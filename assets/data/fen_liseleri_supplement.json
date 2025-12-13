@@ -1,0 +1,352 @@
+[
+  {
+    "id": "fen_001",
+    "name": "Ankara Fen Lisesi",
+    "city": "Ankara",
+    "district": "Çankaya",
+    "type": "lise"
+  },
+  {
+    "id": "fen_002", 
+    "name": "İzmir Fen Lisesi",
+    "city": "İzmir",
+    "district": "Bornova",
+    "type": "lise"
+  },
+  {
+    "id": "fen_003",
+    "name": "İstanbul Atatürk Fen Lisesi", 
+    "city": "İstanbul",
+    "district": "Kadıköy",
+    "type": "lise"
+  },
+  {
+    "id": "fen_004",
+    "name": "Prof. Dr. Aziz Sancar Fen Lisesi",
+    "city": "Ankara", 
+    "district": "Çankaya",
+    "type": "lise"
+  },
+  {
+    "id": "fen_005",
+    "name": "Tofaş Fen Lisesi",
+    "city": "Bursa",
+    "district": "Nilüfer", 
+    "type": "lise"
+  },
+  {
+    "id": "fen_006",
+    "name": "Ankara Pursaklar Fen Lisesi",
+    "city": "Ankara",
+    "district": "Pursaklar",
+    "type": "lise"
+  },
+  {
+    "id": "fen_007",
+    "name": "Çapa Fen Lisesi", 
+    "city": "İstanbul",
+    "district": "Fatih",
+    "type": "lise"
+  },
+  {
+    "id": "fen_008",
+    "name": "Adana Fen Lisesi",
+    "city": "Adana",
+    "district": "Seyhan",
+    "type": "lise"
+  },
+  {
+    "id": "fen_009",
+    "name": "Osman Ulubaş Kayseri Fen Lisesi",
+    "city": "Kayseri", 
+    "district": "Kocasinan",
+    "type": "lise"
+  },
+  {
+    "id": "fen_010",
+    "name": "Erbakır Fen Lisesi",
+    "city": "Denizli",
+    "district": "Merkezefendi",
+    "type": "lise"
+  },
+  {
+    "id": "fen_011",
+    "name": "Bolu Fen Lisesi",
+    "city": "Bolu",
+    "district": "Merkez", 
+    "type": "lise"
+  },
+  {
+    "id": "fen_012",
+    "name": "Yusuf Ziya Öner Fen Lisesi",
+    "city": "Antalya",
+    "district": "Döşemealtı",
+    "type": "lise"
+  },
+  {
+    "id": "fen_013",
+    "name": "Nilüfer Borsa İstanbul Fen Lisesi",
+    "city": "Bursa",
+    "district": "Nilüfer",
+    "type": "lise"
+  },
+  {
+    "id": "fen_014",
+    "name": "Samsun Garip Zeycan Yıldırım Fen Lisesi",
+    "city": "Samsun",
+    "district": "Atakum",
+    "type": "lise"
+  },
+  {
+    "id": "fen_015",
+    "name": "Eyüp Aygar Fen Lisesi",
+    "city": "Mersin",
+    "district": "Yenişehir",
+    "type": "lise"
+  },
+  {
+    "id": "fen_016",
+    "name": "Vehbi Dinçerler Fen Lisesi",
+    "city": "Gaziantep",
+    "district": "Şehitkamil",
+    "type": "lise"
+  },
+  {
+    "id": "fen_017",
+    "name": "Kocaeli Fen Lisesi",
+    "city": "Kocaeli",
+    "district": "İzmit",
+    "type": "lise"
+  },
+  {
+    "id": "fen_018",
+    "name": "Aydın Fen Lisesi",
+    "city": "Aydın",
+    "district": "Efeler",
+    "type": "lise"
+  },
+  {
+    "id": "fen_019",
+    "name": "Meram Fen Lisesi",
+    "city": "Konya",
+    "district": "Meram",
+    "type": "lise"
+  },
+  {
+    "id": "fen_020",
+    "name": "Eskişehir Fatih Fen Lisesi",
+    "city": "Eskişehir",
+    "district": "Odunpazarı",
+    "type": "lise"
+  },
+  {
+    "id": "fen_021",
+    "name": "Seyhan Borsa İstanbul Fen Lisesi", 
+    "city": "Adana",
+    "district": "Seyhan",
+    "type": "lise"
+  },
+  {
+    "id": "fen_022",
+    "name": "Sümer Fen Lisesi",
+    "city": "Kayseri",
+    "district": "Kocasinan",
+    "type": "lise"
+  },
+  {
+    "id": "fen_023",
+    "name": "Cumhuriyet Fen Lisesi",
+    "city": "Ankara",
+    "district": "Çankaya",
+    "type": "lise"
+  },
+  {
+    "id": "fen_024",
+    "name": "Malatya Erman Ilıcak Fen Lisesi",
+    "city": "Malatya",
+    "district": "Yeşilyurt",
+    "type": "lise"
+  },
+  {
+    "id": "fen_025",
+    "name": "Ankara Erman Ilıcak Fen Lisesi",
+    "city": "Ankara", 
+    "district": "Sincan",
+    "type": "lise"
+  },
+  {
+    "id": "fen_026",
+    "name": "Manisa Fen Lisesi",
+    "city": "Manisa",
+    "district": "Yunusemre",
+    "type": "lise"
+  },
+  {
+    "id": "fen_027",
+    "name": "Buca İnci-Özer Tırnaklı Fen Lisesi",
+    "city": "İzmir",
+    "district": "Buca",
+    "type": "lise"
+  },
+  {
+    "id": "fen_028",
+    "name": "Rekabet Kurumu Cumhuriyet Fen Lisesi",
+    "city": "Diyarbakır",
+    "district": "Yenişehir", 
+    "type": "lise"
+  },
+  {
+    "id": "fen_029",
+    "name": "Keçiören Vatansever Şehit Tümgeneral Aydoğan Aydın Fen Lisesi",
+    "city": "Ankara",
+    "district": "Keçiören",
+    "type": "lise"
+  },
+  {
+    "id": "fen_030",
+    "name": "Validebağ Fen Lisesi",
+    "city": "İstanbul",
+    "district": "Üsküdar",
+    "type": "lise"
+  },
+  {
+    "id": "fen_031",
+    "name": "Aziz Atik Fen Lisesi",
+    "city": "Samsun",
+    "district": "İlkadım",
+    "type": "lise"
+  },
+  {
+    "id": "fen_032",
+    "name": "Yahya Akel Fen Lisesi",
+    "city": "Mersin",
+    "district": "Yenişehir",
+    "type": "lise"
+  },
+  {
+    "id": "fen_033",
+    "name": "Yaşar Acar Fen Lisesi",
+    "city": "İstanbul",
+    "district": "Beylikdüzü",
+    "type": "lise"
+  },
+  {
+    "id": "fen_034",
+    "name": "Trabzon Merkez Fen Lisesi", 
+    "city": "Trabzon",
+    "district": "Ortahisar",
+    "type": "lise"
+  },
+  {
+    "id": "fen_035",
+    "name": "Şehit Münir Alkan Fen Lisesi",
+    "city": "İstanbul",
+    "district": "Büyükçekmece",
+    "type": "lise"
+  },
+  {
+    "id": "fen_036",
+    "name": "Yenimahalle Fen Lisesi",
+    "city": "Ankara",
+    "district": "Yenimahalle",
+    "type": "lise"
+  },
+  {
+    "id": "fen_037",
+    "name": "Aydem Fen Lisesi",
+    "city": "Denizli",
+    "district": "Merkezefendi",
+    "type": "lise"
+  },
+  {
+    "id": "fen_038", 
+    "name": "Tobb Fen Lisesi",
+    "city": "Gaziantep",
+    "district": "Şahinbey",
+    "type": "lise"
+  },
+  {
+    "id": "fen_039",
+    "name": "Nazilli Fen Lisesi",
+    "city": "Aydın",
+    "district": "Nazilli",
+    "type": "lise"
+  },
+  {
+    "id": "fen_040",
+    "name": "Tobb Osmaniye Fen Lisesi",
+    "city": "Osmaniye",
+    "district": "Merkez",
+    "type": "lise"
+  },
+  {
+    "id": "fen_041",
+    "name": "Ebru Nayim Fen Lisesi",
+    "city": "Tekirdağ",
+    "district": "Süleymanpaşa",
+    "type": "lise"
+  },
+  {
+    "id": "fen_042",
+    "name": "Muammer Dereli Fen Lisesi",
+    "city": "Kocaeli",
+    "district": "İzmit",
+    "type": "lise"
+  },
+  {
+    "id": "fen_043",
+    "name": "Ahmet Hamdi Gökbayrak Fen Lisesi",
+    "city": "Bursa",
+    "district": "Osmangazi",
+    "type": "lise"
+  },
+  {
+    "id": "fen_044",
+    "name": "Erzurum İbrahim Hakkı Fen Lisesi",
+    "city": "Erzurum",
+    "district": "Palandöken",
+    "type": "lise"
+  },
+  {
+    "id": "fen_045",
+    "name": "Şehit Turgut Solak Fen Lisesi",
+    "city": "Balıkesir",
+    "district": "Karesi",
+    "type": "lise"
+  },
+  {
+    "id": "fen_046",
+    "name": "Isparta Süleyman Demirel Fen Lisesi",
+    "city": "Isparta",
+    "district": "Merkez",
+    "type": "lise"
+  },
+  {
+    "id": "fen_047",
+    "name": "Yüksel-İlhan Alanyalı Fen Lisesi",
+    "city": "İstanbul",
+    "district": "Kartal",
+    "type": "lise"
+  },
+  {
+    "id": "fen_048",
+    "name": "Halil Kale Fen Lisesi",
+    "city": "Manisa",
+    "district": "Turgutlu",
+    "type": "lise"
+  },
+  {
+    "id": "fen_049",
+    "name": "Kahramanmaraş Tobb Fen Lisesi",
+    "city": "Kahramanmaraş",
+    "district": "Onikişubat",
+    "type": "lise"
+  },
+  {
+    "id": "fen_050",
+    "name": "Kayseri Fen Lisesi",
+    "city": "Kayseri",
+    "district": "Melikgazi",
+    "type": "lise"
+  }
+] 

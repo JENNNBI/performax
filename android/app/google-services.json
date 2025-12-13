@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "378725490445",
+    "project_id": "performax-e4b1c",
+    "storage_bucket": "performax-e4b1c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:378725490445:android:8762efc38fad9e5d5eda44",
+        "android_client_info": {
+          "package_name": "com.performax.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "378725490445-7eb0n0907egevgrghbf0p8ccb6slpvu4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.performax.app",
+            "certificate_hash": "ebda57c91cf949481558764f57cc486568fb5de5"
+          }
+        },
+        {
+          "client_id": "378725490445-dc4q83e2m2r06dqn4tm9geo1d7vnc53b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDNCHpzX5KwNg4AV7qzPGbmIDHiHulBvWM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "378725490445-dc4q83e2m2r06dqn4tm9geo1d7vnc53b.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "378725490445-9ud1peb2lj6uu38vm49vpv234lj2n7p6.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.performax.app"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
