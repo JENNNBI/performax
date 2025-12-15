@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../models/user_profile.dart';
-import '../widgets/avatar_3d_widget.dart';
 import '../blocs/bloc_exports.dart';
 
 /// Profile-Centric Home Screen
@@ -175,137 +174,75 @@ class ProfileHomeScreen extends StatelessWidget {
                       
                       const SizedBox(height: 20),
                       
-                      // 3D Avatar - NO BOX, with Pedestal & Glow
-                      // Always show avatar (uses default if avatarId is null)
-                      TweenAnimationBuilder<double>(
-                          tween: Tween(begin: 0.0, end: 1.0),
-                          duration: const Duration(milliseconds: 1200),
-                          curve: Curves.elasticOut,
-                          builder: (context, value, child) {
-                            return Transform.scale(
-                              scale: 0.5 + (0.5 * value),
-                              child: Opacity(
-                                opacity: value.clamp(0.0, 1.0),
-                                child: Stack(
-                                  alignment: Alignment.center,
-                                  clipBehavior: Clip.none,
-                                  children: [
-                                    // Glow Effect Behind Avatar - ADJUSTED for expanded viewport
-                                    Positioned(
-                                      child: Container(
-                                        width: 320, // Adjusted to match expanded model
-                                        height: 320,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          gradient: RadialGradient(
-                                            colors: [
-                                              theme.primaryColor.withValues(alpha: 0.3),
-                                              theme.primaryColor.withValues(alpha: 0.15),
-                                              theme.primaryColor.withValues(alpha: 0.05),
-                                              Colors.transparent,
-                                            ],
-                                            stops: const [0.0, 0.4, 0.7, 1.0],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    
-                                    // 3D Avatar Standing on Visual Stand - EXPANDED VIEWPORT
-                                    // Using Stack to layer avatar ON TOP of stand asset
-                                    SizedBox(
-                                      width: 340, // EXPANDED from 320 to prevent clipping
-                                      height: 480, // EXPANDED from 400 to show full head and feet
-                                      child: Stack(
-                                        alignment: Alignment.bottomCenter,
-                                        clipBehavior: Clip.none, // Allow overflow to prevent any clipping
-                                        children: [
-                                          // Stand Asset - BOTTOM LAYER
-                                          Positioned(
-                                            bottom: 0,
-                                            child: Image.asset(
-                                              'assets/images/stand.png',
-                                              width: 220, // Slightly larger stand
-                                              height: 220,
-                                              fit: BoxFit.contain,
-                                              errorBuilder: (context, error, stackTrace) {
-                                                // Fallback to gradient pedestal if stand.png fails
-                                                return Container(
-                                                  width: 180,
-                                                  height: 12,
-                                                  decoration: BoxDecoration(
-                                                    gradient: LinearGradient(
-                                                      begin: Alignment.topCenter,
-                                                      end: Alignment.bottomCenter,
-                                                      colors: [
-                                                        theme.primaryColor.withValues(alpha: 0.4),
-                                                        theme.primaryColor.withValues(alpha: 0.2),
-                                                      ],
-                                                    ),
-                                                    borderRadius: BorderRadius.circular(100),
-                                                    boxShadow: [
-                                                      BoxShadow(
-                                                        color: theme.primaryColor.withValues(alpha: 0.3),
-                                                        blurRadius: 15,
-                                                        spreadRadius: 2,
-                                                        offset: const Offset(0, 5),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                );
-                                              },
-                                            ),
-                                          ),
-                                          
-                                          // 3D Avatar - TOP LAYER - ADJUSTED FOR PERFECT STAND PLACEMENT
-                                          // CRITICAL: Wrap in error boundary to prevent crashes
-                                          Positioned(
-                                            bottom: 80, // ADJUSTED: Raised to sit perfectly on stand (increased from 40)
-                                            child: Builder(
-                                              builder: (context) {
-                                                try {
-                                                  return Avatar3DWidget(
-                                                    avatar: userProfile.avatar,
-                                                    size: 300, // ADJUSTED: Size for proper scale with 3.5m camera distance
-                                                  );
-                                                } catch (e, stackTrace) {
-                                                  debugPrint('❌ FATAL ERROR creating Avatar3DWidget: $e');
-                                                  debugPrint('Stack trace: $stackTrace');
-                                                  // Return fallback avatar icon
-                                                  return Container(
-                                                    width: 300,
-                                                    height: 300,
-                                                    decoration: BoxDecoration(
-                                                      gradient: LinearGradient(
-                                                        begin: Alignment.topLeft,
-                                                        end: Alignment.bottomRight,
-                                                        colors: [
-                                                          Theme.of(context).primaryColor.withValues(alpha: 0.3),
-                                                          Theme.of(context).primaryColor.withValues(alpha: 0.1),
-                                                        ],
-                                                      ),
-                                                      borderRadius: BorderRadius.circular(150),
-                                                    ),
-                                                    child: Center(
-                                                      child: Icon(
-                                                        Icons.person,
-                                                        size: 120,
-                                                        color: Theme.of(context).primaryColor,
-                                                      ),
-                                                    ),
-                                                  );
-                                                }
-                                              },
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
+                      Stack(
+                        alignment: Alignment.center,
+                        clipBehavior: Clip.none,
+                        children: [
+                          Positioned(
+                            child: Container(
+                              width: 320,
+                              height: 320,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                gradient: RadialGradient(
+                                  colors: [
+                                    theme.primaryColor.withValues(alpha: 0.3),
+                                    theme.primaryColor.withValues(alpha: 0.15),
+                                    theme.primaryColor.withValues(alpha: 0.05),
+                                    Colors.transparent,
                                   ],
+                                  stops: const [0.0, 0.4, 0.7, 1.0],
                                 ),
                               ),
-                            );
-                          },
-                        ),
+                            ),
+                          ),
+                          SizedBox(
+                            width: 340,
+                            height: 480,
+                            child: Stack(
+                              alignment: Alignment.bottomCenter,
+                              clipBehavior: Clip.none,
+                              children: [
+                                Positioned(
+                                  bottom: 0,
+                                  child: Image.asset(
+                                    'assets/images/stand.png',
+                                    width: 220,
+                                    height: 220,
+                                    fit: BoxFit.contain,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Container(
+                                        width: 180,
+                                        height: 12,
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            begin: Alignment.topCenter,
+                                            end: Alignment.bottomCenter,
+                                            colors: [
+                                              theme.primaryColor.withValues(alpha: 0.4),
+                                              theme.primaryColor.withValues(alpha: 0.2),
+                                            ],
+                                          ),
+                                          borderRadius: BorderRadius.circular(100),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: theme.primaryColor.withValues(alpha: 0.3),
+                                              blurRadius: 15,
+                                              spreadRadius: 2,
+                                              offset: const Offset(0, 5),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                                // Intentionally empty: no avatar is rendered
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                       
                       const SizedBox(height: 12), // REDUCED SPACING: From 24 to 12 to bring user data closer
                       
@@ -408,4 +345,3 @@ class ProfileHomeScreen extends StatelessWidget {
     );
   }
 }
-

@@ -5,7 +5,6 @@ import '../widgets/slidable_subject_card.dart';
 import '../widgets/ai_assistant_widget.dart';
 import '../widgets/pulsing_ai_fab.dart';
 import '../widgets/enhanced_bottom_nav.dart';
-import '../widgets/avatar_3d_widget.dart';
 import '../utils/app_icons.dart';
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import '../blocs/bloc_exports.dart';
@@ -363,41 +362,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 3D Avatar Section (if user has avatar)
-        if (_userProfile?.avatarId != null) ...[
-          Container(
-            margin: const EdgeInsets.fromLTRB(20.0, 16.0, 20.0, 16.0),
-            padding: const EdgeInsets.all(16.0),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Theme.of(context).primaryColor.withOpacity(0.1),
-                  Theme.of(context).primaryColor.withOpacity(0.05),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: Theme.of(context).primaryColor.withOpacity(0.2),
-                width: 2,
-              ),
-            ),
-            child: Column(
-              children: [
-                Avatar3DWidget(
-                  avatar: _userProfile!.avatar,
-                  size: 200,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Merhaba ${_userProfile!.displayName}!',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+        // Avatar section removed to keep display area empty
         
         Padding(
           padding: const EdgeInsets.fromLTRB(20.0, 16.0, 20.0, 0),
