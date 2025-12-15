@@ -178,14 +178,33 @@ class _FavoriteQuestionsScreenState extends State<FavoriteQuestionsScreen> {
                 );
               }
               
+              // Group favorites by test name (book title)
+              final Map<String, List<FavoriteQuestion>> groupedFavorites = {};
+              for (final favorite in favorites) {
+                if (!groupedFavorites.containsKey(favorite.testName)) {
+                  groupedFavorites[favorite.testName] = [];
+                }
+                groupedFavorites[favorite.testName]!.add(favorite);
+              }
+              
+              // Sort each group by question number
+              groupedFavorites.forEach((key, value) {
+                value.sort((a, b) => a.questionNumber.compareTo(b.questionNumber));
+              });
+              
+              // Get sorted book titles
+              final sortedBookTitles = groupedFavorites.keys.toList();
+              
               return ListView.builder(
                 padding: const EdgeInsets.all(16),
-                itemCount: favorites.length,
+                itemCount: sortedBookTitles.length,
                 itemBuilder: (context, index) {
-                  final favorite = favorites[index];
+                  final bookTitle = sortedBookTitles[index];
+                  final bookFavorites = groupedFavorites[bookTitle]!;
                   
-                  return _buildFavoriteQuestionCard(
-                    favorite: favorite,
+                  return _buildBookGroup(
+                    bookTitle: bookTitle,
+                    favorites: bookFavorites,
                     theme: theme,
                     isEnglish: isEnglish,
                   );
@@ -198,8 +217,9 @@ class _FavoriteQuestionsScreenState extends State<FavoriteQuestionsScreen> {
     );
   }
 
-  Widget _buildFavoriteQuestionCard({
-    required FavoriteQuestion favorite,
+  Widget _buildBookGroup({
+    required String bookTitle,
+    required List<FavoriteQuestion> favorites,
     required ThemeData theme,
     required bool isEnglish,
   }) {
@@ -216,22 +236,84 @@ class _FavoriteQuestionsScreenState extends State<FavoriteQuestionsScreen> {
           ),
         ],
       ),
+      child: Theme(
+        data: theme.copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          childrenPadding: const EdgeInsets.only(bottom: 8),
+          initiallyExpanded: true,
+          leading: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: theme.primaryColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              Icons.book_rounded,
+              color: theme.primaryColor,
+              size: 24,
+            ),
+          ),
+          title: Text(
+            bookTitle,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+          subtitle: Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text(
+              '${favorites.length} ${isEnglish ? (favorites.length == 1 ? "question" : "questions") : (favorites.length == 1 ? "soru" : "soru")}',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[600],
+              ),
+            ),
+          ),
+          children: favorites.map((favorite) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: _buildFavoriteQuestionCard(
+                favorite: favorite,
+                theme: theme,
+                isEnglish: isEnglish,
+              ),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFavoriteQuestionCard({
+    required FavoriteQuestion favorite,
+    required ThemeData theme,
+    required bool isEnglish,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: theme.brightness == Brightness.dark 
+            ? Colors.grey[850] 
+            : Colors.grey[50],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: theme.primaryColor.withValues(alpha: 0.1),
+          width: 1,
+        ),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header with test name and question number
+          // Header with question number and remove button
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  theme.primaryColor.withValues(alpha: 0.1),
-                  theme.primaryColor.withValues(alpha: 0.05),
-                ],
-              ),
+              color: theme.primaryColor.withValues(alpha: 0.08),
               borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(16),
-                topRight: Radius.circular(16),
+                topLeft: Radius.circular(12),
+                topRight: Radius.circular(12),
               ),
             ),
             child: Row(
@@ -243,30 +325,22 @@ class _FavoriteQuestionsScreenState extends State<FavoriteQuestionsScreen> {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    '${isEnglish ? "Q" : "Soru"} ${favorite.questionNumber}',
+                    '${isEnglish ? "Question" : "Soru"} ${favorite.questionNumber}',
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
-                      fontSize: 14,
+                      fontSize: 13,
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    favorite.testName,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
+                const Spacer(),
                 IconButton(
-                  icon: const Icon(Icons.delete_outline, color: Colors.red),
+                  icon: const Icon(Icons.delete_outline, size: 20),
+                  color: Colors.red,
                   onPressed: () => _removeFromFavorites(favorite),
                   tooltip: isEnglish ? 'Remove' : 'Kaldır',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
                 ),
               ],
             ),
@@ -440,4 +514,5 @@ class _FavoriteQuestionsScreenState extends State<FavoriteQuestionsScreen> {
     }
   }
 }
+
 
