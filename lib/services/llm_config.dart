@@ -7,6 +7,8 @@
 /// 
 /// Manages API keys and configuration for the LLM service.
 /// In production, this should integrate with secure storage solutions.
+library;
+
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class LLMConfig {

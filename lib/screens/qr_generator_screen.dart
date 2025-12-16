@@ -175,7 +175,7 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
                   ),
                   const SizedBox(height: 8),
                   DropdownButtonFormField<String>(
-                    value: _selectedType,
+                    initialValue: _selectedType,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -264,7 +264,7 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
 
                   if (_selectedType == 'subject') ...[
                     DropdownButtonFormField<String>(
-                      value: _selectedSubject,
+                      initialValue: _selectedSubject,
                       decoration: InputDecoration(
                         labelText: languageBloc.translate('subject'),
                         border: OutlineInputBorder(
@@ -285,7 +285,7 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
                     ),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
-                      value: _selectedSection,
+                      initialValue: _selectedSection,
                       decoration: InputDecoration(
                         labelText: languageBloc.translate('section'),
                         border: OutlineInputBorder(
@@ -309,7 +309,7 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
 
                   if (_selectedType == 'exam' || _selectedType == 'practice') ...[
                     DropdownButtonFormField<String>(
-                      value: _selectedSubject,
+                      initialValue: _selectedSubject,
                       decoration: InputDecoration(
                         labelText: languageBloc.translate('subject'),
                         border: OutlineInputBorder(

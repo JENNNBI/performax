@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import '../models/user_profile.dart';
 import '../blocs/bloc_exports.dart';
+import '../widgets/avatar_3d_widget.dart';
 
 /// Profile-Centric Home Screen
-/// Displays user's 3D avatar, name, and grade level
+/// Displays user's avatar, name, and grade level
 /// This is the NEW primary landing screen focused on user profile
 class ProfileHomeScreen extends StatelessWidget {
   final UserProfile userProfile;
@@ -12,6 +13,15 @@ class ProfileHomeScreen extends StatelessWidget {
     super.key,
     required this.userProfile,
   });
+
+  /// Build 3D avatar display with iOS Simulator compatibility
+  Widget _build3DAvatar(ThemeData theme) {
+    return const Avatar3DWidget(
+      assetPath: 'assets/avatars/3d/Creative_Character_free.glb',
+      width: 280,
+      height: 300,
+    );
+  }
 
   String _getGradeDisplayText(BuildContext context) {
     final languageBloc = context.read<LanguageBloc>();
@@ -203,6 +213,7 @@ class ProfileHomeScreen extends StatelessWidget {
                               alignment: Alignment.bottomCenter,
                               clipBehavior: Clip.none,
                               children: [
+                                // Stand image at the bottom
                                 Positioned(
                                   bottom: 0,
                                   child: Image.asset(
@@ -237,7 +248,15 @@ class ProfileHomeScreen extends StatelessWidget {
                                     },
                                   ),
                                 ),
-                                // Intentionally empty: no avatar is rendered
+                                // Avatar positioned with feet on the platform stand
+                                Positioned(
+                                  bottom: 100, // Aligned so character feet rest precisely on platform surface
+                                  child: SizedBox(
+                                    width: 280,
+                                    height: 300,
+                                    child: _build3DAvatar(theme),
+                                  ),
+                                ),
                               ],
                             ),
                           ),
@@ -246,7 +265,7 @@ class ProfileHomeScreen extends StatelessWidget {
                       
                       const SizedBox(height: 12), // REDUCED SPACING: From 24 to 12 to bring user data closer
                       
-                      // User Full Name - CENTERED beneath 3D model
+                      // User Full Name - CENTERED beneath avatar
                       TweenAnimationBuilder<double>(
                         tween: Tween(begin: 0.0, end: 1.0),
                         duration: const Duration(milliseconds: 1000),
@@ -259,7 +278,7 @@ class ProfileHomeScreen extends StatelessWidget {
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  // User Name - CENTERED beneath 3D model
+                                  // User Name - CENTERED beneath avatar
                                   Text(
                                     _capitalizeFirstLetter(userProfile.displayName),
                                     textAlign: TextAlign.center,

@@ -85,7 +85,7 @@ class _PDFResourcesScreenState extends State<PDFResourcesScreen> {
                     // Subject filter
                     Expanded(
                       child: DropdownButtonFormField<String>(
-                        value: _selectedSubject,
+                        initialValue: _selectedSubject,
                         decoration: InputDecoration(
                           labelText: languageBloc.translate('subject'),
                           border: OutlineInputBorder(
@@ -113,7 +113,7 @@ class _PDFResourcesScreenState extends State<PDFResourcesScreen> {
                     // Grade filter
                     Expanded(
                       child: DropdownButtonFormField<String>(
-                        value: _selectedGrade,
+                        initialValue: _selectedGrade,
                         decoration: InputDecoration(
                           labelText: languageBloc.translate('grade'),
                           border: OutlineInputBorder(

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import '../widgets/pulsing_ai_fab.dart';
 import '../widgets/ai_assistant_widget.dart';
 import '../utils/app_icons.dart';
@@ -61,6 +60,15 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     });
     
+    // Load user profile via bloc (loads from cache first, then syncs)
+    // This ensures My Drawer and Profile screens have immediate access to cached data
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<UserProfileBloc>().add(const LoadUserProfile());
+      }
+    });
+    
+    // Also load directly for backward compatibility
     _loadUserData();
   }
 

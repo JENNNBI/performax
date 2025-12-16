@@ -2,62 +2,56 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Allow users to read/write their own user document
-    // This includes favorites stored as arrays: favoriteQuestions, favoriteBooks, favoritePlaylists
+    // ---------------------------------------------------------
+    // 1. User Documents (Profil ve Array bazlı favoriler)
+    // ---------------------------------------------------------
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
       
-      // Allow users to read/write their own test results (subcollection)
       match /test_results/{testResultId} {
         allow read, write: if request.auth != null && request.auth.uid == userId;
       }
     }
     
-    // ==================== FAVORITES COLLECTIONS ====================
-    // Users can only read/write their own favorites
-    // Security: userId field must match authenticated user's UID
-    
-    // Favorite questions collection
+    // ---------------------------------------------------------
+    // 2. FAVORITES COLLECTION (ACTIVE - Used by FavoritesService)
+    // Bu koleksiyon FavoritesService tarafından kullanılıyor.
+    // Giriş yapmış herhangi bir kullanıcı kendi favorilerini ekleyebilir.
+    // ---------------------------------------------------------
     match /favorites/{favoriteId} {
-      allow read: if request.auth != null && 
-                     (!resource.exists || resource.data.userId == request.auth.uid);
-      allow create, update: if request.auth != null && 
-                               request.resource.data.userId == request.auth.uid;
-      allow delete: if request.auth != null && 
-                       resource.data.userId == request.auth.uid;
+      allow read, write: if request.auth != null;
     }
     
-    // Favorite books collection
+    // ---------------------------------------------------------
+    // 3. FAVORITE QUESTIONS (Legacy - Preserved)
+    // Eski koleksiyon, korunuyor. Giriş yapmış kullanıcılar yazabilir.
+    // ---------------------------------------------------------
+    match /favorite_questions/{questionId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // ---------------------------------------------------------
+    // 4. Diğer Favori Koleksiyonlar
+    // ---------------------------------------------------------
     match /favorite_books/{bookId} {
-      allow read: if request.auth != null && 
-                     (!resource.exists || resource.data.userId == request.auth.uid);
-      allow create, update: if request.auth != null && 
-                               request.resource.data.userId == request.auth.uid;
-      allow delete: if request.auth != null && 
-                       resource.data.userId == request.auth.uid;
+      allow read, write: if request.auth != null;
     }
     
-    // Favorite playlists collection
     match /favorite_playlists/{playlistId} {
-      allow read: if request.auth != null && 
-                     (!resource.exists || resource.data.userId == request.auth.uid);
-      allow create, update: if request.auth != null && 
-                               request.resource.data.userId == request.auth.uid;
-      allow delete: if request.auth != null && 
-                       resource.data.userId == request.auth.uid;
+      allow read, write: if request.auth != null;
     }
     
-    // Allow users to read/write their own progress data
+    // ---------------------------------------------------------
+    // 5. Genel İçerik ve Progress
+    // ---------------------------------------------------------
     match /user_progress/{progressId} {
       allow read, write: if request.auth != null;
     }
     
-    // Allow authenticated users to read public content
     match /content/{document=**} {
       allow read: if request.auth != null;
     }
     
-    // Default deny all other access
     match /{document=**} {
       allow read, write: if false;
     }

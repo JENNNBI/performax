@@ -784,7 +784,7 @@ class _RegistrationDetailsScreenState extends State<RegistrationDetailsScreen>
                               
                               // Class Selection
                               DropdownButtonFormField<String>(
-                                value: _selectedClass,
+                                initialValue: _selectedClass,
                                 decoration: const InputDecoration(
                                   labelText: 'Sınıf',
                                   prefixIcon: Icon(Icons.school_outlined),
@@ -806,7 +806,7 @@ class _RegistrationDetailsScreenState extends State<RegistrationDetailsScreen>
                               
                               // Gender Selection
                               DropdownButtonFormField<String>(
-                                value: _selectedGender,
+                                initialValue: _selectedGender,
                                 decoration: const InputDecoration(
                                   labelText: 'Cinsiyet',
                                   prefixIcon: Icon(Icons.person_outline),

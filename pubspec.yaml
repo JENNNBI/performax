@@ -56,6 +56,7 @@ dependencies:
   smooth_page_indicator: ^1.2.0+3
   fluttertoast: ^8.2.8
   rive: ^0.13.17
+  model_viewer_plus: ^1.9.2
 
   # Media & Content
   youtube_player_flutter: ^9.0.3
@@ -66,7 +67,7 @@ dependencies:
   video_player: ^2.9.1
   chewie: ^1.8.3
   image: ^4.3.0
-
+  
   # Utilities
   url_launcher: ^6.3.1
   share_plus: ^12.0.1
@@ -145,4 +146,5 @@ flutter:
    - assets/hocalar/bunyamin_bayraktutar.png
    - assets/hocalar/omer_faruk_cetinkaya.png
    - assets/images/youtube_logo.png
+   - assets/avatars/3d/Creative_Character_free.glb
   
