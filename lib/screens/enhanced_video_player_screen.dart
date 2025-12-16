@@ -6,6 +6,7 @@ import 'package:share_plus/share_plus.dart';
 import '../blocs/bloc_exports.dart';
 import '../models/video_watch_session.dart';
 import '../services/video_session_service.dart';
+import '../services/quest_service.dart';
 
 /// Enhanced Video Player Screen with Proper YouTube View Attribution
 /// 
@@ -45,6 +46,7 @@ class _EnhancedVideoPlayerScreenState extends State<EnhancedVideoPlayerScreen>
   VideoWatchSession? _watchSession;
   final VideoSessionService _sessionService = VideoSessionService();
   bool _hasShownDialog = false; // Prevent duplicate dialogs
+  int _lastEmittedWatchSeconds = 0;
 
   @override
   void initState() {
@@ -164,6 +166,13 @@ class _EnhancedVideoPlayerScreenState extends State<EnhancedVideoPlayerScreen>
           _watchSession!.stopPlaying();
           debugPrint('⏸️ Playback paused - timer stopped');
           debugPrint('   Total watch time: ${_watchSession!.totalWatchTimeSeconds}s');
+          // Emit quest progress in real-time on each pause
+          final total = _watchSession!.totalWatchTimeSeconds;
+          final delta = total - _lastEmittedWatchSeconds;
+          if (delta > 0) {
+            QuestService.instance.onVideoWatchedSeconds(delta);
+            _lastEmittedWatchSeconds = total;
+          }
         }
       }
       setState(() {});
@@ -187,6 +196,13 @@ class _EnhancedVideoPlayerScreenState extends State<EnhancedVideoPlayerScreen>
             debugPrint('💾 Session saved in dispose (dialog may not have been shown)');
           } catch (e) {
             debugPrint('⚠️ Failed to save session in dispose: $e');
+          }
+          // Emit any remaining watch time to quests
+          final total = _watchSession!.totalWatchTimeSeconds;
+          final delta = total - _lastEmittedWatchSeconds;
+          if (delta > 0) {
+            QuestService.instance.onVideoWatchedSeconds(delta);
+            _lastEmittedWatchSeconds = total;
           }
         }
       }
@@ -1093,4 +1109,3 @@ class _EnhancedVideoPlayerScreenState extends State<EnhancedVideoPlayerScreen>
     );
   }
 }
-

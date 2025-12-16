@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import '../models/user_profile.dart';
+import '../models/quest.dart';
 import '../blocs/bloc_exports.dart';
 import '../widgets/avatar_3d_widget.dart';
+import '../widgets/quest_speech_bubble.dart';
+import '../widgets/quest_list_widget.dart';
+import '../services/quest_service.dart';
 
 /// Profile-Centric Home Screen
-/// Displays user's avatar, name, and grade level
+/// Displays user's avatar, name, and grade level with interactive quest system
 /// This is the NEW primary landing screen focused on user profile
-class ProfileHomeScreen extends StatelessWidget {
+class ProfileHomeScreen extends StatefulWidget {
   final UserProfile userProfile;
 
   const ProfileHomeScreen({
@@ -14,12 +18,119 @@ class ProfileHomeScreen extends StatelessWidget {
     required this.userProfile,
   });
 
-  /// Build 3D avatar display with iOS Simulator compatibility
+  @override
+  State<ProfileHomeScreen> createState() => _ProfileHomeScreenState();
+}
+
+class _ProfileHomeScreenState extends State<ProfileHomeScreen> with TickerProviderStateMixin {
+  final QuestService _questService = QuestService();
+  QuestData? _questData;
+  bool _showSpeechBubble = true;
+  bool _showQuestList = false;
+  late AnimationController _avatarBounceController;
+  late AnimationController _slideController;
+  late Animation<double> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _avatarBounceController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+    _slideController = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
+    _slideAnimation = Tween<double>(
+      begin: 0.0, // Center position
+      end: -120.0, // Slide left by 120px
+    ).animate(CurvedAnimation(
+      parent: _slideController,
+      curve: Curves.easeInOutCubic,
+    ));
+    _loadQuests();
+  }
+
+  @override
+  void dispose() {
+    _avatarBounceController.dispose();
+    _slideController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadQuests() async {
+    try {
+      final questData = await _questService.loadQuests();
+      if (mounted) {
+        setState(() {
+          _questData = questData;
+        });
+        // Subscribe to quest updates for real-time progress
+        _questService.stream.listen((data) {
+          if (!mounted) return;
+          setState(() => _questData = data);
+        });
+        // Reset state for test mode as requested
+        _questService.resetAll();
+      }
+    } catch (e) {
+      debugPrint('❌ Error loading quests: $e');
+    }
+  }
+
+  void _toggleQuest() {
+    try {
+      // Trigger bounce animation
+      _avatarBounceController.forward(from: 0.0).then((_) {
+        _avatarBounceController.reverse();
+      });
+
+      setState(() {
+        if (_showSpeechBubble && !_showQuestList) {
+          // State A: First tap - Hide speech bubble, show quest list, slide avatar left
+          _showSpeechBubble = false;
+          _showQuestList = true;
+          _slideController.forward(); // Slide avatar left
+        } else if (_showQuestList && !_showSpeechBubble) {
+          // State B: Second tap - Hide quest list, restore speech bubble, slide avatar center
+          _showQuestList = false;
+          _slideController.reverse(); // Slide avatar back to center
+          if (_questData != null && _questData!.hasPendingQuests) {
+            // Delay speech bubble appearance until slide animation completes
+            Future.delayed(const Duration(milliseconds: 500), () {
+              if (mounted && !_showQuestList) {
+                setState(() {
+                  _showSpeechBubble = true;
+                });
+              }
+            });
+          }
+        }
+      });
+    } catch (e) {
+      debugPrint('❌ Error in _toggleQuest: $e');
+    }
+  }
+
+  /// Build 3D avatar display with iOS Simulator compatibility and bounce animation
   Widget _build3DAvatar(ThemeData theme) {
-    return const Avatar3DWidget(
-      assetPath: 'assets/avatars/3d/Creative_Character_free.glb',
-      width: 280,
-      height: 300,
+    return AnimatedBuilder(
+      animation: _avatarBounceController,
+      builder: (context, child) {
+        final bounce = Curves.elasticOut.transform(_avatarBounceController.value);
+        return Transform.scale(
+          scale: 1.0 + (bounce * 0.15), // Subtle bounce effect
+          child: Transform.translate(
+            offset: Offset(0, -bounce * 8), // Slight upward movement
+            child: const Avatar3DWidget(
+              assetPath: 'assets/avatars/3d/Creative_Character_free.glb',
+              width: 280,
+              height: 380,
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -27,7 +138,7 @@ class ProfileHomeScreen extends StatelessWidget {
     final languageBloc = context.read<LanguageBloc>();
     final isEnglish = languageBloc.currentLanguage == 'en';
     
-    if (userProfile.gradeLevel == null || userProfile.gradeLevel!.isEmpty) {
+    if (widget.userProfile.gradeLevel == null || widget.userProfile.gradeLevel!.isEmpty) {
       return isEnglish ? 'Grade not specified' : 'Sınıf belirtilmedi';
     }
     
@@ -39,7 +150,7 @@ class ProfileHomeScreen extends StatelessWidget {
       '12': isEnglish ? '12th Grade' : '12. Sınıf',
     };
     
-    return gradeMap[userProfile.gradeLevel] ?? userProfile.gradeLevel!;
+    return gradeMap[widget.userProfile.gradeLevel] ?? widget.userProfile.gradeLevel!;
   }
   
   /// Capitalize first letter of user's name
@@ -188,6 +299,7 @@ class ProfileHomeScreen extends StatelessWidget {
                         alignment: Alignment.center,
                         clipBehavior: Clip.none,
                         children: [
+                          // Background circle (bottom layer)
                           Positioned(
                             child: Container(
                               width: 320,
@@ -206,64 +318,136 @@ class ProfileHomeScreen extends StatelessWidget {
                               ),
                             ),
                           ),
-                          SizedBox(
-                            width: 340,
-                            height: 480,
-                            child: Stack(
-                              alignment: Alignment.bottomCenter,
-                              clipBehavior: Clip.none,
-                              children: [
-                                // Stand image at the bottom
-                                Positioned(
-                                  bottom: 0,
-                                  child: Image.asset(
-                                    'assets/images/stand.png',
-                                    width: 220,
-                                    height: 220,
-                                    fit: BoxFit.contain,
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return Container(
-                                        width: 180,
-                                        height: 12,
-                                        decoration: BoxDecoration(
-                                          gradient: LinearGradient(
-                                            begin: Alignment.topCenter,
-                                            end: Alignment.bottomCenter,
-                                            colors: [
-                                              theme.primaryColor.withValues(alpha: 0.4),
-                                              theme.primaryColor.withValues(alpha: 0.2),
-                                            ],
-                                          ),
-                                          borderRadius: BorderRadius.circular(100),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: theme.primaryColor.withValues(alpha: 0.3),
-                                              blurRadius: 15,
-                                              spreadRadius: 2,
-                                              offset: const Offset(0, 5),
-                                            ),
-                                          ],
+                          
+                          // Avatar + Stand group (middle layer) - slides left/right
+                          AnimatedBuilder(
+                            animation: _slideAnimation,
+                            builder: (context, child) {
+                              return Transform.translate(
+                                offset: Offset(_slideAnimation.value, 0),
+                                child: SizedBox(
+                                  width: 340,
+                                  height: 480,
+                                  child: Stack(
+                                    alignment: Alignment.bottomCenter,
+                                    clipBehavior: Clip.none,
+                                    children: [
+                                      // Stand image at the bottom
+                                      Positioned(
+                                        bottom: 0,
+                                        child: Image.asset(
+                                          'assets/images/stand.png',
+                                          width: 220,
+                                          height: 220,
+                                          fit: BoxFit.contain,
+                                          errorBuilder: (context, error, stackTrace) {
+                                            return Container(
+                                              width: 180,
+                                              height: 12,
+                                              decoration: BoxDecoration(
+                                                gradient: LinearGradient(
+                                                  begin: Alignment.topCenter,
+                                                  end: Alignment.bottomCenter,
+                                                  colors: [
+                                                    theme.primaryColor.withValues(alpha: 0.4),
+                                                    theme.primaryColor.withValues(alpha: 0.2),
+                                                  ],
+                                                ),
+                                                borderRadius: BorderRadius.circular(100),
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: theme.primaryColor.withValues(alpha: 0.3),
+                                                    blurRadius: 15,
+                                                    spreadRadius: 2,
+                                                    offset: const Offset(0, 5),
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                          },
                                         ),
-                                      );
-                                    },
+                                      ),
+                                      // Avatar positioned with feet on the platform stand
+                                      Positioned(
+                                        bottom: 80, // Fine-tuned for precise feet alignment on platform surface
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            try {
+                                              debugPrint('🎮 Avatar tapped! Toggling quest...');
+                                              _toggleQuest();
+                                            } catch (e, stackTrace) {
+                                              debugPrint('❌ Fatal error on avatar tap: $e');
+                                              debugPrint('Stack trace: $stackTrace');
+                                            }
+                                          },
+                                          behavior: HitTestBehavior.opaque,
+                                          child: Container(
+                                            width: 280,
+                                            height: 380, // Increased to prevent model overflow
+                                            color: Colors.transparent,
+                                            child: IgnorePointer(
+                                              child: _build3DAvatar(theme),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                // Avatar positioned with feet on the platform stand
-                                Positioned(
-                                  bottom: 100, // Aligned so character feet rest precisely on platform surface
-                                  child: SizedBox(
-                                    width: 280,
-                                    height: 300,
-                                    child: _build3DAvatar(theme),
-                                  ),
-                                ),
-                              ],
-                            ),
+                              );
+                            },
                           ),
+                          
+                          // Speech Bubble (top layer) - positioned on far right, clear of avatar
+                          if (_questData != null && _questData!.hasPendingQuests && _showSpeechBubble)
+                            Positioned(
+                              right: 20, // Far right with padding
+                              top: 80,
+                              child: DismissSpeechBubble(
+                                dismiss: !_showSpeechBubble,
+                                child: QuestSpeechBubble(
+                                  message: 'Görevlerin var!',
+                                  pendingCount: _questData!.pendingCount,
+                                  show: _showSpeechBubble,
+                                ),
+                              ),
+                            ),
+                          
+                          // Quest List Overlay (top layer) - FIXED POSITIONING to prevent "skinny column" bug
+                          if (_showQuestList && _questData != null)
+                            AnimatedBuilder(
+                              animation: _slideAnimation,
+                              builder: (context, child) {
+                                final screenWidth = MediaQuery.of(context).size.width;
+                                
+                                // Calculate if window should be visible based on slide progress
+                                final slideProgress = (-_slideAnimation.value) / 120.0; // 0.0 to 1.0
+                                
+                                // MANDATORY FIX: Use fixed coordinates to prevent collapse
+                                // LEFT: Start at 35% from left (window will be 65% width)
+                                final leftPosition = screenWidth * 0.16;
+                                
+                                // Only show when avatar has slid left
+                                if (slideProgress <= 0) {
+                                  return const SizedBox.shrink(); // Hide when avatar is centered
+                                }
+                                
+                                return Positioned(
+                                  left: leftPosition,
+                                  right: -24,
+                                  top: 0,
+                                  bottom: 0,
+                                  child: QuestListWidget(
+                                    questData: _questData!,
+                                    onClose: _toggleQuest,
+                                  ),
+                                );
+                              },
+                            ),
                         ],
                       ),
                       
-                      const SizedBox(height: 12), // REDUCED SPACING: From 24 to 12 to bring user data closer
+                      const SizedBox(height: 24), // REDUCED SPACING: From 24 to 12 to bring user data closer
                       
                       // User Full Name - CENTERED beneath avatar
                       TweenAnimationBuilder<double>(
@@ -280,7 +464,7 @@ class ProfileHomeScreen extends StatelessWidget {
                                 children: [
                                   // User Name - CENTERED beneath avatar
                                   Text(
-                                    _capitalizeFirstLetter(userProfile.displayName),
+                                    _capitalizeFirstLetter(widget.userProfile.displayName),
                                     textAlign: TextAlign.center,
                                     style: const TextStyle(
                                       fontSize: 24,
@@ -344,7 +528,7 @@ class ProfileHomeScreen extends StatelessWidget {
                                       const SizedBox(width: 12),
                                       
                                       // Rocket Currency Display - to the right of grade level
-                                      _buildAnimatedCurrencyDisplay(theme, userProfile.rocketCurrency),
+                                      _buildAnimatedCurrencyDisplay(theme, widget.userProfile.rocketCurrency),
                                     ],
                                   ),
                                 ],

@@ -4,6 +4,7 @@ import '../services/llm_config.dart';
 import '../blocs/bloc_exports.dart';
 import '../models/user_profile.dart';
 import 'typewriter_text.dart';
+import '../services/quest_service.dart';
 
 /// AI Study Assistant Widget - Simplified Chat Interface
 /// 
@@ -120,6 +121,8 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget> with TickerProvid
       });
       _isLoading = true;
     });
+    // Event: user engaged with AI
+    QuestService.instance.onAiInteracted();
 
     // Clear input
     _questionController.clear();
@@ -154,6 +157,8 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget> with TickerProvid
           });
           _isLoading = false;
         });
+        // Event: AI responded (counts as interaction)
+        QuestService.instance.onAiInteracted();
 
         _scrollToBottom();
       }
@@ -470,4 +475,3 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget> with TickerProvid
     );
   }
 }
-

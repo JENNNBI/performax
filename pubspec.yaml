@@ -115,6 +115,7 @@ flutter:
    - assets/images/app_icon.png
    - assets/data/ysk_school_list.json
    - assets/data/fen_liseleri_supplement.json
+   - assets/data/quests.json
    - assets/images/istatistik1.png
    - assets/images/soru_cozum.png
    - assets/images/konu_anlatim.png

@@ -1,0 +1,148 @@
+{
+  "daily_quests": [
+    {
+      "id": "daily_1",
+      "title": "Matematik Çalışması",
+      "description": "10 matematik sorusu çöz",
+      "reward": 50,
+      "progress": 5,
+      "target": 10,
+      "icon": "calculate",
+      "completed": false
+    },
+    {
+      "id": "daily_2",
+      "title": "Video İzle",
+      "description": "3 konu anlatım videosu izle",
+      "reward": 30,
+      "progress": 1,
+      "target": 3,
+      "icon": "play_circle",
+      "completed": false
+    },
+    {
+      "id": "daily_3",
+      "title": "Okuma Pratiği",
+      "description": "15 dakika PDF kaynak oku",
+      "reward": 25,
+      "progress": 0,
+      "target": 15,
+      "icon": "book",
+      "completed": false
+    },
+    {
+      "id": "daily_5",
+      "title": "Mükemmel Puan",
+      "description": "Bir testi %100 başarıyla tamamla",
+      "reward": 100,
+      "progress": 0,
+      "target": 1,
+      "icon": "emoji_events",
+      "completed": false
+    },
+    {
+      "id": "daily_6",
+      "title": "AI ile Sohbet",
+      "description": "AI asistanıyla 3 etkileşim gerçekleştir",
+      "reward": 60,
+      "progress": 0,
+      "target": 3,
+      "icon": "smart_toy",
+      "completed": false
+    },
+    {
+      "id": "daily_4",
+      "title": "Hızlı Test",
+      "description": "5 farklı dersten birer soru çöz",
+      "reward": 40,
+      "progress": 3,
+      "target": 5,
+      "icon": "quiz",
+      "completed": false
+    }
+  ],
+  "weekly_quests": [
+    {
+      "id": "weekly_1",
+      "title": "Haftalık Hedef",
+      "description": "100 soru çöz",
+      "reward": 300,
+      "progress": 67,
+      "target": 100,
+      "icon": "star",
+      "completed": false
+    },
+    {
+      "id": "weekly_2",
+      "title": "Konu Tamamlama",
+      "description": "5 konu anlatımını bitir",
+      "reward": 200,
+      "progress": 2,
+      "target": 5,
+      "icon": "school",
+      "completed": false
+    },
+    {
+      "id": "weekly_3",
+      "title": "PDF Ustası",
+      "description": "10 farklı PDF kaynağı incele",
+      "reward": 250,
+      "progress": 4,
+      "target": 10,
+      "icon": "picture_as_pdf",
+      "completed": false
+    },
+    {
+      "id": "weekly_4",
+      "title": "Düzenli Çalışma",
+      "description": "Haftanın her günü giriş yap",
+      "reward": 150,
+      "progress": 5,
+      "target": 7,
+      "icon": "event",
+      "completed": false
+    }
+  ],
+  "monthly_quests": [
+    {
+      "id": "monthly_1",
+      "title": "Ay Sonu Sınavı",
+      "description": "500 soru çöz",
+      "reward": 1500,
+      "progress": 287,
+      "target": 500,
+      "icon": "emoji_events",
+      "completed": false
+    },
+    {
+      "id": "monthly_2",
+      "title": "Tüm Konular",
+      "description": "20 farklı konuyu tamamla",
+      "reward": 1000,
+      "progress": 8,
+      "target": 20,
+      "icon": "checklist",
+      "completed": false
+    },
+    {
+      "id": "monthly_3",
+      "title": "Video Maratonu",
+      "description": "50 video izle",
+      "reward": 800,
+      "progress": 23,
+      "target": 50,
+      "icon": "video_library",
+      "completed": false
+    },
+    {
+      "id": "monthly_4",
+      "title": "Sürekli Öğrenci",
+      "description": "25 gün aktif ol",
+      "reward": 2000,
+      "progress": 14,
+      "target": 25,
+      "icon": "calendar_month",
+      "completed": false
+    }
+  ]
+}

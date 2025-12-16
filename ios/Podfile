@@ -44,6 +44,8 @@ post_install do |installer|
       config.build_settings['ARCHS[sdk=iphonesimulator*]'] = 'arm64'
       config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'i386 x86_64'
       config.build_settings['ONLY_ACTIVE_ARCH'] = 'YES'
+      config.build_settings['COMPILER_INDEX_STORE_ENABLE'] = 'NO'
+      config.build_settings['SWIFT_COMPILATION_MODE'] = 'wholemodule'
     end
   end
 end

@@ -5,6 +5,7 @@ import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import '../blocs/bloc_exports.dart';
 import 'local_pdf_viewer_screen.dart';
 import '../services/favorites_service.dart';
+import '../services/quest_service.dart';
 
 /// Interactive Test Screen
 /// Displays question images with selectable answer options
@@ -287,6 +288,9 @@ class _InteractiveTestScreenState extends State<InteractiveTestScreen> with Tick
       _selectedAnswers[_currentQuestionIndex] = answer;
     });
     
+    // Event: a question was answered (counts regardless of correctness)
+    QuestService.instance.onQuestionAnswered();
+    
     // Show visual feedback
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -477,6 +481,11 @@ class _InteractiveTestScreenState extends State<InteractiveTestScreen> with Tick
           correctCount++;
         }
       }
+    }
+    
+    // Event: perfect score achieved
+    if (widget.totalQuestions > 0 && correctCount == widget.totalQuestions) {
+      QuestService.instance.onPerfectScoreAchieved();
     }
     
     Navigator.push(
@@ -1326,4 +1335,3 @@ class _TestResultsScreen extends StatelessWidget {
     );
   }
 }
-

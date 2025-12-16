@@ -1,10 +1,12 @@
 import 'dart:io';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import '../blocs/bloc_exports.dart';
+import '../services/quest_service.dart';
 
 /// Local PDF Viewer Screen
 /// Displays PDF files from local assets with zoom and scroll functionality
@@ -33,6 +35,8 @@ class _LocalPDFViewerScreenState extends State<LocalPDFViewerScreen> {
   String _errorMessage = '';
   int _currentPage = 0;
   int _totalPages = 0;
+  Timer? _studyTimer;
+  int _elapsedSeconds = 0;
 
   @override
   void initState() {
@@ -326,6 +330,22 @@ class _LocalPDFViewerScreenState extends State<LocalPDFViewerScreen> {
               _totalPages = pages ?? 0;
             });
             debugPrint('✅ PDF rendered with $_totalPages pages');
+            // Start study timer
+            _studyTimer?.cancel();
+            _studyTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+              _elapsedSeconds++;
+              // Show feedback every 60 seconds
+              if (_elapsedSeconds % 60 == 0 && mounted) {
+                final minutes = (_elapsedSeconds ~/ 60);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('PDF çalışması: ${minutes} dk'),
+                    duration: const Duration(seconds: 1),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              }
+            });
           },
           onError: (error) {
             debugPrint('❌ PDF render error: $error');
@@ -403,5 +423,14 @@ class _LocalPDFViewerScreenState extends State<LocalPDFViewerScreen> {
       ),
     );
   }
-}
 
+  @override
+  void dispose() {
+    // Stop timer and emit quest progress
+    _studyTimer?.cancel();
+    if (_elapsedSeconds > 0) {
+      QuestService.instance.onPdfStudiedSeconds(_elapsedSeconds);
+    }
+    super.dispose();
+  }
+}

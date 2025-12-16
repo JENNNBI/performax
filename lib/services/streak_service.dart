@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'quest_service.dart';
 
 /// Service to handle user login streak tracking
 /// Tracks consecutive days of app usage with automatic reset logic
@@ -143,16 +144,18 @@ class StreakService {
           // Same day login - maintain current streak (no change)
           newStreak = currentStreak > 0 ? currentStreak : 1;
           debugPrint('✅ Same day login ($userId) - Streak unchanged: $newStreak');
-        } else if (daysSinceLastLogin == 1) {
-          // Consecutive day - increment streak
-          newStreak = currentStreak + 1;
-          isStreakIncremented = true;
-          debugPrint('🚀 Consecutive day login ($userId) - Streak incremented to $newStreak');
-        } else {
-          // CRITICAL: Broken consecutive usage period - reset to first day (1)
-          // Any gap of 2+ days breaks the streak and resets to day 1
-          newStreak = 1;
-          isStreakReset = true;
+      } else if (daysSinceLastLogin == 1) {
+        // Consecutive day - increment streak
+        newStreak = currentStreak + 1;
+        isStreakIncremented = true;
+        debugPrint('🚀 Consecutive day login ($userId) - Streak incremented to $newStreak');
+        // Quest event: daily login contributes to quests
+        QuestService.instance.onDailyLogin();
+      } else {
+        // CRITICAL: Broken consecutive usage period - reset to first day (1)
+        // Any gap of 2+ days breaks the streak and resets to day 1
+        newStreak = 1;
+        isStreakReset = true;
           debugPrint('💔 Streak broken: $daysSinceLastLogin day(s) since last login ($userId) - Reset to day 1');
         }
       }
@@ -392,4 +395,3 @@ class StreakData {
     }
   }
 }
-
