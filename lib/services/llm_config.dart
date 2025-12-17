@@ -13,6 +13,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class LLMConfig {
   static const String _defaultApiKey = '';
+  static const String _defaultGeminiModel = 'gemini-1.5-flash';
   
   /// Get the OpenAI API key
   /// 
@@ -26,6 +27,16 @@ class LLMConfig {
   /// 4. Rotate keys periodically
   static String getApiKey() {
     return dotenv.env['OPENAI_API_KEY'] ?? _defaultApiKey;
+  }
+  
+  /// Get the Gemini API key
+  static String getGeminiApiKey() {
+    return dotenv.env['GEMINI_API_KEY'] ?? '';
+  }
+  
+  /// Get the Gemini model name
+  static String getGeminiModel() {
+    return dotenv.env['GEMINI_MODEL'] ?? _defaultGeminiModel;
   }
   
   /// Check if API key is configured

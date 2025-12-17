@@ -6,6 +6,8 @@ import '../widgets/avatar_3d_widget.dart';
 import '../widgets/quest_speech_bubble.dart';
 import '../widgets/quest_list_widget.dart';
 import '../services/quest_service.dart';
+import '../services/quest_celebration_coordinator.dart';
+import '../services/currency_service.dart';
 
 /// Profile-Centric Home Screen
 /// Displays user's avatar, name, and grade level with interactive quest system
@@ -27,9 +29,15 @@ class _ProfileHomeScreenState extends State<ProfileHomeScreen> with TickerProvid
   QuestData? _questData;
   bool _showSpeechBubble = true;
   bool _showQuestList = false;
+  final GlobalKey _rocketIconKey = GlobalKey();
+  int _displayedRocketCurrency = 0;
+  int _lastAnimatedCurrency = 0;
   late AnimationController _avatarBounceController;
   late AnimationController _slideController;
   late Animation<double> _slideAnimation;
+  late AnimationController _rocketIconBounceController;
+  late Animation<double> _rocketIconBounce;
+  bool _rocketIconControllerDisposed = false;
 
   @override
   void initState() {
@@ -50,12 +58,29 @@ class _ProfileHomeScreenState extends State<ProfileHomeScreen> with TickerProvid
       curve: Curves.easeInOutCubic,
     ));
     _loadQuests();
+    CurrencyService.instance.loadBalance(widget.userProfile).then((balance) {
+      if (!mounted) return;
+      setState(() {
+        _displayedRocketCurrency = balance;
+        _lastAnimatedCurrency = balance;
+      });
+    });
+    _rocketIconBounceController = AnimationController(
+      duration: const Duration(milliseconds: 180),
+      vsync: this,
+    );
+    _rocketIconBounce = Tween<double>(begin: 1.0, end: 1.2).animate(
+      CurvedAnimation(parent: _rocketIconBounceController, curve: Curves.easeOutBack),
+    );
   }
 
   @override
   void dispose() {
     _avatarBounceController.dispose();
     _slideController.dispose();
+    _rocketIconControllerDisposed = true;
+    _rocketIconBounceController.dispose();
+    QuestCelebrationCoordinator.instance.unregisterHome();
     super.dispose();
   }
 
@@ -71,8 +96,13 @@ class _ProfileHomeScreenState extends State<ProfileHomeScreen> with TickerProvid
           if (!mounted) return;
           setState(() => _questData = data);
         });
-        // Reset state for test mode as requested
-        _questService.resetAll();
+        QuestCelebrationCoordinator.instance.registerHome(
+          context,
+          _rocketIconKey,
+          _openQuestListIfHidden,
+          _animateCurrencyIncrement,
+          _bounceRocketIcon,
+        );
       }
     } catch (e) {
       debugPrint('❌ Error loading quests: $e');
@@ -111,6 +141,32 @@ class _ProfileHomeScreenState extends State<ProfileHomeScreen> with TickerProvid
     } catch (e) {
       debugPrint('❌ Error in _toggleQuest: $e');
     }
+  }
+  void _openQuestListIfHidden() {
+    if (!_showQuestList) {
+      setState(() {
+        _showSpeechBubble = false;
+        _showQuestList = true;
+      });
+      _slideController.forward();
+    }
+  }
+  void _animateCurrencyIncrement(int delta) {
+    final prev = _displayedRocketCurrency;
+    final next = prev + delta;
+    setState(() {
+      _lastAnimatedCurrency = prev;
+      _displayedRocketCurrency = next;
+    });
+    CurrencyService.instance.add(widget.userProfile, delta);
+  }
+  void _bounceRocketIcon() {
+    if (!mounted) return;
+    if (_rocketIconControllerDisposed) return;
+    _rocketIconBounceController.forward(from: 0.0).then((_) {
+      if (!mounted || _rocketIconControllerDisposed) return;
+      _rocketIconBounceController.reverse();
+    });
   }
 
   /// Build 3D avatar display with iOS Simulator compatibility and bounce animation
@@ -162,7 +218,7 @@ class _ProfileHomeScreenState extends State<ProfileHomeScreen> with TickerProvid
   /// Build animated currency display with rocket icon
   Widget _buildAnimatedCurrencyDisplay(ThemeData theme, int finalAmount) {
     return TweenAnimationBuilder<int>(
-      tween: IntTween(begin: 0, end: finalAmount),
+      tween: IntTween(begin: _lastAnimatedCurrency, end: finalAmount),
       duration: const Duration(milliseconds: 1500),
       curve: Curves.easeOut,
       builder: (context, value, child) {
@@ -203,18 +259,24 @@ class _ProfileHomeScreenState extends State<ProfileHomeScreen> with TickerProvid
                   color: Colors.white.withValues(alpha: 0.3),
                   shape: BoxShape.circle,
                 ),
-                child: Image.asset(
-                  'assets/images/currency_rocket1.png',
-                  width: 24,
-                  height: 24,
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) {
-                    return const Icon(
-                      Icons.rocket_launch_rounded,
-                      color: Colors.white,
-                      size: 24,
-                    );
-                  },
+                child: Container(
+                  key: _rocketIconKey,
+                  child: ScaleTransition(
+                    scale: _rocketIconBounce,
+                    child: Image.asset(
+                      'assets/images/currency_rocket1.png',
+                      width: 24,
+                      height: 24,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Icon(
+                          Icons.rocket_launch_rounded,
+                          color: Colors.white,
+                          size: 24,
+                        );
+                      },
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
@@ -528,7 +590,7 @@ class _ProfileHomeScreenState extends State<ProfileHomeScreen> with TickerProvid
                                       const SizedBox(width: 12),
                                       
                                       // Rocket Currency Display - to the right of grade level
-                                      _buildAnimatedCurrencyDisplay(theme, widget.userProfile.rocketCurrency),
+                                      _buildAnimatedCurrencyDisplay(theme, _displayedRocketCurrency),
                                     ],
                                   ),
                                 ],

@@ -10,6 +10,7 @@ class Quest extends Equatable {
   final int target;
   final String icon;
   final bool completed;
+  final bool claimed;
 
   const Quest({
     required this.id,
@@ -20,6 +21,7 @@ class Quest extends Equatable {
     required this.target,
     required this.icon,
     required this.completed,
+    this.claimed = false,
   });
 
   /// Calculate progress percentage (0.0 to 1.0)
@@ -28,8 +30,10 @@ class Quest extends Equatable {
     return (progress / target).clamp(0.0, 1.0);
   }
 
-  /// Check if quest is completed
-  bool get isCompleted => progress >= target || completed;
+  /// Check if quest is completed (claimed)
+  bool get isCompleted => completed || (claimed && progress >= target);
+  /// Ready to be claimed when target reached and not claimed yet
+  bool get isClaimable => progress >= target && !claimed && !completed;
 
   /// Format progress as string (e.g., "5/10")
   String get progressText => '$progress/$target';
@@ -45,6 +49,7 @@ class Quest extends Equatable {
       target: json['target'] as int,
       icon: json['icon'] as String,
       completed: json['completed'] as bool? ?? false,
+      claimed: json['claimed'] as bool? ?? false,
     );
   }
 
@@ -59,6 +64,7 @@ class Quest extends Equatable {
       'target': target,
       'icon': icon,
       'completed': completed,
+      'claimed': claimed,
     };
   }
 
@@ -72,6 +78,7 @@ class Quest extends Equatable {
     int? target,
     String? icon,
     bool? completed,
+    bool? claimed,
   }) {
     return Quest(
       id: id ?? this.id,
@@ -82,11 +89,12 @@ class Quest extends Equatable {
       target: target ?? this.target,
       icon: icon ?? this.icon,
       completed: completed ?? this.completed,
+      claimed: claimed ?? this.claimed,
     );
   }
 
   @override
-  List<Object?> get props => [id, title, description, reward, progress, target, icon, completed];
+  List<Object?> get props => [id, title, description, reward, progress, target, icon, completed, claimed];
 }
 
 /// Quest data container for all quest types

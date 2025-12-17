@@ -23,14 +23,15 @@ class Avatar3DWidget extends StatelessWidget {
     super.key,
     this.assetPath = 'assets/avatars/3d/Creative_Character_free.glb',
     this.width = 280,
-    this.height = 300,
+    this.height = 380,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     
-    // Attempt to load 3D model on all platforms (including iOS Simulator)
+    // Attempt to load 3D model on all platforms
+    // Error handling will catch WebKit GPU crashes and use fallback
     debugPrint('🎯 Avatar3DWidget: Attempting to load 3D model on current platform');
     return _SafeModelViewerWidget(
       assetPath: assetPath,
@@ -191,12 +192,12 @@ class _SafeModelViewerWidgetState extends State<_SafeModelViewerWidget> {
           disablePan: true,
           
           // Set camera orbit to optimize Y-axis rotation
-          // Format: "theta phi radius"
-          cameraOrbit: '0deg 75deg 2.5m',
+          // Format: "theta phi radius" - increased radius to 3.8m to show full model
+          cameraOrbit: '0deg 80deg 3.8m',
           
           // Restrict camera orbit to Y-axis only
-          minCameraOrbit: 'auto 75deg auto',
-          maxCameraOrbit: 'auto 75deg auto',
+          minCameraOrbit: 'auto 80deg auto',
+          maxCameraOrbit: 'auto 80deg auto',
           
           // Transparent background to blend with app design
           backgroundColor: Colors.transparent,

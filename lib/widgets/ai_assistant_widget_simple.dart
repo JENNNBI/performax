@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/llm_service.dart';
 import '../services/llm_config.dart';
+import '../services/quest_service.dart';
 import '../blocs/bloc_exports.dart';
 
 /// AI Study Assistant Widget - Simplified Chat Interface
@@ -91,6 +92,8 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget> {
       });
       _isLoading = true;
     });
+    // Event: user engaged with AI
+    QuestService.instance.onAiInteracted();
 
     // Clear input
     _questionController.clear();
@@ -121,6 +124,8 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget> {
 
         _scrollToBottom();
       }
+      // Event: AI responded (counts as interaction)
+      QuestService.instance.onAiInteracted();
     } catch (e) {
       if (mounted) {
         setState(() {
@@ -384,4 +389,3 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget> {
     );
   }
 }
-

@@ -1,7 +1,9 @@
 import 'package:dart_openai/dart_openai.dart';
+import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:flutter/foundation.dart';
 import '../models/ai_response.dart';
 import '../models/user_profile.dart';
+import 'llm_config.dart';
 
 /// Production-Grade OpenAI LLM Service - AI Study Assistant
 /// 
@@ -18,6 +20,8 @@ class LLMService {
 
   bool _isInitialized = false;
   String? _lastError;
+  bool _useGemini = false;
+  GenerativeModel? _geminiModel;
   
   // Conversation history for context-aware responses
   final List<OpenAIChatCompletionChoiceMessageModel> _conversationHistory = [];
@@ -76,17 +80,26 @@ KİŞİLİK:
     try {
       debugPrint('🔄 Initializing OpenAI LLM Service...');
       
-      if (apiKey.isEmpty || !apiKey.startsWith('sk-')) {
-        throw Exception('Invalid OpenAI API key format. Key must start with "sk-"');
+      if (apiKey.isNotEmpty && apiKey.startsWith('sk-')) {
+        // Configure OpenAI
+        OpenAI.apiKey = apiKey;
+        OpenAI.showLogs = false;
+        OpenAI.showResponsesLogs = false;
+        _useGemini = false;
+        _isInitialized = true;
+        debugPrint('✅ LLM initialized with OpenAI (GPT-4o-mini)');
+      } else {
+        // Try Gemini fallback
+        final geminiKey = LLMConfig.getGeminiApiKey();
+        if (geminiKey.isEmpty) {
+          throw Exception('API key missing. Provide OPENAI_API_KEY (starts with "sk-") or GEMINI_API_KEY in .env');
+        }
+        final modelName = LLMConfig.getGeminiModel();
+        _geminiModel = GenerativeModel(model: modelName, apiKey: geminiKey);
+        _useGemini = true;
+        _isInitialized = true;
+        debugPrint('✅ LLM initialized with Gemini ($modelName)');
       }
-      
-      // Configure OpenAI with the API key
-      OpenAI.apiKey = apiKey;
-      OpenAI.showLogs = false; // Disable verbose logs in production
-      OpenAI.showResponsesLogs = false;
-      
-      _isInitialized = true;
-      debugPrint('✅ OpenAI LLM Service initialized successfully with GPT-4o-mini');
       
     } catch (e) {
       _lastError = 'Initialization failed: $e';
@@ -149,18 +162,27 @@ KİŞİLİK:
           ),
         ];
         
-        // Call OpenAI GPT-4o-mini (more accessible and cost-effective)
-        final chatCompletion = await OpenAI.instance.chat.create(
-          model: 'gpt-4o-mini',
-          messages: messages,
-          temperature: 0.8,
-          maxTokens: 2048,
-          topP: 0.95,
-          frequencyPenalty: 0.0,
-          presencePenalty: 0.0,
-        );
-        
-        final responseText = chatCompletion.choices.first.message.content?.first.text;
+        String? responseText;
+        if (!_useGemini) {
+          final chatCompletion = await OpenAI.instance.chat.create(
+            model: 'gpt-4o-mini',
+            messages: messages,
+            temperature: 0.8,
+            maxTokens: 2048,
+            topP: 0.95,
+            frequencyPenalty: 0.0,
+            presencePenalty: 0.0,
+          );
+          responseText = chatCompletion.choices.first.message.content?.first.text;
+        } else {
+          // Gemini: system + user messages in content list
+          final content = [
+            Content.text(_advancedSystemPersona),
+            Content.text(userMessage),
+          ];
+          final response = await _geminiModel!.generateContent(content);
+          responseText = response.text;
+        }
         
         if (responseText == null || responseText.trim().isEmpty) {
           throw Exception('Empty response from OpenAI');
@@ -570,4 +592,3 @@ KİŞİLİK:
     debugPrint('🗑️  OpenAI LLM Service disposed');
   }
 }
-

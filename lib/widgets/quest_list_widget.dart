@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../models/quest.dart';
+import '../services/quest_celebration_coordinator.dart';
 
 /// Quest list widget with tabs for Daily/Weekly/Monthly quests
 class QuestListWidget extends StatefulWidget {
@@ -135,20 +136,29 @@ class _QuestListWidgetState extends State<QuestListWidget> with SingleTickerProv
   }
 
   Widget _buildQuestList(List<Quest> quests, ThemeData theme) {
+    final sorted = [...quests];
+    sorted.sort((a, b) {
+      final ac = a.isCompleted ? 1 : 0;
+      final bc = b.isCompleted ? 1 : 0;
+      return ac.compareTo(bc);
+    });
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: quests.length,
+      itemCount: sorted.length,
       itemBuilder: (context, index) {
-        final quest = quests[index];
-        return _QuestCard(quest: quest, theme: theme)
-            .animate(delay: (index * 100).ms)
-            .fadeIn(duration: 300.ms)
-            .slideX(
-              begin: 0.2,
-              end: 0,
-              duration: 400.ms,
-              curve: Curves.easeOut,
-            );
+        final quest = sorted[index];
+        return AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          child: _QuestCard(key: ValueKey(quest.id), quest: quest, theme: theme)
+              .animate(delay: (index * 80).ms)
+              .fadeIn(duration: 250.ms)
+              .slideX(
+                begin: 0.15,
+                end: 0,
+                duration: 300.ms,
+                curve: Curves.easeOut,
+              ),
+        );
       },
     );
   }
@@ -160,6 +170,7 @@ class _QuestCard extends StatelessWidget {
   final ThemeData theme;
 
   const _QuestCard({
+    super.key,
     required this.quest,
     required this.theme,
   });
@@ -168,20 +179,27 @@ class _QuestCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isCompleted = quest.isCompleted;
+    final isClaimable = quest.isClaimable;
 
-    return Container(
+    return GestureDetector(
+      onTap: isClaimable ? () => QuestCelebrationCoordinator.instance.claimQuest(quest) : null,
+      child: Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: isCompleted ? Colors.green.withValues(alpha: 0.1) : Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isCompleted ? Colors.green : Colors.grey.withValues(alpha: 0.3),
+          color: isCompleted
+              ? Colors.green
+              : isClaimable
+                  ? const Color(0xFFFFD700)
+                  : Colors.grey.withValues(alpha: 0.3),
           width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
+            color: isClaimable ? const Color(0xFFFFA500).withValues(alpha: 0.15) : Colors.black.withValues(alpha: 0.05),
+            blurRadius: isClaimable ? 12 : 8,
             offset: const Offset(0, 2),
           ),
         ],
@@ -191,6 +209,24 @@ class _QuestCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (isClaimable)
+              Align(
+                alignment: Alignment.topRight,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(colors: [Color(0xFFFFD700), Color(0xFFFFA500)]),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(color: const Color(0xFFFFA500).withValues(alpha: 0.35), blurRadius: 8),
+                    ],
+                  ),
+                  child: const Text(
+                    'Claim!',
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 12),
+                  ),
+                ),
+              ),
             // Title and description - MAXIMUM space allocation (GREEN FRAME LOGOS REMOVED)
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -257,6 +293,7 @@ class _QuestCard extends StatelessWidget {
                     Positioned(
                       right: -2,
                       child: Container(
+                        key: _registerAndGetKey(context, quest.id),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           shape: BoxShape.circle,
@@ -352,6 +389,11 @@ class _QuestCard extends StatelessWidget {
           ],
         ),
       ),
-    );
+    ));
+  }
+  GlobalKey _registerAndGetKey(BuildContext context, String id) {
+    final key = GlobalKey();
+    QuestCelebrationCoordinator.instance.registerQuestRocketKey(id, key);
+    return key;
   }
 }
