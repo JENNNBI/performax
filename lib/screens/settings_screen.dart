@@ -5,7 +5,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../blocs/bloc_exports.dart';
 import '../utils/app_icons.dart';
 import '../services/localization_service.dart';
+import '../services/notification_service.dart';
+import '../services/user_service.dart';
 import 'change_password_screen.dart';
+import 'login_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   static const String id = 'settings_screen';
@@ -322,6 +325,10 @@ class _SettingsScreenState extends State<SettingsScreen>
               setState(() {
                 _notificationsEnabled = value;
               });
+              if (value) {
+                NotificationService.instance.requestPermission();
+              }
+              NotificationService.instance.enableNotifications(value);
               _saveSettings();
             },
           ),
@@ -340,6 +347,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                 setState(() {
                   _emailNotifications = value;
                 });
+                NotificationService.instance.setEmailNotifications(value);
                 _saveSettings();
               },
             ),
@@ -357,6 +365,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                 setState(() {
                   _pushNotifications = value;
                 });
+                NotificationService.instance.setPushNotifications(value);
                 _saveSettings();
               },
             ),
@@ -385,6 +394,15 @@ class _SettingsScreenState extends State<SettingsScreen>
           onTap: () {
             Navigator.pushNamed(context, ChangePasswordScreen.id);
           },
+        ),
+        const SizedBox(height: 8),
+        _buildSettingCard(
+          icon: Icons.logout_rounded,
+          title: languageBloc.translate('logout'),
+          subtitle: languageBloc.translate('end_session'),
+          trailing: const Icon(AppIcons.arrowForward),
+          onTap: _logout,
+          isDestructive: true,
         ),
         const SizedBox(height: 8),
         _buildSettingCard(
@@ -677,12 +695,7 @@ class _SettingsScreenState extends State<SettingsScreen>
             ElevatedButton(
               onPressed: () {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Hesap silme özelliği yakında eklenecek'),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
+                _deleteAccount();
               },
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
               child: Text(
@@ -694,6 +707,76 @@ class _SettingsScreenState extends State<SettingsScreen>
         );
       },
     );
+  }
+
+  Future<void> _logout() async {
+    try {
+      await FirebaseAuth.instance.signOut();
+      await UserService.clearAllUserData();
+      if (mounted) {
+        context.read<UserProfileBloc>().add(const ClearUserProfile());
+        Navigator.pushNamedAndRemoveUntil(context, LoginScreen.id, (route) => false);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Çıkış yapılamadı: $e'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _deleteAccount() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+      // Delete Firestore user document
+      try {
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).delete();
+      } catch (_) {}
+      // Delete auth user
+      await user.delete();
+      await UserService.clearAllUserData();
+      if (mounted) {
+        context.read<UserProfileBloc>().add(const ClearUserProfile());
+        Navigator.pushNamedAndRemoveUntil(context, LoginScreen.id, (route) => false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(LocalizationService.translate('account_deleted')),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              e.code == 'requires-recent-login'
+                  ? LocalizationService.translate('reauth_required')
+                  : 'Hesap silme hatası: ${e.message ?? e.code}',
+            ),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Hesap silme hatası: $e'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
   }
 
   void _showContactDialog() {

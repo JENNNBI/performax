@@ -13,6 +13,7 @@ import 'services/app_router.dart';
 import 'services/app_theme.dart';
 import 'services/localization_service.dart';
 import 'firebase_options.dart';
+import 'services/statistics_service.dart';
 
 void main() async {
   try {
@@ -72,6 +73,9 @@ void main() async {
         debugPrint('⚠️ App will continue without localization');
       }
     }
+    try {
+      await StatisticsService.instance.initialize();
+    } catch (_) {}
     
     debugPrint('🚀 Starting Flutter app...');
     runApp(const MyApp());
@@ -120,19 +124,29 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (context) => SoruCozumVideolariBloc()),
         BlocProvider(create: (context) => OrnekYazililarBloc()),
         BlocProvider(create: (context) => UserProfileBloc()),
-        BlocProvider(create: (context) => LanguageBloc()),
+        BlocProvider(create: (context) => LanguageBloc()..add(LanguageInitialized())),
         BlocProvider(create: (context) => BottomNavVisibilityBloc()),
         BlocProvider(create: (context) => TasksBloc()),
         BlocProvider(create: (context) => SwitchBloc()),
       ],
-      child: MaterialApp(
-        title: 'Performax',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
-        showPerformanceOverlay: kDebugMode,
-        onGenerateRoute: AppRouter().onGenerateRoute,
-        home: const SplashScreen(),
+      child: BlocBuilder<LanguageBloc, LanguageState>(
+        builder: (context, langState) {
+          return BlocBuilder<SwitchBloc, SwitchState>(
+            builder: (context, switchState) {
+              return MaterialApp(
+                title: 'Performax',
+                debugShowCheckedModeBanner: false,
+                theme: AppTheme.lightTheme,
+                darkTheme: AppTheme.darkTheme,
+                themeMode: switchState.switchValue ? ThemeMode.dark : ThemeMode.light,
+                locale: Locale(langState.languageCode),
+                showPerformanceOverlay: kDebugMode,
+                onGenerateRoute: AppRouter().onGenerateRoute,
+                home: const SplashScreen(),
+              );
+            },
+          );
+        },
       ),
     );
   }

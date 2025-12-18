@@ -7,6 +7,7 @@ import '../blocs/bloc_exports.dart';
 import '../models/video_watch_session.dart';
 import '../services/video_session_service.dart';
 import '../services/quest_service.dart';
+import '../services/statistics_service.dart';
 
 /// Enhanced Video Player Screen with Proper YouTube View Attribution
 /// 
@@ -171,6 +172,8 @@ class _EnhancedVideoPlayerScreenState extends State<EnhancedVideoPlayerScreen>
           final delta = total - _lastEmittedWatchSeconds;
           if (delta > 0) {
             QuestService.instance.onVideoWatchedSeconds(delta);
+            StatisticsService.instance.logStudyTime(video: delta);
+            StatisticsService.instance.logDailyActivity(increment: 1);
             _lastEmittedWatchSeconds = total;
           }
         }
@@ -202,6 +205,8 @@ class _EnhancedVideoPlayerScreenState extends State<EnhancedVideoPlayerScreen>
           final delta = total - _lastEmittedWatchSeconds;
           if (delta > 0) {
             QuestService.instance.onVideoWatchedSeconds(delta);
+            StatisticsService.instance.logStudyTime(video: delta);
+            StatisticsService.instance.logDailyActivity(increment: 1);
             _lastEmittedWatchSeconds = total;
           }
         }

@@ -32,12 +32,12 @@
     },
     {
       "id": "daily_4",
-      "title": "Okuma Pratiği",
-      "description": "15 dakika PDF kaynak oku",
+      "title": "15 Sayfa Oku",
+      "description": "PDF'lerde toplam 15 sayfa oku",
       "reward": 25,
       "progress": 0,
       "target": 15,
-      "icon": "timer",
+      "icon": "menu_book",
       "completed": false
     },
     {
@@ -121,16 +121,6 @@
       "completed": false
     },
     {
-      "id": "daily_13",
-      "title": "PDF Keşfi",
-      "description": "2 farklı PDF dökümanı aç ve incele",
-      "reward": 30,
-      "progress": 0,
-      "target": 2,
-      "icon": "picture_as_pdf",
-      "completed": false
-    },
-    {
       "id": "daily_14",
       "title": "Sınav Provası",
       "description": "Tek oturuşta 40 soru çöz",
@@ -194,12 +184,12 @@
     },
     {
       "id": "weekly_5",
-      "title": "PDF Ustası",
-      "description": "Toplam 60 dakika PDF oku",
+      "title": "150 Sayfa Oku",
+      "description": "PDF'lerde toplam 150 sayfa oku",
       "reward": 180,
       "progress": 0,
-      "target": 60,
-      "icon": "access_time",
+      "target": 150,
+      "icon": "menu_book",
       "completed": false
     },
     {
@@ -286,12 +276,12 @@
     },
     {
       "id": "monthly_4",
-      "title": "Konu Hakimi",
-      "description": "20 farklı PDF kaynağını bitir",
+      "title": "500 Sayfa Oku",
+      "description": "PDF'lerde toplam 500 sayfa oku",
       "reward": 1200,
       "progress": 0,
-      "target": 20,
-      "icon": "collections_bookmark",
+      "target": 500,
+      "icon": "menu_book",
       "completed": false
     },
     {

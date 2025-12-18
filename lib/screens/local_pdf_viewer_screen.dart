@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import '../blocs/bloc_exports.dart';
 import '../services/quest_service.dart';
+import '../services/statistics_service.dart';
 
 /// Local PDF Viewer Screen
 /// Displays PDF files from local assets with zoom and scroll functionality
@@ -37,6 +38,8 @@ class _LocalPDFViewerScreenState extends State<LocalPDFViewerScreen> {
   int _totalPages = 0;
   Timer? _studyTimer;
   int _elapsedSeconds = 0;
+  Timer? _pageViewTimer;
+  final Set<int> _countedPages = {};
 
   @override
   void initState() {
@@ -346,6 +349,14 @@ class _LocalPDFViewerScreenState extends State<LocalPDFViewerScreen> {
                 );
               }
             });
+            // Start page view debounce for initial page
+            _pageViewTimer?.cancel();
+            _pageViewTimer = Timer(const Duration(seconds: 1), () {
+              if (mounted && !_countedPages.contains(_currentPage)) {
+                _countedPages.add(_currentPage);
+                QuestService.instance.onPdfPageViewed();
+              }
+            });
           },
           onError: (error) {
             debugPrint('❌ PDF render error: $error');
@@ -365,6 +376,13 @@ class _LocalPDFViewerScreenState extends State<LocalPDFViewerScreen> {
               setState(() {
                 _currentPage = page;
                 _totalPages = total ?? 0;
+              });
+              _pageViewTimer?.cancel();
+              _pageViewTimer = Timer(const Duration(seconds: 1), () {
+                if (mounted && !_countedPages.contains(_currentPage)) {
+                  _countedPages.add(_currentPage);
+                  QuestService.instance.onPdfPageViewed();
+                }
               });
             }
           },
@@ -428,8 +446,10 @@ class _LocalPDFViewerScreenState extends State<LocalPDFViewerScreen> {
   void dispose() {
     // Stop timer and emit quest progress
     _studyTimer?.cancel();
+    _pageViewTimer?.cancel();
     if (_elapsedSeconds > 0) {
-      QuestService.instance.onPdfStudiedSeconds(_elapsedSeconds);
+      StatisticsService.instance.logStudyTime(pdf: _elapsedSeconds);
+      StatisticsService.instance.logDailyActivity(increment: 1);
     }
     super.dispose();
   }

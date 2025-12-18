@@ -6,6 +6,7 @@ import '../blocs/bloc_exports.dart';
 import 'local_pdf_viewer_screen.dart';
 import '../services/favorites_service.dart';
 import '../services/quest_service.dart';
+import '../services/statistics_service.dart';
 
 /// Interactive Test Screen
 /// Displays question images with selectable answer options
@@ -468,6 +469,9 @@ class _InteractiveTestScreenState extends State<InteractiveTestScreen> with Tick
         _isTimerRunning = false;
       });
     }
+    if (finalElapsedTime.inSeconds > 0) {
+      StatisticsService.instance.logStudyTime(quiz: finalElapsedTime.inSeconds);
+    }
     
     // Calculate results to return
     int correctCount = 0;
@@ -487,6 +491,17 @@ class _InteractiveTestScreenState extends State<InteractiveTestScreen> with Tick
     if (widget.totalQuestions > 0 && correctCount == widget.totalQuestions) {
       QuestService.instance.onPerfectScoreAchieved();
     }
+    final subject = _extractSubjectFromPrefix(widget.assetPathPrefix);
+    if (subject.isNotEmpty) {
+      StatisticsService.instance.logQuizResult(subject, correctCount, widget.totalQuestions);
+    }
+    StatisticsService.instance.logDailyActivity(increment: _selectedAnswers.length);
+    StatisticsService.instance.logTestCompleted(
+      lesson: subject.isNotEmpty ? subject : 'Unknown',
+      source: widget.testTitle,
+      correct: correctCount,
+      total: widget.totalQuestions,
+    );
     
     Navigator.push(
       context,
@@ -515,6 +530,21 @@ class _InteractiveTestScreenState extends State<InteractiveTestScreen> with Tick
 
   String _getQuestionImagePath() {
     return '${widget.assetPathPrefix}/soru${_currentQuestionIndex + 1}.png';
+  }
+
+  String _extractSubjectFromPrefix(String prefix) {
+    try {
+      final parts = prefix.split('/');
+      // assets/sorular/<subject>/<grade>/...
+      if (parts.length >= 3) {
+        final subj = parts[2];
+        if (subj.isNotEmpty) {
+          final cap = subj[0].toUpperCase() + subj.substring(1);
+          return cap;
+        }
+      }
+    } catch (_) {}
+    return '';
   }
 
   @override

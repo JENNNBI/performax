@@ -1,6 +1,5 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../models/user_profile.dart';
 
 class CurrencyService {
@@ -17,7 +16,9 @@ class CurrencyService {
       if (saved != null) {
         return saved;
       }
-      return profile.rocketCurrency;
+      final initial = profile.rocketCurrency;
+      await prefs.setInt(key, initial);
+      return initial;
     } catch (e) {
       debugPrint('⚠️ Currency load error: $e');
       return profile.rocketCurrency;

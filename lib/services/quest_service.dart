@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/quest.dart';
+import 'statistics_service.dart';
 
 /// Service to manage quest data loading and updates
 class QuestService {
@@ -34,37 +35,70 @@ class QuestService {
       // Parse full quest data
       final fullData = QuestData.fromJson(jsonData);
       final prefs = await SharedPreferences.getInstance();
-      final today = _dateString(DateTime.now());
-      final lastDate = prefs.getString('quests_last_date');
+      final now = DateTime.now();
+      final today = _dateString(now);
+      final thisMonth = _monthKey(now);
+      final lastDailyDate = prefs.getString('daily_last_date');
+      final lastWeeklyDate = prefs.getString('weekly_last_date');
+      final lastMonthlyMonth = prefs.getString('monthly_last_month');
 
       final selectedDailyIds = _getIdList(prefs.getString('selected_daily_ids'));
       final selectedWeeklyIds = _getIdList(prefs.getString('selected_weekly_ids'));
       final selectedMonthlyIds = _getIdList(prefs.getString('selected_monthly_ids'));
 
-      if (lastDate == today &&
-          selectedDailyIds.isNotEmpty &&
-          selectedWeeklyIds.isNotEmpty &&
-          selectedMonthlyIds.isNotEmpty) {
-        // Same day: load selected IDs and restore saved progress/flags
-        final daily = _applySavedStatus(_mapIds(fullData.dailyQuests, selectedDailyIds), prefs);
-        final weekly = _applySavedStatus(_mapIds(fullData.weeklyQuests, selectedWeeklyIds), prefs);
-        final monthly = _applySavedStatus(_mapIds(fullData.monthlyQuests, selectedMonthlyIds), prefs);
-        _cachedQuestData = QuestData(dailyQuests: daily, weeklyQuests: weekly, monthlyQuests: monthly);
+      List<Quest> daily;
+      if (lastDailyDate == today && selectedDailyIds.isNotEmpty) {
+        daily = _applySavedStatus(_mapIds(fullData.dailyQuests, selectedDailyIds), prefs);
       } else {
-        // New day: randomize selection, reset progress, persist selection and date
-        final daily = _pickRandomAndReset(fullData.dailyQuests, 5);
-        final weekly = _pickRandomAndReset(fullData.weeklyQuests, 5);
-        final monthly = _pickRandomAndReset(fullData.monthlyQuests, 5);
-        _cachedQuestData = QuestData(dailyQuests: daily, weeklyQuests: weekly, monthlyQuests: monthly);
-        // Persist selection and zeroed status
+        daily = _pickDailyWithMandatory(fullData.dailyQuests);
         await prefs.setString('selected_daily_ids', json.encode(daily.map((q) => q.id).toList()));
-        await prefs.setString('selected_weekly_ids', json.encode(weekly.map((q) => q.id).toList()));
-        await prefs.setString('selected_monthly_ids', json.encode(monthly.map((q) => q.id).toList()));
-        await prefs.setString('quests_last_date', today);
-        // Save initial status for each quest
-        for (final q in [...daily, ...weekly, ...monthly]) {
+        await prefs.setString('daily_last_date', today);
+        for (final q in daily) {
           await _saveQuestStatus(prefs, q);
         }
+      }
+
+      List<Quest> weekly;
+      final shouldResetWeekly = () {
+        if (lastWeeklyDate == null) return true;
+        try {
+          final last = _parseDate(lastWeeklyDate);
+          final days = _daysBetween(last, now);
+          final weekChanged = _weekKey(last) != _weekKey(now);
+          return days >= 7 || weekChanged;
+        } catch (_) {
+          return true;
+        }
+      }();
+      if (!shouldResetWeekly && selectedWeeklyIds.isNotEmpty) {
+        weekly = _applySavedStatus(_mapIds(fullData.weeklyQuests, selectedWeeklyIds), prefs);
+      } else {
+        weekly = _pickRandomAndReset(fullData.weeklyQuests, 5);
+        await prefs.setString('selected_weekly_ids', json.encode(weekly.map((q) => q.id).toList()));
+        await prefs.setString('weekly_last_date', today);
+        for (final q in weekly) {
+          await _saveQuestStatus(prefs, q);
+        }
+      }
+
+      List<Quest> monthly;
+      if (lastMonthlyMonth == thisMonth && selectedMonthlyIds.isNotEmpty) {
+        monthly = _applySavedStatus(_mapIds(fullData.monthlyQuests, selectedMonthlyIds), prefs);
+      } else {
+        monthly = _pickRandomAndReset(fullData.monthlyQuests, 5);
+        await prefs.setString('selected_monthly_ids', json.encode(monthly.map((q) => q.id).toList()));
+        await prefs.setString('monthly_last_month', thisMonth);
+        for (final q in monthly) {
+          await _saveQuestStatus(prefs, q);
+        }
+      }
+      _cachedQuestData = QuestData(dailyQuests: daily, weeklyQuests: weekly, monthlyQuests: monthly);
+
+      // Migration: Reset progress for PDF page-count quests after format change
+      final migrated = prefs.getBool('pdf_pages_migration_done') ?? false;
+      if (!migrated) {
+        _cachedQuestData = _migratePdfQuests(prefs, _cachedQuestData!);
+        await prefs.setBool('pdf_pages_migration_done', true);
       }
       _controller.add(_cachedQuestData!);
       
@@ -200,6 +234,28 @@ class QuestService {
     }
   }
 
+  void onPdfPageViewed() {
+    _incrementIfExists('daily_4', 1);
+    _incrementIfExists('weekly_5', 1);
+    _incrementIfExists('monthly_4', 1);
+  }
+
+  QuestData _migratePdfQuests(SharedPreferences prefs, QuestData data) {
+    Quest resetIfPdf(Quest q) {
+      if (q.id == 'daily_4' || q.id == 'weekly_5' || q.id == 'monthly_4') {
+        final updated = q.copyWith(progress: 0, completed: false, claimed: false);
+        // Persist reset
+        _saveQuestStatus(prefs, updated);
+        return updated;
+      }
+      return q;
+    }
+    final migratedDaily = data.dailyQuests.map(resetIfPdf).toList();
+    final migratedWeekly = data.weeklyQuests.map(resetIfPdf).toList();
+    final migratedMonthly = data.monthlyQuests.map(resetIfPdf).toList();
+    return QuestData(dailyQuests: migratedDaily, weeklyQuests: migratedWeekly, monthlyQuests: migratedMonthly);
+  }
+
   void onAiInteracted() {
     // Increment across all AI-related quests if present
     _incrementIfExists('daily_6', 1);
@@ -208,6 +264,7 @@ class QuestService {
   }
 
   void onDailyLogin() {
+    incrementById('daily_1', 1);
     incrementById('weekly_4', 1);
     incrementById('monthly_4', 1);
   }
@@ -220,10 +277,35 @@ class QuestService {
     final updated = q.copyWith(claimed: true, completed: true, progress: q.target);
     _replaceQuest(updated);
     onCurrencyEarned(updated.reward);
+    StatisticsService.instance.logRocketEarned(updated.reward);
   }
 
   // Helpers for persistence and selection
   String _dateString(DateTime dt) => '${dt.year.toString().padLeft(4, '0')}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
+  String _monthKey(DateTime dt) => '${dt.year.toString().padLeft(4, '0')}-${dt.month.toString().padLeft(2, '0')}';
+  String _weekKey(DateTime dt) {
+    final monday = dt.subtract(Duration(days: dt.weekday - 1));
+    return _dateString(DateTime(monday.year, monday.month, monday.day));
+  }
+  DateTime _parseDate(String s) {
+    final parts = s.split('-');
+    return DateTime(int.parse(parts[0]), int.parse(parts[1]), int.parse(parts[2]));
+    }
+  int _daysBetween(DateTime a, DateTime b) {
+    final a0 = DateTime(a.year, a.month, a.day);
+    final b0 = DateTime(b.year, b.month, b.day);
+    return b0.difference(a0).inDays;
+  }
+  List<Quest> _pickDailyWithMandatory(List<Quest> source) {
+    final mandatory = source.where((q) => q.id == 'daily_1').toList();
+    if (mandatory.isEmpty) {
+      return _pickRandomAndReset(source, 5);
+    }
+    final rest = source.where((q) => q.id != 'daily_1').toList();
+    final picked = _pickRandomAndReset(rest, 4);
+    final m = mandatory.first.copyWith(progress: 0, completed: false, claimed: false);
+    return [m, ...picked];
+  }
   List<String> _getIdList(String? jsonStr) {
     if (jsonStr == null || jsonStr.isEmpty) return [];
     try {
