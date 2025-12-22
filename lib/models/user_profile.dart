@@ -22,6 +22,7 @@ class UserProfile {
   final bool isPhoneVerified; // Whether phone number has been verified via OTP
   final int rocketCurrency; // In-game Rocket currency balance
   final bool isGuest;
+  final String? studyField; // 'Sayısal', 'Eşit Ağırlık', 'Sözel'
   
   UserProfile({
     required this.userId,
@@ -39,8 +40,9 @@ class UserProfile {
     this.avatarId,
     this.phoneNumber,
     this.isPhoneVerified = false,
-    this.rocketCurrency = 100, // Default initial balance
+    this.rocketCurrency = 0, // Default initial balance
     this.isGuest = false,
+    this.studyField,
   });
 
   /// Create UserProfile from Firestore document
@@ -85,6 +87,7 @@ class UserProfile {
       isPhoneVerified: data['isPhoneVerified'] as bool? ?? false,
       rocketCurrency: data['rocketCurrency'] ?? 100, // Default to 100 if not set
       isGuest: false,
+      studyField: data['studyField'] as String?,
     );
   }
 
@@ -181,6 +184,7 @@ class UserProfile {
       'isPhoneVerified': isPhoneVerified,
       'rocketCurrency': rocketCurrency,
       'isGuest': isGuest,
+      'studyField': studyField,
     };
   }
 

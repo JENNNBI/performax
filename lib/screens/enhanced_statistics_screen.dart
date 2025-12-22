@@ -35,6 +35,12 @@ class _EnhancedStatisticsScreenState extends State<EnhancedStatisticsScreen> wit
         _snap = s;
       });
     });
+    _service.loadSnapshot().then((s) {
+      if (!mounted) return;
+      setState(() {
+        _snap = s;
+      });
+    });
   }
 
   @override
@@ -71,8 +77,6 @@ class _EnhancedStatisticsScreenState extends State<EnhancedStatisticsScreen> wit
                       _buildStudyPie(languageBloc),
                       const SizedBox(height: 20),
                       _buildConsistencyBar(languageBloc),
-                      const SizedBox(height: 20),
-                      _buildEconomyLine(languageBloc),
                       const SizedBox(height: 20),
                       _buildTestHistory(languageBloc),
                       const SizedBox(height: 100),
@@ -132,15 +136,17 @@ class _EnhancedStatisticsScreenState extends State<EnhancedStatisticsScreen> wit
   }
 
   Widget _buildSubjectRadar(LanguageBloc languageBloc) {
-    final ratios = _snap?.subjectRatios ?? {};
-    if (ratios.isEmpty || ratios.length < 3) {
+    final baseOrder = ['Matematik','Türkçe','Fizik','Kimya','Biyoloji','Tarih','Coğrafya','Felsefe'];
+    final prof = _snap?.subjectProficiency ?? {};
+    final hasData = prof.values.any((v) => (v ?? 0) > 0);
+    if (!hasData) {
       return _emptyCard(
         icon: Icons.school,
         title: languageBloc.currentLanguage == 'tr' ? 'Ders Başarısı' : 'Subject Mastery',
         subtitle: languageBloc.currentLanguage == 'tr' ? 'Henüz veri yok' : 'No data yet',
       );
     }
-    final entries = ratios.entries.toList();
+    final entries = baseOrder.map((k) => MapEntry(k, (prof[k] ?? 0.0))).toList();
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -175,7 +181,7 @@ class _EnhancedStatisticsScreenState extends State<EnhancedStatisticsScreen> wit
                       borderColor: Theme.of(context).primaryColor,
                       entryRadius: 2,
                       dataEntries: entries
-                          .map((e) => RadarEntry(value: (e.value * 100).clamp(0, 100).toDouble()))
+                          .map((e) => RadarEntry(value: e.value.clamp(0, 100).toDouble()))
                           .toList(),
                     ),
                   ],
@@ -273,8 +279,30 @@ class _EnhancedStatisticsScreenState extends State<EnhancedStatisticsScreen> wit
   }
 
   Widget _buildConsistencyBar(LanguageBloc languageBloc) {
-    final data = _snap?.last7DaysCounts ?? List<int>.filled(7, 0);
+    final data = _snap?.last7DaysStudySeconds ?? List<int>.filled(7, 0);
     final dayLabels = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+    final maxSeconds = data.isEmpty ? 0 : data.reduce((a, b) => a > b ? a : b);
+    String formatShort(double seconds) {
+      if (seconds <= 0) return '0';
+      if (seconds < 3600) {
+        final m = (seconds / 60).round();
+        return languageBloc.currentLanguage == 'tr' ? '${m}dk' : '${m}m';
+      } else {
+        final h = (seconds / 3600).round();
+        return languageBloc.currentLanguage == 'tr' ? '${h}sa' : '${h}h';
+      }
+    }
+    String formatFull(int seconds) {
+      final h = seconds ~/ 3600;
+      final m = (seconds % 3600) ~/ 60;
+      if (languageBloc.currentLanguage == 'tr') {
+        if (h > 0) return '${h}sa ${m}dk';
+        return '${m}dk';
+      } else {
+        if (h > 0) return '${h}h ${m}m';
+        return '${m}m';
+      }
+    }
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -288,7 +316,7 @@ class _EnhancedStatisticsScreenState extends State<EnhancedStatisticsScreen> wit
                 Icon(Icons.bar_chart, color: Theme.of(context).primaryColor),
                 const SizedBox(width: 8),
                 Text(
-                  languageBloc.currentLanguage == 'tr' ? 'Tutarlılık' : 'Consistency',
+                  languageBloc.currentLanguage == 'tr' ? 'Günlük Çalışma Süresi' : 'Daily Study Time',
                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ],
@@ -299,8 +327,8 @@ class _EnhancedStatisticsScreenState extends State<EnhancedStatisticsScreen> wit
               child: BarChart(
                 BarChartData(
                   alignment: BarChartAlignment.spaceAround,
-                  maxY: (data.isEmpty ? 1 : (data.reduce((a, b) => a > b ? a : b) + 1)).toDouble(),
-                  gridData: FlGridData(show: false),
+                  maxY: (data.isEmpty ? 1 : (maxSeconds.toDouble() * 1.1)),
+                  gridData: FlGridData(show: true, drawVerticalLine: false),
                   borderData: FlBorderData(show: false),
                   titlesData: FlTitlesData(
                     bottomTitles: AxisTitles(
@@ -319,9 +347,36 @@ class _EnhancedStatisticsScreenState extends State<EnhancedStatisticsScreen> wit
                         reservedSize: 32,
                       ),
                     ),
-                    leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 44,
+                        getTitlesWidget: (value, meta) {
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 4.0),
+                            child: Text(
+                              formatShort(value),
+                              style: const TextStyle(fontSize: 10, color: Colors.black54),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
                     topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                     rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  ),
+                  barTouchData: BarTouchData(
+                    enabled: true,
+                    touchTooltipData: BarTouchTooltipData(
+                      getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                        final seconds = rod.toY.toInt();
+                        final day = dayLabels[group.x];
+                        return BarTooltipItem(
+                          '$day: ${formatFull(seconds)}',
+                          const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        );
+                      },
+                    ),
                   ),
                   barGroups: data.asMap().entries.map((e) {
                     final i = e.key;
@@ -353,80 +408,6 @@ class _EnhancedStatisticsScreenState extends State<EnhancedStatisticsScreen> wit
     );
   }
 
-  Widget _buildEconomyLine(LanguageBloc languageBloc) {
-    final history = _snap?.rocketHistory ?? [];
-    if (history.isEmpty) {
-      return _emptyCard(
-        icon: Icons.trending_up,
-        title: languageBloc.currentLanguage == 'tr' ? 'Ekonomi Büyümesi' : 'Economy Growth',
-        subtitle: languageBloc.currentLanguage == 'tr' ? 'Henüz veri yok' : 'No data yet',
-      );
-    }
-    final spots = history.asMap().entries.map((e) {
-      final total = (e.value['total'] as int).toDouble();
-      return FlSpot(e.key.toDouble(), total);
-    }).toList();
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.trending_up, color: Theme.of(context).primaryColor),
-                const SizedBox(width: 8),
-                Text(
-                  languageBloc.currentLanguage == 'tr' ? 'Ekonomi Büyümesi' : 'Economy Growth',
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              height: 220,
-              child: LineChart(
-                LineChartData(
-                  gridData: FlGridData(show: true, drawVerticalLine: false, horizontalInterval: (spots.isEmpty ? 1 : (spots.last.y / 5).clamp(1, 100))),
-                  titlesData: const FlTitlesData(
-                    leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  ),
-                  borderData: FlBorderData(show: false),
-                  lineBarsData: [
-                    LineChartBarData(
-                      spots: spots,
-                      isCurved: true,
-                      gradient: LinearGradient(colors: [Theme.of(context).primaryColor, Theme.of(context).primaryColor.withValues(alpha: 0.7)]),
-                      barWidth: 3,
-                      isStrokeCapRound: true,
-                      dotData: FlDotData(show: false),
-                      belowBarData: BarAreaData(
-                        show: true,
-                        gradient: LinearGradient(
-                          colors: [
-                            Theme.of(context).primaryColor.withValues(alpha: 0.25),
-                            Theme.of(context).primaryColor.withValues(alpha: 0.1),
-                          ],
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                duration: const Duration(milliseconds: 800),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   Widget _legendItem({required Color color, required String text}) {
     return Row(

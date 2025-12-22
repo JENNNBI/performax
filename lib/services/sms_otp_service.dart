@@ -111,6 +111,15 @@ class SmsOtpService {
   Future<bool> sendOtp(String phoneNumber, {Function(String verificationId)? onSent, Function(String error)? onFailed}) async {
     try {
       debugPrint('📱 Sending OTP to phone number: $phoneNumber');
+
+      // CRITICAL: Validate phone number is not empty
+      if (phoneNumber.isEmpty) {
+        debugPrint('❌ Phone number is empty');
+        if (onFailed != null) {
+          onFailed('Telefon numarası boş olamaz');
+        }
+        return false;
+      }
       
       // CRITICAL: Check rate limit before proceeding
       final rateLimitError = await checkRateLimit();
@@ -143,6 +152,8 @@ class SmsOtpService {
       // The reCAPTCHA challenge happens asynchronously and should not block OTP input
       verificationCompleted(PhoneAuthCredential credential) {
         debugPrint('✅ Phone number auto-verified (silent reCAPTCHA succeeded)');
+        // Note: We don't automatically sign in here for registration flow
+        // We just let the user know
       }
       
       verificationFailed(FirebaseAuthException e) {
@@ -214,6 +225,17 @@ class SmsOtpService {
         }
       }
       
+      // CRITICAL: Ensure FirebaseAuth is ready
+      if (_auth.app == null) {
+        debugPrint('❌ FirebaseAuth app instance is null');
+         if (onFailed != null) {
+          onFailed('Uygulama başlatma hatası (Auth)');
+        }
+        return false;
+      }
+
+      debugPrint('🚀 Calling verifyPhoneNumber...');
+      
       // Send OTP with silent reCAPTCHA handling
       // On iOS, Firebase attempts silent reCAPTCHA first
       // The reCAPTCHA challenge happens asynchronously and completes before codeSent is called
@@ -231,8 +253,9 @@ class SmsOtpService {
       debugPrint('✅ OTP request initiated - reCAPTCHA will complete asynchronously');
       // Note: Return true immediately - actual OTP sending happens in codeSent callback
       return true;
-    } catch (e) {
+    } catch (e, stackTrace) {
       debugPrint('❌ Error sending OTP: $e');
+      debugPrint('Stack trace: $stackTrace');
       String errorMessage = 'OTP gönderilemedi: ${e.toString()}';
       if (onVerificationFailed != null) {
         onVerificationFailed!(errorMessage);

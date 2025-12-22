@@ -290,7 +290,7 @@ class _InteractiveTestScreenState extends State<InteractiveTestScreen> with Tick
     });
     
     // Event: a question was answered (counts regardless of correctness)
-    QuestService.instance.onQuestionAnswered();
+    // QuestService.instance.onQuestionAnswered();
     
     // Show visual feedback
     ScaffoldMessenger.of(context).showSnackBar(
@@ -449,6 +449,7 @@ class _InteractiveTestScreenState extends State<InteractiveTestScreen> with Tick
   void _showResultsScreen() {
     // Calculate final elapsed time before stopping timer
     Duration finalElapsedTime = _elapsedTime;
+    final answeredCount = _selectedAnswers.length;
     
     if (widget.isTimed && _startTime != null) {
       if (_isTimerPaused && _pauseTime != null) {
@@ -469,8 +470,9 @@ class _InteractiveTestScreenState extends State<InteractiveTestScreen> with Tick
         _isTimerRunning = false;
       });
     }
-    if (finalElapsedTime.inSeconds > 0) {
-      StatisticsService.instance.logStudyTime(quiz: finalElapsedTime.inSeconds);
+    final secondsToLog = finalElapsedTime.inSeconds > 0 ? finalElapsedTime.inSeconds : (answeredCount > 0 ? answeredCount * 60 : 0);
+    if (secondsToLog > 0) {
+      StatisticsService.instance.logStudyTime(quiz: secondsToLog);
     }
     
     // Calculate results to return
@@ -501,6 +503,13 @@ class _InteractiveTestScreenState extends State<InteractiveTestScreen> with Tick
       source: widget.testTitle,
       correct: correctCount,
       total: widget.totalQuestions,
+    );
+    
+    // Update Quest Progress with Subject Tagging
+    QuestService.instance.updateProgress(
+      type: 'solve_questions',
+      amount: correctCount,
+      subject: subject.isNotEmpty ? subject : null,
     );
     
     Navigator.push(

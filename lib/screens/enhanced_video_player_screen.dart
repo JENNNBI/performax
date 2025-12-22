@@ -171,7 +171,10 @@ class _EnhancedVideoPlayerScreenState extends State<EnhancedVideoPlayerScreen>
           final total = _watchSession!.totalWatchTimeSeconds;
           final delta = total - _lastEmittedWatchSeconds;
           if (delta > 0) {
-            QuestService.instance.onVideoWatchedSeconds(delta);
+            final subj = _extractBranch(widget.subjectKey ?? '').toLowerCase() == 'unknown'
+                ? null
+                : _extractBranch(widget.subjectKey ?? '').substring(0,1).toUpperCase() + _extractBranch(widget.subjectKey ?? '').substring(1).toLowerCase();
+            QuestService.instance.updateProgress(type: 'watch_video', amount: delta, subject: subj);
             StatisticsService.instance.logStudyTime(video: delta);
             StatisticsService.instance.logDailyActivity(increment: 1);
             _lastEmittedWatchSeconds = total;
@@ -204,7 +207,10 @@ class _EnhancedVideoPlayerScreenState extends State<EnhancedVideoPlayerScreen>
           final total = _watchSession!.totalWatchTimeSeconds;
           final delta = total - _lastEmittedWatchSeconds;
           if (delta > 0) {
-            QuestService.instance.onVideoWatchedSeconds(delta);
+            final subj = _extractBranch(widget.subjectKey ?? '').toLowerCase() == 'unknown'
+                ? null
+                : _extractBranch(widget.subjectKey ?? '').substring(0,1).toUpperCase() + _extractBranch(widget.subjectKey ?? '').substring(1).toLowerCase();
+            QuestService.instance.updateProgress(type: 'watch_video', amount: delta, subject: subj);
             StatisticsService.instance.logStudyTime(video: delta);
             StatisticsService.instance.logDailyActivity(increment: 1);
             _lastEmittedWatchSeconds = total;

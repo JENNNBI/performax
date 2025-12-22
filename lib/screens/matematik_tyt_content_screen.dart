@@ -165,6 +165,7 @@ class _MatematikTYTContentScreenState extends State<MatematikTYTContentScreen>
             title: 'ENS Problemler - TYT Matematik',
             gradientStart: widget.gradientStart,
             gradientEnd: widget.gradientEnd,
+            subject: 'Matematik',
           ),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             const begin = Offset(1.0, 0.0);
@@ -509,4 +510,3 @@ class _MatematikTYTContentScreenState extends State<MatematikTYTContentScreen>
     );
   }
 }
-

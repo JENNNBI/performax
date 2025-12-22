@@ -57,6 +57,8 @@ class _ProfileHomeScreenState extends State<ProfileHomeScreen> with TickerProvid
       parent: _slideController,
       curve: Curves.easeInOutCubic,
     ));
+    _slideController.value = 0.0;
+    _avatarBounceController.value = 0.0;
     _loadQuests();
     CurrencyService.instance.loadBalance(widget.userProfile).then((balance) {
       if (!mounted) return;
@@ -72,6 +74,13 @@ class _ProfileHomeScreenState extends State<ProfileHomeScreen> with TickerProvid
     _rocketIconBounce = Tween<double>(begin: 1.0, end: 1.2).animate(
       CurvedAnimation(parent: _rocketIconBounceController, curve: Curves.easeOutBack),
     );
+  }
+
+  bool get _hasUnclaimedRewards {
+    if (_questData == null) return false;
+    final d = _questData!;
+    bool anyClaimable(List<Quest> list) => list.any((q) => q.isClaimable);
+    return anyClaimable(d.dailyQuests) || anyClaimable(d.weeklyQuests) || anyClaimable(d.monthlyQuests);
   }
 
   @override
@@ -117,25 +126,12 @@ class _ProfileHomeScreenState extends State<ProfileHomeScreen> with TickerProvid
       });
 
       setState(() {
-        if (_showSpeechBubble && !_showQuestList) {
-          // State A: First tap - Hide speech bubble, show quest list, slide avatar left
-          _showSpeechBubble = false;
+        if (!_showQuestList) {
           _showQuestList = true;
-          _slideController.forward(); // Slide avatar left
-        } else if (_showQuestList && !_showSpeechBubble) {
-          // State B: Second tap - Hide quest list, restore speech bubble, slide avatar center
+          _slideController.forward();
+        } else {
           _showQuestList = false;
-          _slideController.reverse(); // Slide avatar back to center
-          if (_questData != null && _questData!.hasPendingQuests) {
-            // Delay speech bubble appearance until slide animation completes
-            Future.delayed(const Duration(milliseconds: 500), () {
-              if (mounted && !_showQuestList) {
-                setState(() {
-                  _showSpeechBubble = true;
-                });
-              }
-            });
-          }
+          _slideController.reverse();
         }
       });
     } catch (e) {
@@ -453,6 +449,28 @@ class _ProfileHomeScreenState extends State<ProfileHomeScreen> with TickerProvid
                                           ),
                                         ),
                                       ),
+                                      // Red dot indicator for unclaimed rewards
+                                      if (_hasUnclaimedRewards)
+                                        Positioned(
+                                          right: 12,
+                                          top: 12,
+                                          child: Container(
+                                            width: 12,
+                                            height: 12,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: Colors.red,
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.red.withValues(alpha: 0.4),
+                                                  blurRadius: 6,
+                                                  spreadRadius: 1,
+                                                ),
+                                              ],
+                                              border: Border.all(color: Colors.white, width: 2),
+                                            ),
+                                          ),
+                                        ),
                                     ],
                                   ),
                                 ),
@@ -460,52 +478,32 @@ class _ProfileHomeScreenState extends State<ProfileHomeScreen> with TickerProvid
                             },
                           ),
                           
-                          // Speech Bubble (top layer) - positioned on far right, clear of avatar
-                          if (_questData != null && _questData!.hasPendingQuests && _showSpeechBubble)
-                            Positioned(
-                              right: 20, // Far right with padding
-                              top: 80,
-                              child: DismissSpeechBubble(
-                                dismiss: !_showSpeechBubble,
-                                child: QuestSpeechBubble(
-                                  message: 'Görevlerin var!',
-                                  pendingCount: _questData!.pendingCount,
-                                  show: _showSpeechBubble,
-                                ),
+                          // Speech Bubble (top layer) - positioned on far right, hides when quest list open
+                          Positioned(
+                            right: 20,
+                            top: 80,
+                            child: _showQuestList
+                                ? const SizedBox.shrink()
+                                : QuestSpeechBubble(
+                                    message: (() {
+                                      final remainingDaily = _questData?.dailyQuests.where((q) => !q.isCompleted).length ?? 0;
+                                      return remainingDaily > 0 ? 'Günlük görevlerin var!' : 'Bugün bütün günlük görevlerimi yaptım!';
+                                    })(),
+                                    pendingCount: _questData?.dailyQuests.where((q) => !q.isCompleted).length ?? 0,
+                                    show: true,
+                                  ),
+                          ),
+                          
+                          // Quest List Overlay (top layer) - emergency fallback to force render
+                          Positioned.fill(
+                            child: Visibility(
+                              visible: _showQuestList,
+                              child: QuestListWidget(
+                                questData: _questData ?? const QuestData(dailyQuests: [], weeklyQuests: [], monthlyQuests: []),
+                                onClose: _toggleQuest,
                               ),
                             ),
-                          
-                          // Quest List Overlay (top layer) - FIXED POSITIONING to prevent "skinny column" bug
-                          if (_showQuestList && _questData != null)
-                            AnimatedBuilder(
-                              animation: _slideAnimation,
-                              builder: (context, child) {
-                                final screenWidth = MediaQuery.of(context).size.width;
-                                
-                                // Calculate if window should be visible based on slide progress
-                                final slideProgress = (-_slideAnimation.value) / 120.0; // 0.0 to 1.0
-                                
-                                // MANDATORY FIX: Use fixed coordinates to prevent collapse
-                                // LEFT: Start at 35% from left (window will be 65% width)
-                                final leftPosition = screenWidth * 0.16;
-                                
-                                // Only show when avatar has slid left
-                                if (slideProgress <= 0) {
-                                  return const SizedBox.shrink(); // Hide when avatar is centered
-                                }
-                                
-                                return Positioned(
-                                  left: leftPosition,
-                                  right: -24,
-                                  top: 0,
-                                  bottom: 0,
-                                  child: QuestListWidget(
-                                    questData: _questData!,
-                                    onClose: _toggleQuest,
-                                  ),
-                                );
-                              },
-                            ),
+                          ),
                         ],
                       ),
                       

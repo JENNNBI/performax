@@ -10,6 +10,7 @@ import '../widgets/avatar_placeholder.dart';
 import '../widgets/otp_verification_widget.dart';
 import '../services/user_service.dart';
 import '../services/sms_otp_service.dart';
+import '../services/quest_service.dart';
 import 'avatar_selection_screen.dart';
 
 class RegistrationDetailsScreen extends StatefulWidget {
@@ -38,6 +39,7 @@ class _RegistrationDetailsScreenState extends State<RegistrationDetailsScreen>
   bool _isLoading = false;
   String? _selectedClass;
   String? _selectedGender;
+  String? _selectedStudyField; // 'Sayısal', 'Eşit Ağırlık', 'Sözel'
   String? _selectedAvatarId;
   Institution? _selectedInstitution;
   DateTime? _selectedBirthDate;
@@ -115,6 +117,12 @@ class _RegistrationDetailsScreenState extends State<RegistrationDetailsScreen>
     '11. Sınıf',
     '12. Sınıf',
     'Mezun',
+  ];
+
+  final List<String> _studyFieldOptions = [
+    'Sayısal',
+    'Eşit Ağırlık',
+    'Sözel',
   ];
 
   @override
@@ -272,6 +280,11 @@ class _RegistrationDetailsScreenState extends State<RegistrationDetailsScreen>
   }
 
   Future<void> _completeRegistration() async {
+    // Prevent multiple submissions
+    if (_isLoading || _isSendingOtp) {
+      return;
+    }
+
     // CRITICAL: Validate form first
     if (!_formKey.currentState!.validate()) {
       return;
@@ -499,11 +512,16 @@ class _RegistrationDetailsScreenState extends State<RegistrationDetailsScreen>
       );
 
       if (userCredential.user != null) {
+        // Clear old quest data for new user
+        await QuestService.instance.resetLocalData();
         await _saveUserData(userCredential.user!.uid);
       }
 
       // Clear guest status when user successfully registers
       await UserService.clearGuestStatus();
+
+      // Ensure "Login" quest is completed for new users immediately
+      QuestService.instance.updateProgress(type: 'login', amount: 1);
 
       if (mounted) {
         Navigator.pushReplacementNamed(context, '/home');
@@ -545,6 +563,7 @@ class _RegistrationDetailsScreenState extends State<RegistrationDetailsScreen>
         'phoneNumber': _formattedPhoneNumber, // Store formatted phone number
         'isPhoneVerified': _isPhoneVerified, // Store verification status
         'class': _selectedClass,
+        'studyField': _selectedStudyField, // Store selected field of study
         'gender': _selectedGender,
         'avatar': _selectedAvatarId != null 
             ? {
@@ -640,6 +659,13 @@ class _RegistrationDetailsScreenState extends State<RegistrationDetailsScreen>
       return 'Geçerli bir Türk telefon numarası girin (örn: 05551234567)';
     }
     
+    return null;
+  }
+
+  String? _validateStudyField(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Lütfen alanınızı seçin';
+    }
     return null;
   }
 
@@ -798,11 +824,42 @@ class _RegistrationDetailsScreenState extends State<RegistrationDetailsScreen>
                                 onChanged: _isLoading ? null : (value) {
                                   setState(() {
                                     _selectedClass = value;
+                                    // Reset study field if 9th or 10th grade is selected
+                                    if (value == '9. Sınıf' || value == '10. Sınıf') {
+                                      _selectedStudyField = null;
+                                    }
                                   });
                                 },
                                 validator: _validateClass,
                               ),
                               const SizedBox(height: 20),
+                              
+                              // Field of Study Selection (Alan Seçimi)
+                              // Only show for 11th, 12th grade and Graduates
+                              if (_selectedClass == '11. Sınıf' || 
+                                  _selectedClass == '12. Sınıf' || 
+                                  _selectedClass == 'Mezun') ...[
+                                DropdownButtonFormField<String>(
+                                  initialValue: _selectedStudyField,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Alan Seçimi',
+                                    prefixIcon: Icon(Icons.category_outlined),
+                                  ),
+                                  items: _studyFieldOptions.map((String field) {
+                                    return DropdownMenuItem<String>(
+                                      value: field,
+                                      child: Text(field),
+                                    );
+                                  }).toList(),
+                                  onChanged: _isLoading ? null : (value) {
+                                    setState(() {
+                                      _selectedStudyField = value;
+                                    });
+                                  },
+                                  validator: _validateStudyField,
+                                ),
+                                const SizedBox(height: 20),
+                              ],
                               
                               // Gender Selection
                               DropdownButtonFormField<String>(

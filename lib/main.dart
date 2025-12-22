@@ -14,6 +14,7 @@ import 'services/app_theme.dart';
 import 'services/localization_service.dart';
 import 'firebase_options.dart';
 import 'services/statistics_service.dart';
+import 'services/quest_service.dart';
 
 void main() async {
   try {
@@ -75,6 +76,11 @@ void main() async {
     }
     try {
       await StatisticsService.instance.initialize();
+    } catch (_) {}
+    try {
+      await QuestService.instance.ensureDailyLoginTracked();
+      // Ensure existing users get credit immediately
+      QuestService.instance.updateProgress(type: 'login', amount: 1);
     } catch (_) {}
     
     debugPrint('🚀 Starting Flutter app...');

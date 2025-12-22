@@ -20,6 +20,24 @@ class QuestService {
   Stream<Quest> get completions => _completionController.stream;
   QuestData? get data => _cachedQuestData;
 
+  /// Clear all local quest data (for new user registration)
+  Future<void> resetLocalData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final keys = prefs.getKeys();
+    for (final key in keys) {
+      if (key.startsWith('quest_status_') || 
+          key.startsWith('selected_daily_ids') ||
+          key.startsWith('selected_weekly_ids') ||
+          key.startsWith('selected_monthly_ids') ||
+          key.startsWith('daily_last_date') ||
+          key.startsWith('weekly_last_date') ||
+          key.startsWith('monthly_last_month')) {
+        await prefs.remove(key);
+      }
+    }
+    _cachedQuestData = null;
+  }
+
   /// Load quest data from JSON asset
   Future<QuestData> loadQuests() async {
     try {
@@ -35,6 +53,19 @@ class QuestService {
       // Parse full quest data
       final fullData = QuestData.fromJson(jsonData);
       final prefs = await SharedPreferences.getInstance();
+      
+      // Get user's study field and grade from cached profile
+      String? studyField;
+      String? gradeLevel;
+      try {
+        final cachedProfileJson = prefs.getString('cached_user_profile');
+        if (cachedProfileJson != null) {
+          final Map<String, dynamic> profileMap = json.decode(cachedProfileJson);
+          studyField = profileMap['studyField'];
+          gradeLevel = profileMap['gradeLevel'] ?? profileMap['class'];
+        }
+      } catch (_) {}
+      
       final now = DateTime.now();
       final today = _dateString(now);
       final thisMonth = _monthKey(now);
@@ -50,7 +81,7 @@ class QuestService {
       if (lastDailyDate == today && selectedDailyIds.isNotEmpty) {
         daily = _applySavedStatus(_mapIds(fullData.dailyQuests, selectedDailyIds), prefs);
       } else {
-        daily = _pickDailyWithMandatory(fullData.dailyQuests);
+        daily = _pickDailyWithMandatory(fullData.dailyQuests, studyField, gradeLevel);
         await prefs.setString('selected_daily_ids', json.encode(daily.map((q) => q.id).toList()));
         await prefs.setString('daily_last_date', today);
         for (final q in daily) {
@@ -73,7 +104,7 @@ class QuestService {
       if (!shouldResetWeekly && selectedWeeklyIds.isNotEmpty) {
         weekly = _applySavedStatus(_mapIds(fullData.weeklyQuests, selectedWeeklyIds), prefs);
       } else {
-        weekly = _pickRandomAndReset(fullData.weeklyQuests, 5);
+        weekly = _pickRandomAndReset(fullData.weeklyQuests, 3, studyField, gradeLevel);
         await prefs.setString('selected_weekly_ids', json.encode(weekly.map((q) => q.id).toList()));
         await prefs.setString('weekly_last_date', today);
         for (final q in weekly) {
@@ -85,7 +116,7 @@ class QuestService {
       if (lastMonthlyMonth == thisMonth && selectedMonthlyIds.isNotEmpty) {
         monthly = _applySavedStatus(_mapIds(fullData.monthlyQuests, selectedMonthlyIds), prefs);
       } else {
-        monthly = _pickRandomAndReset(fullData.monthlyQuests, 5);
+        monthly = _pickRandomAndReset(fullData.monthlyQuests, 2, studyField, gradeLevel);
         await prefs.setString('selected_monthly_ids', json.encode(monthly.map((q) => q.id).toList()));
         await prefs.setString('monthly_last_month', thisMonth);
         for (final q in monthly) {
@@ -182,12 +213,25 @@ class QuestService {
   void _replaceQuest(Quest updated) {
     if (_cachedQuestData == null) return;
     final d = _cachedQuestData!;
-    List<Quest> replace(List<Quest> list) =>
-        list.map((q) => q.id == updated.id ? updated : q).toList();
+    
+    // Sort helper: Incomplete on top (false), Completed/Claimed on bottom (true)
+    int sortQuests(Quest a, Quest b) {
+      final aDone = a.isCompleted;
+      final bDone = b.isCompleted;
+      if (aDone == bDone) return 0;
+      return aDone ? 1 : -1;
+    }
+
+    List<Quest> replaceAndSort(List<Quest> list) {
+      final replaced = list.map((q) => q.id == updated.id ? updated : q).toList();
+      replaced.sort(sortQuests);
+      return replaced;
+    }
+
     _cachedQuestData = QuestData(
-      dailyQuests: replace(d.dailyQuests),
-      weeklyQuests: replace(d.weeklyQuests),
-      monthlyQuests: replace(d.monthlyQuests),
+      dailyQuests: replaceAndSort(d.dailyQuests),
+      weeklyQuests: replaceAndSort(d.weeklyQuests),
+      monthlyQuests: replaceAndSort(d.monthlyQuests),
     );
     // Persist status
     SharedPreferences.getInstance().then((prefs) => _saveQuestStatus(prefs, updated));
@@ -208,38 +252,167 @@ class QuestService {
   }
 
   /// Event bindings
-  void onQuestionAnswered() {
-    // Tie to question solving quests (daily/weekly/monthly)
-    incrementById('daily_1', 1);
-    incrementById('weekly_1', 1);
-    incrementById('monthly_1', 1);
-  }
-
   void onPerfectScoreAchieved() {
     incrementById('daily_5', 1);
   }
 
-  void onVideoWatchedSeconds(int seconds) {
-    // Convert to minutes for daily video quest (round down)
-    final minutes = (seconds ~/ 60);
-    if (minutes > 0) {
-      incrementById('daily_2', minutes);
+  // Legacy methods removed in favor of updateProgress
+
+
+  void updateProgress({required String type, required int amount, String? subject}) {
+    if (_cachedQuestData == null) return;
+    if (amount <= 0) return;
+    final d = _cachedQuestData!;
+    
+    // Build tokens from the incoming subject
+    final subjTokens = subject != null && subject.isNotEmpty ? _buildSubjectTokens(subject) : const <String>[];
+    
+    Iterable<Quest> all = [
+      ...d.dailyQuests,
+      ...d.weeklyQuests,
+      ...d.monthlyQuests,
+    ];
+    
+    for (final q in all) {
+      if (q.completed) continue;
+      
+      // 1. Check if type matches (e.g. 'watch_video', 'solve_questions')
+      final haystack = '${q.id} ${q.title} ${q.description}'.toLowerCase();
+      final normHaystack = _normalize(haystack);
+      
+      // If type doesn't match, skip this quest
+      // Note: _matchesType uses keywords based on type, but we should also check explicit 'type' field if available
+      // For now, we rely on _matchesType which checks keywords related to the action type
+      if (!_matchesType(haystack, normHaystack, type)) continue;
+      
+      // 2. Check Subject Specificity
+      // Check if the quest itself is specific to a subject (e.g. contains "math", "fizik")
+      // We check if the quest contains any known subject keywords
+      final questSpecificSubjects = _findSubjectKeywordsInQuest(haystack, normHaystack);
+      
+      if (questSpecificSubjects.isNotEmpty) {
+        // Quest is specific (e.g. "Solve Math Questions")
+        
+        if (subjTokens.isEmpty) {
+          // Incoming action has no subject -> NO UPDATE for specific quest
+          continue;
+        }
+        
+        // Check if incoming subject matches the quest's subject
+        // The incoming subject tokens must overlap with the quest's subject keywords
+        final bool matches = questSpecificSubjects.any((qSubj) => subjTokens.contains(qSubj));
+        
+        if (!matches) {
+          // User watched "History", Quest is "Math" -> NO UPDATE
+          continue;
+        }
+        // If matches, proceed to update
+      } else {
+        // Quest is Generic (e.g. "Watch ANY video") -> ALWAYS UPDATE
+        // No subject check needed
+      }
+
+      final newProgress = (q.progress + amount).clamp(0, q.target);
+      final updated = q.copyWith(progress: newProgress);
+      _replaceQuest(updated);
     }
   }
 
-  void onPdfStudiedSeconds(int seconds) {
-    final minutes = (seconds ~/ 60);
-    if (minutes > 0) {
-      incrementById('daily_3', minutes);
+  /// Helper to identify if a quest is subject-specific
+  /// Returns a list of normalized subject tokens found in the quest text
+  List<String> _findSubjectKeywordsInQuest(String haystack, String normHaystack) {
+    // List of all possible subjects to check against
+    final allSubjects = [
+      'matematik', 'math', 'mat',
+      'türkçe', 'turkce', 'turkish', 'turk',
+      'fizik', 'physics', 'fiz',
+      'kimya', 'chemistry', 'kim',
+      'biyoloji', 'biology', 'bio',
+      'tarih', 'history',
+      'coğrafya', 'cografya', 'geography', 'geo',
+      'felsefe', 'philosophy',
+      'fen', 'science',
+      'sosyal', 'social'
+    ];
+    
+    final found = <String>[];
+    for (final subj in allSubjects) {
+      if (haystack.contains(subj) || normHaystack.contains(subj)) {
+        found.add(subj);
+      }
+    }
+    return found;
+  }
+
+  bool _matchesType(String haystack, String normHaystack, String type) {
+    final tokens = <String>[];
+    switch (type) {
+      case 'watch_video':
+        tokens.addAll(['video', 'izle', 'watch', 'konu anlatım']);
+        break;
+      case 'read_pages':
+        tokens.addAll(['pdf', 'sayfa', 'page', 'oku', 'document']);
+        break;
+      case 'solve_questions':
+        tokens.addAll(['soru', 'question', 'solve', 'çöz']);
+        break;
+      case 'login':
+        tokens.addAll(['login', 'giriş', 'gir', 'enter', 'sign in']);
+        break;
+      default:
+        return true; // unknown type, treat as generic
+    }
+    return tokens.any((t) => haystack.contains(t) || normHaystack.contains(t));
+  }
+
+  List<String> _buildSubjectTokens(String subjectName) {
+    final lower = subjectName.toLowerCase();
+    final norm = _normalize(lower);
+    final syn = _subjectSynonyms(lower);
+    return {lower, norm, ...syn}.toList();
+  }
+
+  String _normalize(String s) {
+    return s
+        .replaceAll('ç', 'c')
+        .replaceAll('ğ', 'g')
+        .replaceAll('ı', 'i')
+        .replaceAll('ö', 'o')
+        .replaceAll('ş', 's')
+        .replaceAll('ü', 'u');
+  }
+
+  List<String> _subjectSynonyms(String lower) {
+    switch (lower) {
+      case 'matematik':
+        return ['math', 'mat'];
+      case 'türkçe':
+        return ['turkce', 'turkish', 'turk'];
+      case 'fizik':
+        return ['physics', 'fiz'];
+      case 'kimya':
+        return ['chemistry', 'kim'];
+      case 'biyoloji':
+        return ['biology', 'bio'];
+      case 'tarih':
+        return ['history'];
+      case 'coğrafya':
+        return ['cografya', 'geography', 'geo'];
+      case 'felsefe':
+        return ['philosophy'];
+      default:
+        return [];
     }
   }
 
-  void onPdfPageViewed() {
-    _incrementIfExists('daily_4', 1);
-    _incrementIfExists('weekly_5', 1);
-    _incrementIfExists('monthly_4', 1);
+  Future<void> ensureDailyLoginTracked() async {
+    final prefs = await SharedPreferences.getInstance();
+    final last = prefs.getString('last_login_date');
+    final today = _dateString(DateTime.now());
+    if (last == today) return;
+    updateProgress(type: 'login', amount: 1);
+    await prefs.setString('last_login_date', today);
   }
-
   QuestData _migratePdfQuests(SharedPreferences prefs, QuestData data) {
     Quest resetIfPdf(Quest q) {
       if (q.id == 'daily_4' || q.id == 'weekly_5' || q.id == 'monthly_4') {
@@ -296,13 +469,13 @@ class QuestService {
     final b0 = DateTime(b.year, b.month, b.day);
     return b0.difference(a0).inDays;
   }
-  List<Quest> _pickDailyWithMandatory(List<Quest> source) {
+  List<Quest> _pickDailyWithMandatory(List<Quest> source, String? studyField, String? gradeLevel) {
     final mandatory = source.where((q) => q.id == 'daily_1').toList();
     if (mandatory.isEmpty) {
-      return _pickRandomAndReset(source, 5);
+      return _pickRandomAndReset(source, 5, studyField, gradeLevel);
     }
     final rest = source.where((q) => q.id != 'daily_1').toList();
-    final picked = _pickRandomAndReset(rest, 4);
+    final picked = _pickRandomAndReset(rest, 4, studyField, gradeLevel);
     final m = mandatory.first.copyWith(progress: 0, completed: false, claimed: false);
     return [m, ...picked];
   }
@@ -348,17 +521,65 @@ class QuestService {
     };
     await prefs.setString('quest_status_${q.id}', json.encode(data));
   }
-  List<Quest> _pickRandomAndReset(List<Quest> source, int count) {
-    final n = source.length;
+  List<Quest> _pickRandomAndReset(List<Quest> source, int count, String? studyField, String? gradeLevel) {
+    // Filter by study field first
+    final filtered = source.where((q) => _isQuestRelevant(q, studyField, gradeLevel)).toList();
+    
+    final n = filtered.length;
     if (n <= count) {
-      return source.map((q) => q.copyWith(progress: 0, completed: false, claimed: false)).toList();
+      return filtered.map((q) => q.copyWith(progress: 0, completed: false, claimed: false)).toList();
     }
     final rng = DateTime.now().millisecondsSinceEpoch;
     // Simple deterministic shuffle based on current ms (good enough for daily rotation)
     final indices = List<int>.generate(n, (i) => i);
     indices.sort((a, b) => ((a * 1103515245 + rng) % 2147483647).compareTo((b * 1103515245 + rng) % 2147483647));
-    final picked = indices.take(count).map((i) => source[i]).toList();
+    final picked = indices.take(count).map((i) => filtered[i]).toList();
     return picked.map((q) => q.copyWith(progress: 0, completed: false, claimed: false)).toList();
+  }
+
+  bool _isQuestRelevant(Quest quest, String? studyField, String? gradeLevel) {
+    // If grade is 9 or 10, show all quests (bypass study field filtering)
+    if (gradeLevel != null) {
+       final grade = gradeLevel.replaceAll(RegExp(r'[^\d]'), '');
+       if (grade == '9' || grade == '10') {
+         return true;
+       }
+    }
+
+    if (studyField == null) return true; // No field selected, allow all
+
+    final text = '${quest.title} ${quest.description} ${quest.id}'.toLowerCase();
+    final normText = _normalize(text);
+    final subjects = _findSubjectKeywordsInQuest(text, normText);
+
+    // If no specific subject identified, assume it's generic/TYT and allow
+    if (subjects.isEmpty) return true;
+
+    // Check specific rules
+    switch (studyField) {
+      case 'Sayısal':
+        // Block Edebiyat
+        if (subjects.contains('edebiyat')) return false;
+        // Block AYT History/Geography
+        if ((subjects.contains('tarih') || subjects.contains('history')) && (text.contains('ayt') || text.contains('2'))) return false;
+        if ((subjects.contains('cografya') || subjects.contains('geography') || subjects.contains('geo')) && (text.contains('ayt') || text.contains('2'))) return false;
+        return true;
+
+      case 'Eşit Ağırlık':
+        // Block Science (Fizik, Kimya, Biyoloji)
+        if (subjects.any((s) => ['fizik', 'physics', 'fiz', 'kimya', 'chemistry', 'kim', 'biyoloji', 'biology', 'bio'].contains(s))) return false;
+        return true;
+
+      case 'Sözel':
+        // Block Science
+        if (subjects.any((s) => ['fizik', 'physics', 'fiz', 'kimya', 'chemistry', 'kim', 'biyoloji', 'biology', 'bio'].contains(s))) return false;
+        // Block AYT Math
+        if (subjects.any((s) => ['matematik', 'math', 'mat'].contains(s)) && (text.contains('ayt'))) return false;
+        return true;
+
+      default:
+        return true;
+    }
   }
 
   void _incrementIfExists(String questId, int delta) {

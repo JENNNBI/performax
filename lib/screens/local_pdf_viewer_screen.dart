@@ -16,6 +16,7 @@ class LocalPDFViewerScreen extends StatefulWidget {
   final String title;
   final Color? gradientStart;
   final Color? gradientEnd;
+  final String? subject;
 
   const LocalPDFViewerScreen({
     super.key,
@@ -23,6 +24,7 @@ class LocalPDFViewerScreen extends StatefulWidget {
     required this.title,
     this.gradientStart,
     this.gradientEnd,
+    this.subject,
   });
 
   @override
@@ -354,7 +356,8 @@ class _LocalPDFViewerScreenState extends State<LocalPDFViewerScreen> {
             _pageViewTimer = Timer(const Duration(seconds: 1), () {
               if (mounted && !_countedPages.contains(_currentPage)) {
                 _countedPages.add(_currentPage);
-                QuestService.instance.onPdfPageViewed();
+                QuestService.instance.updateProgress(type: 'read_pages', amount: 1, subject: widget.subject);
+                StatisticsService.instance.incrementPageCount(1);
               }
             });
           },
@@ -381,7 +384,8 @@ class _LocalPDFViewerScreenState extends State<LocalPDFViewerScreen> {
               _pageViewTimer = Timer(const Duration(seconds: 1), () {
                 if (mounted && !_countedPages.contains(_currentPage)) {
                   _countedPages.add(_currentPage);
-                  QuestService.instance.onPdfPageViewed();
+                  QuestService.instance.updateProgress(type: 'read_pages', amount: 1, subject: widget.subject);
+                  StatisticsService.instance.incrementPageCount(1);
                 }
               });
             }

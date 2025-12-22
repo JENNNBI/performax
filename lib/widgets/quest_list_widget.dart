@@ -142,6 +142,31 @@ class _QuestListWidgetState extends State<QuestListWidget> with SingleTickerProv
       final bc = b.isCompleted ? 1 : 0;
       return ac.compareTo(bc);
     });
+    if (sorted.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.emoji_events, color: theme.primaryColor, size: 36),
+              const SizedBox(height: 12),
+              const Text(
+                'Harika! Bu bölümde tüm görevler tamamlandı.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 6),
+              const Text(
+                'Diğer sekmelere geçerek haftalık ve aylık görevlere bakabilirsin.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 12, color: Colors.black54),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
     return ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: sorted.length,
