@@ -227,93 +227,80 @@ class _TYTMatematikVideoDersleriScreenState extends State<TYTMatematikVideoDersl
         
         return Scaffold(
           body: Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
                 colors: [
-                  const Color(0xFFFFE5CC), // Light orange/peach at top
-                  const Color(0xFFFFD6E8), // Light pink/rose in middle
-                  const Color(0xFFFFC0CB), // Deeper pink/rose at bottom
+                  Color(0xFF1A1030), // Deep purple
+                  Color(0xFF4A1E1E), // Dark orange/red
                 ],
-                stops: const [0.0, 0.5, 1.0],
               ),
             ),
             child: CustomScrollView(
             slivers: [
               // Animated App Bar
               SliverAppBar(
-                expandedHeight: 160.0,
+                expandedHeight: 120.0,
                 floating: false,
                 pinned: true,
                 elevation: 0,
-                backgroundColor: widget.gradientStart,
+                backgroundColor: Colors.transparent,
                 flexibleSpace: FlexibleSpaceBar(
                   background: FadeTransition(
                     opacity: _headerFadeAnimation,
                     child: SlideTransition(
                       position: _headerSlideAnimation,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              widget.gradientStart,
-                              widget.gradientEnd,
+                      child: SafeArea(
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                                    ),
+                                    child: Icon(
+                                      widget.subjectIcon,
+                                      color: Colors.white,
+                                      size: 24,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          isEnglish ? 'TYT Mathematics Video Lessons' : 'TYT Matematik Video Dersleri',
+                                          style: const TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          widget.sectionType,
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.white.withValues(alpha: 0.7),
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ],
-                          ),
-                        ),
-                        child: SafeArea(
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                Row(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(10),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white.withValues(alpha: 0.2),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Icon(
-                                        widget.subjectIcon,
-                                        color: Colors.white,
-                                        size: 24,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            isEnglish ? 'TYT Mathematics Video Lessons' : 'TYT Matematik Video Dersleri',
-                                            style: const TextStyle(
-                                              fontSize: 24,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            widget.sectionType,
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              color: Colors.white.withValues(alpha: 0.9),
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
                           ),
                         ),
                       ),
@@ -324,7 +311,7 @@ class _TYTMatematikVideoDersleriScreenState extends State<TYTMatematikVideoDersl
                   icon: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
+                      color: Colors.white.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Icon(Icons.arrow_back_rounded, color: Colors.white),
@@ -368,6 +355,26 @@ class _TYTMatematikVideoDersleriScreenState extends State<TYTMatematikVideoDersl
     );
   }
 
+  Widget _buildPlayButton(Color color) {
+    return Container(
+      width: 60,
+      height: 60,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: color.withValues(alpha: 0.3),
+          width: 1,
+        ),
+      ),
+      child: Icon(
+        Icons.play_arrow_rounded,
+        color: color,
+        size: 36,
+      ),
+    );
+  }
+
   Widget _buildProblemKampiBanner(bool isEnglish) {
     return TweenAnimationBuilder<double>(
       duration: const Duration(milliseconds: 800),
@@ -375,40 +382,26 @@ class _TYTMatematikVideoDersleriScreenState extends State<TYTMatematikVideoDersl
       curve: Curves.easeOutCubic,
       builder: (context, animValue, child) {
         return Transform.translate(
-          offset: Offset(30 * (1 - animValue), 0),
+          offset: Offset(0, 20 * (1 - animValue)),
           child: Opacity(
             opacity: animValue.clamp(0.0, 1.0),
             child: GestureDetector(
               onTap: _navigateToProblemsKampi,
               child: Container(
-                height: 160,
+                height: 140,
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                    colors: [
-                      Color(0xFFFFD700), // Bright yellow
-                      Color(0xFFFF6B35), // Warm orange
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(24),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
                   boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFFFF6B35).withValues(alpha: 0.3),
-                      blurRadius: 20,
-                      spreadRadius: 0,
-                      offset: const Offset(0, 8),
-                    ),
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 10,
-                      spreadRadius: 0,
                       offset: const Offset(0, 4),
                     ),
                   ],
                 ),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: BorderRadius.circular(16),
                   child: Stack(
                     children: [
                       // Instructors on the left
@@ -422,12 +415,14 @@ class _TYTMatematikVideoDersleriScreenState extends State<TYTMatematikVideoDersl
                             _buildInstructorCard(
                               'assets/hocalar/bunyamin_bayraktutar.png',
                               isEnglish ? 'Dr. Benjamin' : 'Doktor. Benjamin',
+                              Colors.black87,
                             ),
                             const SizedBox(width: 8),
                             // Öf Hoca
                             _buildInstructorCard(
                               'assets/hocalar/omer_faruk_cetinkaya.png',
                               isEnglish ? 'Öf Teacher' : 'Öf Hoca',
+                              Colors.black87,
                             ),
                           ],
                         ),
@@ -435,50 +430,45 @@ class _TYTMatematikVideoDersleriScreenState extends State<TYTMatematikVideoDersl
                       
                       // Text in the middle
                       Positioned(
-                        left: 200,
+                        left: 180,
                         top: 0,
                         bottom: 0,
                         child: Center(
-                          child: Text(
-                            isEnglish ? 'PROBLEMS\nCAMP' : 'PROBLEM\nKAMPI',
-                            style: const TextStyle(
-                              fontSize: 32,
-                              fontWeight: FontWeight.w900,
-                              color: Colors.black,
-                              height: 1.1,
-                              letterSpacing: 1,
-                            ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                isEnglish ? 'PROBLEMS\nCAMP' : 'PROBLEM\nKAMPI',
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w900,
+                                  color: Color(0xFF2D1B4E), // Deep Purple text
+                                  height: 1.1,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                isEnglish ? 'Dr. Benjamin & Öf Teacher' : 'Doktor Benjamin & Öf Hoca',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: Colors.grey[600],
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
                       
-                      // YouTube logo on the right
+                      // Play button on the right
                       Positioned(
-                        right: 20,
+                        right: 16,
                         top: 0,
                         bottom: 0,
                         child: Center(
-                          child: Image.asset(
-                            'assets/images/youtube_logo.png',
-                            width: 80,
-                            height: 80,
-                            fit: BoxFit.contain,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                width: 80,
-                                height: 80,
-                                decoration: BoxDecoration(
-                                  color: Colors.red[600],
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: const Icon(
-                                  Icons.play_circle_filled,
-                                  color: Colors.white,
-                                  size: 50,
-                                ),
-                              );
-                            },
-                          ),
+                          child: _buildPlayButton(const Color(0xFFFFA000)), // Gold/Orange
                         ),
                       ),
                     ],
@@ -492,23 +482,23 @@ class _TYTMatematikVideoDersleriScreenState extends State<TYTMatematikVideoDersl
     );
   }
 
-  Widget _buildInstructorCard(String imagePath, String name) {
+  Widget _buildInstructorCard(String imagePath, String name, Color textColor) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Container(
-          width: 70,
-          height: 70,
+          width: 60,
+          height: 60,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             border: Border.all(
-              color: Colors.white,
-              width: 3,
+              color: Colors.grey.withValues(alpha: 0.2),
+              width: 2,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.2),
-                blurRadius: 8,
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 5,
                 offset: const Offset(0, 2),
               ),
             ],
@@ -519,20 +509,20 @@ class _TYTMatematikVideoDersleriScreenState extends State<TYTMatematikVideoDersl
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) {
                 return Container(
-                  color: Colors.grey[300],
-                  child: const Icon(Icons.person, size: 40),
+                  color: Colors.grey[200],
+                  child: const Icon(Icons.person, size: 30, color: Colors.grey),
                 );
               },
             ),
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 6),
         Text(
           name,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 10,
             fontWeight: FontWeight.bold,
-            color: Colors.black,
+            color: textColor,
           ),
           textAlign: TextAlign.center,
         ),
@@ -547,7 +537,7 @@ class _TYTMatematikVideoDersleriScreenState extends State<TYTMatematikVideoDersl
       curve: Curves.easeOutCubic,
       builder: (context, animValue, child) {
         return Transform.translate(
-          offset: Offset(30 * (1 - animValue), 0),
+          offset: Offset(0, 20 * (1 - animValue)),
           child: Opacity(
             opacity: animValue.clamp(0.0, 1.0),
             child: GestureDetector(
@@ -556,48 +546,34 @@ class _TYTMatematikVideoDersleriScreenState extends State<TYTMatematikVideoDersl
                 const Color(0xFF4DD0E1),
               ),
               child: Container(
-                height: 120,
+                height: 100,
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                    colors: [
-                      Color(0xFF4DD0E1), // Teal/blue-green
-                      Color(0xFF1DE9B6), // Light green
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(20),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF4DD0E1).withValues(alpha: 0.3),
-                      blurRadius: 16,
-                      spreadRadius: 0,
-                      offset: const Offset(0, 6),
-                    ),
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.08),
-                      blurRadius: 8,
-                      spreadRadius: 0,
-                      offset: const Offset(0, 2),
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
                     ),
                   ],
                 ),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(16),
                   child: Stack(
                     children: [
                       // Text on the left
                       Positioned(
-                        left: 24,
+                        left: 20,
                         top: 0,
                         bottom: 0,
                         child: Center(
                           child: Text(
                             isEnglish ? 'COMING SOON\nWITH YOU!' : 'YAKINDA\nSİZLERLE',
                             style: const TextStyle(
-                              fontSize: 22,
+                              fontSize: 20,
                               fontWeight: FontWeight.w900,
-                              color: Colors.black,
+                              color: Color(0xFF1A1030), // Deep Dark Purple
                               height: 1.2,
                               letterSpacing: 0.5,
                             ),
@@ -605,33 +581,13 @@ class _TYTMatematikVideoDersleriScreenState extends State<TYTMatematikVideoDersl
                         ),
                       ),
                       
-                      // YouTube logo on the right
+                      // Play button on the right
                       Positioned(
-                        right: 20,
+                        right: 16,
                         top: 0,
                         bottom: 0,
                         child: Center(
-                          child: Image.asset(
-                            'assets/images/youtube_logo.png',
-                            width: 60,
-                            height: 60,
-                            fit: BoxFit.contain,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                width: 60,
-                                height: 60,
-                                decoration: BoxDecoration(
-                                  color: Colors.red[600],
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: const Icon(
-                                  Icons.play_circle_filled,
-                                  color: Colors.white,
-                                  size: 40,
-                                ),
-                              );
-                            },
-                          ),
+                          child: _buildPlayButton(Colors.grey),
                         ),
                       ),
                     ],

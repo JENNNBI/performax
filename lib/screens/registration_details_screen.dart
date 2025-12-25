@@ -515,10 +515,17 @@ class _RegistrationDetailsScreenState extends State<RegistrationDetailsScreen>
         // Clear old quest data for new user
         await QuestService.instance.resetLocalData();
         await _saveUserData(userCredential.user!.uid);
+        
+        // Force refresh user profile to cache it locally immediately
+        // This ensures QuestService can access the correct grade/field data
+        await UserService().getCurrentUserProfile(forceRefresh: true);
       }
 
       // Clear guest status when user successfully registers
       await UserService.clearGuestStatus();
+
+      // Reload quests based on the newly cached profile
+      await QuestService.instance.loadQuests();
 
       // Ensure "Login" quest is completed for new users immediately
       QuestService.instance.updateProgress(type: 'login', amount: 1);

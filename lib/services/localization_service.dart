@@ -166,7 +166,7 @@ class LocalizationService {
     // Dialogs
     'select_language': {'tr': 'Dil Seçin', 'en': 'Select Language'},
     'delete_account_title': {'tr': 'Hesabı Sil', 'en': 'Delete Account'},
-    'delete_account_confirm': {'tr': 'Hesabınızı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.', 'en': 'Are you sure you want to delete your account? This action cannot be undone.'},
+    'delete_account_confirm': {'tr': 'Bütün ilerlemen, görevlerin ve verilerin kalıcı olarak silinecek. Bu işlem geri alınamaz. Emin misin?', 'en': 'All your progress, quests and data will be permanently deleted. This action cannot be undone. Are you sure?'},
     'cancel': {'tr': 'İptal', 'en': 'Cancel'},
     'delete': {'tr': 'Sil', 'en': 'Delete'},
     'storage_management': {'tr': 'Depolama Yönetimi', 'en': 'Storage Management'},
@@ -268,5 +268,7 @@ class LocalizationService {
     'privacy_policy_coming_soon': {'tr': 'Gizlilik politikası yakında eklenecek', 'en': 'Privacy policy coming soon'},
     'account_deletion_coming_soon': {'tr': 'Hesap silme özelliği yakında eklenecek', 'en': 'Account deletion feature coming soon'},
     'teacher_panel_coming_soon': {'tr': 'Öğretmen paneli yakında gelecek!', 'en': 'Teacher panel coming soon!'},
+    'account_deleted': {'tr': 'Hesap başarıyla silindi', 'en': 'Account deleted successfully'},
+    'reauth_required': {'tr': 'Güvenlik gereği tekrar giriş yapıp deneyin', 'en': 'Please sign in again for security reasons'},
   };
 } 

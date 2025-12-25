@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'dart:ui';
 
-/// Speech bubble widget that appears next to the avatar
-/// Shows quest notification with bounce animation
+/// Futuristic Holographic Bubble
+/// Redesigned to match "Futuristic Blue" theme
 class QuestSpeechBubble extends StatelessWidget {
   final String message;
   final int pendingCount;
@@ -19,185 +20,181 @@ class QuestSpeechBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     if (!show) return const SizedBox.shrink();
 
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 200),
-        child: CustomPaint(
-          painter: _SpeechBubblePainter(
-            color: theme.primaryColor,
-            tailPosition: _TailPosition.left,
-          ),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.assignment,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8),
-                    Flexible(
-                      child: Text(
-                        message,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          // Holographic Glass Bubble
+          ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: Container(
+                constraints: const BoxConstraints(maxWidth: 240),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: Colors.cyanAccent.withValues(alpha: 0.5),
+                    width: 1.5,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.cyanAccent.withValues(alpha: 0.2),
+                      blurRadius: 15,
+                      spreadRadius: 2,
                     ),
                   ],
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Colors.white.withValues(alpha: 0.2),
+                      Colors.white.withValues(alpha: 0.05),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 4),
-                if (pendingCount > 0)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(
-                          Icons.pending_actions,
-                          color: Colors.white,
-                          size: 14,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          '$pendingCount görev',
-                          style: const TextStyle(
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Colors.cyanAccent.withValues(alpha: 0.2),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.auto_awesome_rounded,
                             color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
+                            size: 16,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Flexible(
+                          child: Text(
+                            message,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black26,
+                                  offset: Offset(0, 1),
+                                  blurRadius: 2,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ],
                     ),
-                  ),
-              ],
+                    if (pendingCount > 0) ...[
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.1),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.assignment_rounded,
+                              color: Colors.cyanAccent,
+                              size: 12,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              '$pendingCount görev',
+                              style: const TextStyle(
+                                color: Colors.cyanAccent,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
             ),
           ),
-        ),
-      )
-          .animate()
-          .fadeIn(duration: 400.ms)
-          .scale(
-            begin: const Offset(0.8, 0.8),
-            end: const Offset(1.0, 1.0),
-            duration: 500.ms,
-            curve: Curves.elasticOut,
-          )
-          .then() // Wait for initial animation
-          .shake(
-            duration: 300.ms,
-            hz: 2,
-            curve: Curves.easeInOut,
-          )
-          .then(delay: 2000.ms) // Wait 2 seconds
-          .shake(
-            duration: 300.ms,
-            hz: 2,
-            curve: Curves.easeInOut,
+          
+          // Pointer (Triangle)
+          Positioned(
+            bottom: -10,
+            left: 40,
+            child: CustomPaint(
+              painter: _HolographicTrianglePainter(
+                color: Colors.white.withValues(alpha: 0.15),
+                borderColor: Colors.cyanAccent.withValues(alpha: 0.5),
+              ),
+              size: const Size(20, 12),
+            ),
           ),
+        ],
+      )
+      .animate(onPlay: (controller) => controller.repeat(reverse: true))
+      .moveY(
+        begin: 0, 
+        end: -8, 
+        duration: 2000.ms, 
+        curve: Curves.easeInOutSine,
+      ), // Floating animation
     );
   }
 }
 
-/// Animated dismissal of speech bubble with bounce out effect
-class DismissSpeechBubble extends StatelessWidget {
-  final Widget child;
-  final bool dismiss;
-  final VoidCallback? onDismissComplete;
-
-  const DismissSpeechBubble({
-    super.key,
-    required this.child,
-    required this.dismiss,
-    this.onDismissComplete,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    if (!dismiss) {
-      return child;
-    }
-
-    return child
-        .animate(onComplete: (controller) => onDismissComplete?.call())
-        .scale(
-          begin: const Offset(1.0, 1.0),
-          end: const Offset(0.0, 0.0),
-          duration: 400.ms,
-          curve: Curves.easeInBack,
-        )
-        .fadeOut(duration: 300.ms);
-  }
-}
-
-/// Custom painter for speech bubble shape with tail
-class _SpeechBubblePainter extends CustomPainter {
+class _HolographicTrianglePainter extends CustomPainter {
   final Color color;
-  final _TailPosition tailPosition;
+  final Color borderColor;
 
-  _SpeechBubblePainter({
-    required this.color,
-    required this.tailPosition,
-  });
+  _HolographicTrianglePainter({required this.color, required this.borderColor});
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..color = color
       ..style = PaintingStyle.fill;
+      
+    final borderPaint = Paint()
+      ..color = borderColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5;
 
     final path = Path();
-    const radius = 12.0;
-    const tailWidth = 12.0;
-    const tailHeight = 10.0;
+    path.moveTo(0, 0);
+    path.lineTo(size.width / 2, size.height);
+    path.lineTo(size.width, 0);
+    path.close();
 
-    // Main bubble rounded rectangle
-    path.addRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromLTWH(0, 0, size.width, size.height),
-        const Radius.circular(radius),
-      ),
-    );
-
-    // Add tail based on position
-    if (tailPosition == _TailPosition.left) {
-      // Tail pointing left
-      final tailPath = Path();
-      tailPath.moveTo(-tailHeight, size.height / 2);
-      tailPath.lineTo(0, size.height / 2 - tailWidth / 2);
-      tailPath.lineTo(0, size.height / 2 + tailWidth / 2);
-      tailPath.close();
-      path.addPath(tailPath, Offset.zero);
-    }
-
-    // Draw shadow
-    canvas.drawShadow(path, Colors.black.withValues(alpha: 0.3), 4, true);
-    
-    // Draw bubble
     canvas.drawPath(path, paint);
+    
+    // Draw only the V shape border (skip top)
+    final borderPath = Path();
+    borderPath.moveTo(0, 0);
+    borderPath.lineTo(size.width / 2, size.height);
+    borderPath.lineTo(size.width, 0);
+    canvas.drawPath(borderPath, borderPaint);
   }
 
   @override
-  bool shouldRepaint(_SpeechBubblePainter oldDelegate) {
-    return oldDelegate.color != color || oldDelegate.tailPosition != tailPosition;
-  }
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
-
-enum _TailPosition { left, right, top, bottom }

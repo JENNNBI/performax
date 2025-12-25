@@ -15,6 +15,7 @@ import 'services/localization_service.dart';
 import 'firebase_options.dart';
 import 'services/statistics_service.dart';
 import 'services/quest_service.dart';
+import 'services/debug_manager.dart';
 
 void main() async {
   try {
@@ -139,16 +140,21 @@ class MyApp extends StatelessWidget {
         builder: (context, langState) {
           return BlocBuilder<SwitchBloc, SwitchState>(
             builder: (context, switchState) {
-              return MaterialApp(
-                title: 'Performax',
-                debugShowCheckedModeBanner: false,
-                theme: AppTheme.lightTheme,
-                darkTheme: AppTheme.darkTheme,
-                themeMode: switchState.switchValue ? ThemeMode.dark : ThemeMode.light,
-                locale: Locale(langState.languageCode),
-                showPerformanceOverlay: kDebugMode,
-                onGenerateRoute: AppRouter().onGenerateRoute,
-                home: const SplashScreen(),
+              return ValueListenableBuilder<bool>(
+                valueListenable: DebugManager.showDebugStats,
+                builder: (context, showDebug, _) {
+                  return MaterialApp(
+                    title: 'Performax',
+                    debugShowCheckedModeBanner: false,
+                    theme: AppTheme.lightTheme,
+                    darkTheme: AppTheme.darkTheme,
+                    themeMode: switchState.switchValue ? ThemeMode.dark : ThemeMode.light,
+                    locale: Locale(langState.languageCode),
+                    showPerformanceOverlay: showDebug,
+                    onGenerateRoute: AppRouter().onGenerateRoute,
+                    home: const SplashScreen(),
+                  );
+                },
               );
             },
           );

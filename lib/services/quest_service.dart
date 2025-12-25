@@ -7,7 +7,7 @@ import 'statistics_service.dart';
 
 /// Service to manage quest data loading and updates
 class QuestService {
-  static const String _questDataPath = 'assets/data/quests.json';
+  // static const String _questDataPath = 'assets/data/quests.json'; // Deprecated in favor of dynamic loading
   static final QuestService instance = QuestService._internal();
   QuestService._internal();
   factory QuestService() => instance;
@@ -46,14 +46,8 @@ class QuestService {
         return _cachedQuestData!;
       }
 
-      // Load JSON file
-      final String jsonString = await rootBundle.loadString(_questDataPath);
-      final Map<String, dynamic> jsonData = json.decode(jsonString);
-
-      // Parse full quest data
-      final fullData = QuestData.fromJson(jsonData);
       final prefs = await SharedPreferences.getInstance();
-      
+
       // Get user's study field and grade from cached profile
       String? studyField;
       String? gradeLevel;
@@ -65,6 +59,57 @@ class QuestService {
           gradeLevel = profileMap['gradeLevel'] ?? profileMap['class'];
         }
       } catch (_) {}
+      
+      // Fallback to individual keys if profile cache fails (legacy support)
+      studyField ??= prefs.getString('study_field');
+      gradeLevel ??= prefs.getString('grade_level');
+
+      // Determine correct JSON file path based on user profile
+      String questFileName = 'quests_tyt.json'; // Default fallback
+
+      if (gradeLevel != null) {
+        // Normalize grade string (e.g. "9. Sınıf" -> "9")
+        final grade = gradeLevel.replaceAll(RegExp(r'[^\d]'), '');
+        
+        // RULE 1: Grade 9 & 10 get TYT (Field is irrelevant)
+        if (grade == '9' || grade == '10') {
+          questFileName = 'quests_tyt.json';
+        } else {
+          // RULE 2: Grade 11, 12, Mezun depend on FIELD
+          switch (studyField) {
+            case 'Sayısal':
+              questFileName = 'quests_sayisal.json';
+              break;
+            case 'Eşit Ağırlık':
+              questFileName = 'quests_ea.json';
+              break;
+            case 'Sözel':
+              questFileName = 'quests_sozel.json';
+              break;
+            default:
+              // Fallback/Safety (e.g., if field is null)
+              questFileName = 'quests_tyt.json';
+          }
+        }
+      }
+
+      // Load JSON file
+      final String jsonString = await rootBundle.loadString('assets/data/$questFileName');
+      final List<dynamic> jsonList = json.decode(jsonString);
+
+      // Parse and categorize quests
+      final List<Quest> allQuests = jsonList.map((e) => Quest.fromJson(e)).toList();
+      
+      final sourceDaily = allQuests.where((q) => q.id.startsWith('daily')).toList();
+      final sourceWeekly = allQuests.where((q) => q.id.startsWith('weekly')).toList();
+      final sourceMonthly = allQuests.where((q) => q.id.startsWith('monthly')).toList();
+
+      // Create full data object
+      final fullData = QuestData(
+        dailyQuests: sourceDaily, 
+        weeklyQuests: sourceWeekly, 
+        monthlyQuests: sourceMonthly
+      );
       
       final now = DateTime.now();
       final today = _dateString(now);
@@ -137,20 +182,6 @@ class QuestService {
     } catch (e) {
       throw Exception('Failed to load quest data: $e');
     }
-  }
-
-  /// Update quest progress
-  Future<Quest> updateQuestProgress(Quest quest, int newProgress) async {
-    final updatedQuest = quest.copyWith(
-      progress: newProgress,
-      // Do not auto-complete; manual claim flow handles completion
-      completed: quest.completed,
-    );
-
-    // In a real app, you would save this to a database or shared preferences
-    // For now, we just return the updated quest
-    
-    return updatedQuest;
   }
 
   /// Mark quest as completed

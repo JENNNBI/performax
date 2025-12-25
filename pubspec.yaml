@@ -116,6 +116,10 @@ flutter:
    - assets/data/ysk_school_list.json
    - assets/data/fen_liseleri_supplement.json
    - assets/data/quests.json
+   - assets/data/quests_tyt.json
+   - assets/data/quests_sayisal.json
+   - assets/data/quests_sozel.json
+   - assets/data/quests_ea.json
    - assets/images/istatistik1.png
    - assets/images/soru_cozum.png
    - assets/images/konu_anlatim.png
@@ -147,5 +151,6 @@ flutter:
    - assets/hocalar/bunyamin_bayraktutar.png
    - assets/hocalar/omer_faruk_cetinkaya.png
    - assets/images/youtube_logo.png
+   - assets/images/AI.png
    - assets/avatars/3d/Creative_Character_free.glb
   

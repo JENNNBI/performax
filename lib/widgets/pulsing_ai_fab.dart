@@ -158,13 +158,19 @@ class _PulsingAIFABState extends State<PulsingAIFAB> with TickerProviderStateMix
                             ),
                           ),
                           
-                          // AI Icon with subtle animation
+                          // AI Avatar with subtle animation
                           Transform.rotate(
                             angle: _rotationAnimation.value * 0.1,
-                            child: const Icon(
-                              Icons.psychology,
-                              size: 32,
-                              color: Colors.white,
+                            child: SizedBox(
+                              width: 40,
+                              height: 40,
+                              child: Padding(
+                                padding: const EdgeInsets.all(4.0),
+                                child: Image.asset(
+                                  'assets/images/AI.png',
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
                             ),
                           ),
                           

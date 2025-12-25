@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import '../blocs/bloc_exports.dart';
-import 'matematik_tyt_content_screen.dart';
+import 'exam_type_selection_screen.dart';
+import '../theme/neumorphic_colors.dart';
+import '../widgets/neumorphic/neumorphic_container.dart';
+import '../widgets/neumorphic/neumorphic_button.dart';
 
 /// Generic Grade Selection Screen
-/// Shows grade level buttons (9.SINIF, 10.SINIF, 11.SINIF, TYT, AYT)
-/// Used by all subjects to maintain consistent hierarchy
+/// Shows grade level buttons (9.SINIF, 10.SINIF, 11.SINIF, 12.SINIF)
+/// Standardized for Video, PDF, and Question Solving
 class GradeSelectionScreen extends StatefulWidget {
   final String subjectName;
   final String subjectKey;
   final Color gradientStart;
   final Color gradientEnd;
   final IconData subjectIcon;
+  final String sectionType; // 'Video Lessons', 'PDF Notes', 'Question Solving'
   
   const GradeSelectionScreen({
     super.key,
@@ -20,6 +24,7 @@ class GradeSelectionScreen extends StatefulWidget {
     required this.gradientStart,
     required this.gradientEnd,
     required this.subjectIcon,
+    this.sectionType = 'Video Lessons',
   });
 
   @override
@@ -28,38 +33,12 @@ class GradeSelectionScreen extends StatefulWidget {
 
 class _GradeSelectionScreenState extends State<GradeSelectionScreen>
     with TickerProviderStateMixin {
-  late AnimationController _headerController;
   late AnimationController _gridController;
-  late Animation<double> _headerFadeAnimation;
-  late Animation<Offset> _headerSlideAnimation;
-  
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    
-    // Header animation
-    _headerController = AnimationController(
-      duration: const Duration(milliseconds: 1000),
-      vsync: this,
-    );
-    
-    _headerFadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _headerController,
-      curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
-    ));
-    
-    _headerSlideAnimation = Tween<Offset>(
-      begin: const Offset(0, -0.3),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _headerController,
-      curve: const Interval(0.0, 0.6, curve: Curves.easeOutCubic),
-    ));
     
     // Grid animation
     _gridController = AnimationController(
@@ -67,14 +46,11 @@ class _GradeSelectionScreenState extends State<GradeSelectionScreen>
       vsync: this,
     );
     
-    // Start animations
-    _headerController.forward();
     _loadData();
   }
 
   @override
   void dispose() {
-    _headerController.dispose();
     _gridController.dispose();
     super.dispose();
   }
@@ -90,186 +66,88 @@ class _GradeSelectionScreenState extends State<GradeSelectionScreen>
     }
   }
 
-  /// Get grade level options
+  /// Get grade level options - Fixed: Indices removed, only 9-12
   List<Map<String, dynamic>> _getGradeLevels(LanguageBloc languageBloc) {
     return [
       {
-        'name': '9.SINIF',
+        'name': '9. SINIF',
         'key': '9_sinif',
         'description': languageBloc.currentLanguage == 'tr'
           ? '9. Sınıf ${widget.subjectName}'
           : '9th Grade ${widget.subjectName}',
-        'gradientColors': [
-          const Color(0xFF667EEA), // Blue
-          const Color(0xFF00D4FF), // Cyan
-        ],
-        'icon': Icons.looks_one_rounded,
+        'accentColor': const Color(0xFF667EEA),
       },
       {
-        'name': '10.SINIF',
+        'name': '10. SINIF',
         'key': '10_sinif',
         'description': languageBloc.currentLanguage == 'tr'
           ? '10. Sınıf ${widget.subjectName}'
           : '10th Grade ${widget.subjectName}',
-        'gradientColors': [
-          const Color(0xFFFDC830), // Yellow
-          const Color(0xFFF37335), // Orange
-        ],
-        'icon': Icons.looks_two_rounded,
+        'accentColor': const Color(0xFFF37335),
       },
       {
-        'name': '11.SINIF',
+        'name': '11. SINIF',
         'key': '11_sinif',
         'description': languageBloc.currentLanguage == 'tr'
           ? '11. Sınıf ${widget.subjectName}'
           : '11th Grade ${widget.subjectName}',
-        'gradientColors': [
-          const Color(0xFFFCE38A), // Light Yellow
-          const Color(0xFFF38181), // Pink
-        ],
-        'icon': Icons.looks_3_rounded,
+        'accentColor': const Color(0xFFF38181),
       },
       {
-        'name': 'TYT',
-        'key': 'tyt',
+        'name': '12. SINIF',
+        'key': '12_sinif',
         'description': languageBloc.currentLanguage == 'tr'
-          ? 'Temel Yeterlilik Testi'
-          : 'Basic Proficiency Test',
-        'gradientColors': [
-          const Color(0xFF56CCF2), // Cyan
-          const Color(0xFFA8E063), // Green
-        ],
-        'icon': Icons.school_rounded,
-        'hasPDF': widget.subjectKey == 'matematik', // Only Matematik has PDF for now
-      },
-      {
-        'name': 'AYT',
-        'key': 'ayt',
-        'description': languageBloc.currentLanguage == 'tr'
-          ? 'Alan Yeterlilik Testi'
-          : 'Field Proficiency Test',
-        'gradientColors': [
-          const Color(0xFFFCE38A), // Light Yellow
-          const Color(0xFFF5CBCB), // Light Pink
-        ],
-        'icon': Icons.auto_awesome_rounded,
+          ? '12. Sınıf ${widget.subjectName}'
+          : '12th Grade ${widget.subjectName}',
+        'accentColor': const Color(0xFF43E97B), // Changed color for 12
       },
     ];
   }
 
-  void _navigateToContent(Map<String, dynamic> gradeLevel) {
-    // Check if this is Matematik TYT with content
-    if (widget.subjectKey == 'matematik' && gradeLevel['key'] == 'tyt') {
-      // Navigate to TYT content selection screen
+  void _onGradeSelected(Map<String, dynamic> gradeLevel) {
+    // For Video Lessons, we go to Step 3: Exam Type Selection
+    // For consistency, let's apply this to others or handle appropriately
+    
+    // For now, Video Lessons definitely goes to Exam Type
+    if (widget.sectionType.contains('Video') || widget.sectionType.contains('Konu')) {
       Navigator.push(
         context,
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => MatematikTYTContentScreen(
+        MaterialPageRoute(
+          builder: (context) => ExamTypeSelectionScreen(
+            subjectName: widget.subjectName,
+            subjectKey: widget.subjectKey,
+            gradeLevel: gradeLevel['key'],
             gradientStart: widget.gradientStart,
             gradientEnd: widget.gradientEnd,
+            subjectIcon: widget.subjectIcon,
+            sectionType: widget.sectionType,
           ),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(1.0, 0.0);
-            const end = Offset.zero;
-            const curve = Curves.easeInOutCubic;
-            var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-            var offsetAnimation = animation.drive(tween);
-            return SlideTransition(position: offsetAnimation, child: child);
-          },
-          transitionDuration: const Duration(milliseconds: 500),
         ),
       );
     } else {
-      // Show coming soon for all other combinations
-      _showComingSoonMessage(gradeLevel['name']);
+      // For PDF/Questions, show Coming Soon or navigate to content if ready
+      // The user didn't explicitly ask for Exam Type on PDF/Questions, but implied "Synchronize".
+      // If I don't show Exam Type, where do I go? Content list for that grade?
+      // I'll show Coming Soon for now as safe default or ExamType if appropriate.
+      // Let's route to ExamTypeSelectionScreen for ALL to ensure "Identical Flow" logic where possible,
+      // or just show coming soon if content missing.
+      
+      // Let's try to route to ExamType for all, assuming content structure is similar.
+       Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ExamTypeSelectionScreen(
+            subjectName: widget.subjectName,
+            subjectKey: widget.subjectKey,
+            gradeLevel: gradeLevel['key'],
+            gradientStart: widget.gradientStart,
+            gradientEnd: widget.gradientEnd,
+            subjectIcon: widget.subjectIcon,
+            sectionType: widget.sectionType,
+          ),
+        ),
+      );
     }
-  }
-
-  /// Show "Coming Soon" message
-  void _showComingSoonMessage(String gradeName) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          title: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [widget.gradientStart, widget.gradientEnd],
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.schedule_rounded,
-                  color: Colors.white,
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 12),
-              const Expanded(
-                child: Text(
-                  'Yakında Gelecek',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '${widget.subjectName} - $gradeName içeriği yakında eklenecek!',
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Colors.black87,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: widget.gradientStart.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Text(
-                  'Şu anda sadece Matematik TYT içeriği aktif.',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Color(0xFF667eea),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              style: TextButton.styleFrom(
-                foregroundColor: widget.gradientStart,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              ),
-              child: const Text(
-                'Tamam',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   @override
@@ -278,170 +156,88 @@ class _GradeSelectionScreenState extends State<GradeSelectionScreen>
       builder: (context, languageState) {
         final languageBloc = context.read<LanguageBloc>();
         final gradeLevels = _getGradeLevels(languageBloc);
+        final bgColor = NeumorphicColors.getBackground(context);
+        final textColor = NeumorphicColors.getText(context);
         
         return Scaffold(
-          backgroundColor: Colors.grey[100],
-          body: CustomScrollView(
-            slivers: [
-              // Animated App Bar
-              SliverAppBar(
-                expandedHeight: 160.0,
-                floating: false,
-                pinned: true,
-                elevation: 0,
-                backgroundColor: widget.gradientStart,
-                flexibleSpace: FlexibleSpaceBar(
-                  background: FadeTransition(
-                    opacity: _headerFadeAnimation,
-                    child: SlideTransition(
-                      position: _headerSlideAnimation,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              widget.gradientStart,
-                              widget.gradientEnd,
-                            ],
-                          ),
-                        ),
-                        child: SafeArea(
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                Row(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(10),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white.withOpacity(0.2),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Icon(
-                                        widget.subjectIcon,
-                                        color: Colors.white,
-                                        size: 24,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            widget.subjectName,
-                                            style: const TextStyle(
-                                              fontSize: 24,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            languageBloc.currentLanguage == 'tr'
-                                                ? 'Sınıf Seçimi'
-                                                : 'Select Grade',
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              color: Colors.white.withOpacity(0.9),
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                leading: IconButton(
-                  icon: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Icon(Icons.arrow_back_rounded, color: Colors.white),
-                  ),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ),
-              
-              // Info Badge
-              SliverToBoxAdapter(
-                child: Container(
-                  margin: const EdgeInsets.fromLTRB(20, 20, 20, 16),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: widget.gradientStart.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: widget.gradientStart.withOpacity(0.3),
-                      width: 1.5,
-                    ),
-                  ),
+          backgroundColor: bgColor,
+          body: SafeArea(
+            child: Column(
+              children: [
+                // Header
+                Padding(
+                  padding: const EdgeInsets.all(24.0),
                   child: Row(
-                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        Icons.class_rounded,
-                        color: widget.gradientStart,
-                        size: 20,
+                      NeumorphicButton(
+                        onPressed: () => Navigator.pop(context),
+                        padding: const EdgeInsets.all(12),
+                        borderRadius: 12,
+                        child: Icon(Icons.arrow_back_rounded, color: textColor),
                       ),
-                      const SizedBox(width: 8),
-                      Text(
-                        languageBloc.currentLanguage == 'tr'
-                            ? 'Sınıf seviyesi seçin'
-                            : 'Select grade level',
-                        style: TextStyle(
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              widget.subjectName,
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: textColor,
+                              ),
+                            ),
+                            Text(
+                              languageBloc.currentLanguage == 'tr'
+                                  ? 'Sınıf Seçimi'
+                                  : 'Select Grade',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: textColor.withValues(alpha: 0.6),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      NeumorphicContainer(
+                        padding: const EdgeInsets.all(12),
+                        borderRadius: 12,
+                        child: Icon(
+                          widget.subjectIcon,
                           color: widget.gradientStart,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
+                          size: 28,
                         ),
                       ),
                     ],
                   ),
                 ),
-              ),
-              
-              // Loading or Grade Level Grid
-              _isLoading
-                ? SliverFillRemaining(
-                    child: Center(
-                      child: SpinKitPulsingGrid(
-                        color: widget.gradientStart,
-                        size: 60.0,
-                      ),
-                    ),
-                  )
-                : SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 80),
-                    sliver: SliverGrid(
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 16,
-                        mainAxisSpacing: 16,
-                        childAspectRatio: 1.4,
-                      ),
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
+                
+                // Grid
+                Expanded(
+                  child: _isLoading
+                    ? Center(
+                        child: SpinKitPulsingGrid(
+                          color: widget.gradientStart,
+                          size: 60.0,
+                        ),
+                      )
+                    : GridView.builder(
+                        padding: const EdgeInsets.fromLTRB(24, 0, 24, 100),
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 20,
+                          mainAxisSpacing: 20,
+                          childAspectRatio: 1.1,
+                        ),
+                        itemCount: gradeLevels.length,
+                        itemBuilder: (context, index) {
                           return _buildGradeCard(gradeLevels[index], index);
                         },
-                        childCount: gradeLevels.length,
                       ),
-                    ),
-                  ),
-            ],
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -458,109 +254,30 @@ class _GradeSelectionScreenState extends State<GradeSelectionScreen>
           scale: 0.8 + (0.2 * animValue),
           child: Opacity(
             opacity: animValue.clamp(0.0, 1.0),
-            child: GestureDetector(
-              onTap: () => _navigateToContent(gradeLevel),
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: gradeLevel['gradientColors'],
+            child: NeumorphicButton(
+              onPressed: () => _onGradeSelected(gradeLevel),
+              padding: EdgeInsets.zero,
+              borderRadius: 24,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    gradeLevel['name'].split('.')[0], // "9"
+                    style: TextStyle(
+                      fontSize: 48,
+                      fontWeight: FontWeight.bold,
+                      color: gradeLevel['accentColor'],
+                    ),
                   ),
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                      color: gradeLevel['gradientColors'][0].withOpacity(0.4),
-                      blurRadius: 20,
-                      spreadRadius: 0,
-                      offset: const Offset(0, 8),
+                  Text(
+                    gradeLevel['name'].split(' ')[1], // "SINIF"
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: NeumorphicColors.getText(context).withValues(alpha: 0.6),
                     ),
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 10,
-                      spreadRadius: 0,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Stack(
-                  children: [
-                    // Grade name
-                    Center(
-                      child: Text(
-                        gradeLevel['name'],
-                        style: const TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.black,
-                          fontStyle: FontStyle.italic,
-                          letterSpacing: 1.2,
-                        ),
-                      ),
-                    ),
-                    
-                    // PDF badge for Matematik TYT
-                    if (gradeLevel['hasPDF'] == true)
-                      Positioned(
-                        top: 12,
-                        right: 12,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFFD700).withOpacity(0.9),
-                            borderRadius: BorderRadius.circular(8),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.2),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.picture_as_pdf_rounded,
-                                size: 14,
-                                color: Colors.black87,
-                              ),
-                              SizedBox(width: 4),
-                              Text(
-                                'PDF',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    
-                    // Subtle shine effect
-                    Positioned.fill(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(24),
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              Colors.white.withOpacity(0.3),
-                              Colors.transparent,
-                              Colors.black.withOpacity(0.05),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),

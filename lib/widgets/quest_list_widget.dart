@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../models/quest.dart';
 import '../services/quest_celebration_coordinator.dart';
+import '../theme/neumorphic_colors.dart';
+import '../widgets/neumorphic/neumorphic_container.dart';
+import '../widgets/neumorphic/neumorphic_button.dart';
 
 /// Quest list widget with tabs for Daily/Weekly/Monthly quests
+/// Redesigned to match "Dark Neumorphic/Futuristic" theme
 class QuestListWidget extends StatefulWidget {
   final QuestData questData;
   final VoidCallback onClose;
@@ -35,47 +39,43 @@ class _QuestListWidgetState extends State<QuestListWidget> with SingleTickerProv
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    // Dark Futuristic Theme Colors
+    const modalBgColor = Color(0xFF2B2E35);
+    const accentColor = NeumorphicColors.accentBlue;
     
-    // NO FIXED WIDTH - width determined by Positioned left/right constraints
-    // NO MAX HEIGHT - height determined by Positioned top/bottom constraints
-    // This allows the window to fill the available space defined by parent
-
     return Container(
-      // Width and height determined by Positioned left/right/top/bottom constraints
-      // Must fill available space to prevent collapse
-      width: double.infinity, // Fill available width
-      height: double.infinity, // Fill available height
+      width: double.infinity,
+      height: double.infinity,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: modalBgColor.withValues(alpha: 0.95), // Dark Matte Grey
         borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.1),
+          width: 1.5,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
-            blurRadius: 20,
-            spreadRadius: 2,
+            color: Colors.black.withValues(alpha: 0.5),
+            blurRadius: 30,
+            spreadRadius: 5,
           ),
         ],
       ),
       child: Column(
-        mainAxisSize: MainAxisSize.max, // Changed from min to max to fill space
+        mainAxisSize: MainAxisSize.max,
         children: [
           // Header
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  theme.primaryColor,
-                  theme.primaryColor.withValues(alpha: 0.8),
-                ],
-              ),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-            ),
+          Padding(
+            padding: const EdgeInsets.all(20),
             child: Row(
               children: [
-                const Icon(Icons.emoji_events, color: Colors.white, size: 28),
-                const SizedBox(width: 12),
+                NeumorphicContainer(
+                  padding: const EdgeInsets.all(10),
+                  borderRadius: 12,
+                  color: accentColor.withValues(alpha: 0.1),
+                  child: const Icon(Icons.emoji_events_rounded, color: accentColor, size: 24),
+                ),
+                const SizedBox(width: 16),
                 const Expanded(
                   child: Text(
                     'Görevler',
@@ -83,26 +83,51 @@ class _QuestListWidgetState extends State<QuestListWidget> with SingleTickerProv
                       color: Colors.white,
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
                     ),
                   ),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white),
+                NeumorphicButton(
                   onPressed: widget.onClose,
+                  padding: const EdgeInsets.all(8),
+                  borderRadius: 12,
+                  color: Colors.white.withValues(alpha: 0.05),
+                  child: const Icon(Icons.close_rounded, color: Colors.white70, size: 20),
                 ),
               ],
             ),
           ),
 
-          // Tabs
+          // Neumorphic Segmented Control (Tabs)
           Container(
-            color: Colors.grey[100],
+            margin: const EdgeInsets.symmetric(horizontal: 20),
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.05),
+                width: 1,
+              ),
+            ),
             child: TabBar(
               controller: _tabController,
-              labelColor: theme.primaryColor,
+              labelColor: Colors.white,
               unselectedLabelColor: Colors.grey,
-              indicatorColor: theme.primaryColor,
-              indicatorWeight: 3,
+              indicatorSize: TabBarIndicatorSize.tab,
+              indicator: BoxDecoration(
+                color: accentColor,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: accentColor.withValues(alpha: 0.4),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              dividerColor: Colors.transparent,
+              labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
               tabs: const [
                 Tab(text: 'Günlük'),
                 Tab(text: 'Haftalık'),
@@ -110,15 +135,17 @@ class _QuestListWidgetState extends State<QuestListWidget> with SingleTickerProv
               ],
             ),
           ),
+          
+          const SizedBox(height: 16),
 
-          // Tab content - Flexible to fill available height (scrollable within limited space)
+          // Tab content
           Expanded(
             child: TabBarView(
               controller: _tabController,
               children: [
-                _buildQuestList(widget.questData.dailyQuests, theme),
-                _buildQuestList(widget.questData.weeklyQuests, theme),
-                _buildQuestList(widget.questData.monthlyQuests, theme),
+                _buildQuestList(widget.questData.dailyQuests),
+                _buildQuestList(widget.questData.weeklyQuests),
+                _buildQuestList(widget.questData.monthlyQuests),
               ],
             ),
           ),
@@ -128,297 +155,271 @@ class _QuestListWidgetState extends State<QuestListWidget> with SingleTickerProv
         .animate()
         .fadeIn(duration: 300.ms)
         .scale(
-          begin: const Offset(0.8, 0.8),
+          begin: const Offset(0.9, 0.9),
           end: const Offset(1.0, 1.0),
           duration: 400.ms,
-          curve: Curves.easeOutBack,
+          curve: Curves.easeOutCubic,
         );
   }
 
-  Widget _buildQuestList(List<Quest> quests, ThemeData theme) {
+  Widget _buildQuestList(List<Quest> quests) {
     final sorted = [...quests];
     sorted.sort((a, b) {
       final ac = a.isCompleted ? 1 : 0;
       final bc = b.isCompleted ? 1 : 0;
       return ac.compareTo(bc);
     });
+
     if (sorted.isEmpty) {
       return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.emoji_events, color: theme.primaryColor, size: 36),
-              const SizedBox(height: 12),
-              const Text(
-                'Harika! Bu bölümde tüm görevler tamamlandı.',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 6),
-              const Text(
-                'Diğer sekmelere geçerek haftalık ve aylık görevlere bakabilirsin.',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 12, color: Colors.black54),
-              ),
-            ],
-          ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.check_circle_outline_rounded, color: Colors.white.withValues(alpha: 0.3), size: 48),
+            const SizedBox(height: 16),
+            Text(
+              'Tüm görevler tamamlandı!',
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white.withValues(alpha: 0.7)),
+            ),
+          ],
         ),
       );
     }
+
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      physics: const BouncingScrollPhysics(),
       itemCount: sorted.length,
       itemBuilder: (context, index) {
         final quest = sorted[index];
-        return AnimatedSwitcher(
-          duration: const Duration(milliseconds: 300),
-          child: _QuestCard(key: ValueKey(quest.id), quest: quest, theme: theme)
-              .animate(delay: (index * 80).ms)
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: _QuestCard(key: ValueKey(quest.id), quest: quest)
+              .animate(delay: (index * 50).ms)
               .fadeIn(duration: 250.ms)
-              .slideX(
-                begin: 0.15,
-                end: 0,
-                duration: 300.ms,
-                curve: Curves.easeOut,
-              ),
+              .slideY(begin: 0.1, end: 0, duration: 300.ms, curve: Curves.easeOut),
         );
       },
     );
   }
 }
 
-/// Individual quest card with progress bar
+/// Individual quest card with Dark Neumorphic style
 class _QuestCard extends StatelessWidget {
   final Quest quest;
-  final ThemeData theme;
 
   const _QuestCard({
     super.key,
     required this.quest,
-    required this.theme,
   });
-
 
   @override
   Widget build(BuildContext context) {
     final isCompleted = quest.isCompleted;
     final isClaimable = quest.isClaimable;
+    
+    // Card Colors
+    final cardColor = const Color(0xFF353941);
+    final borderColor = isClaimable 
+        ? const Color(0xFFFFD700) 
+        : (isCompleted ? Colors.green : Colors.white.withValues(alpha: 0.1));
 
     return GestureDetector(
       onTap: isClaimable ? () => QuestCelebrationCoordinator.instance.claimQuest(quest) : null,
       child: Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: isCompleted ? Colors.green.withValues(alpha: 0.1) : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isCompleted
-              ? Colors.green
-              : isClaimable
-                  ? const Color(0xFFFFD700)
-                  : Colors.grey.withValues(alpha: 0.3),
-          width: 1.5,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: isClaimable ? const Color(0xFFFFA500).withValues(alpha: 0.15) : Colors.black.withValues(alpha: 0.05),
-            blurRadius: isClaimable ? 12 : 8,
-            offset: const Offset(0, 2),
+        decoration: BoxDecoration(
+          color: cardColor,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: borderColor.withValues(alpha: isClaimable ? 1.0 : 0.5),
+            width: isClaimable ? 1.5 : 1,
           ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+          boxShadow: [
+            // Convex Shadow Effect
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              offset: const Offset(4, 4),
+              blurRadius: 8,
+            ),
+            BoxShadow(
+              color: Colors.white.withValues(alpha: 0.05),
+              offset: const Offset(-2, -2),
+              blurRadius: 4,
+            ),
             if (isClaimable)
-              Align(
-                alignment: Alignment.topRight,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(colors: [Color(0xFFFFD700), Color(0xFFFFA500)]),
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(color: const Color(0xFFFFA500).withValues(alpha: 0.35), blurRadius: 8),
-                    ],
-                  ),
-                  child: const Text(
-                    'Claim!',
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 12),
-                  ),
-                ),
-              ),
-            // Title and description - MAXIMUM space allocation (GREEN FRAME LOGOS REMOVED)
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  quest.title,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: isCompleted ? Colors.green : Colors.black87,
-                    decoration: isCompleted ? TextDecoration.lineThrough : null,
-                  ),
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  softWrap: true,
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  quest.description,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey[600],
-                  ),
-                  maxLines: 4,
-                  overflow: TextOverflow.ellipsis,
-                  softWrap: true,
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 12),
-
-            // Progress bar with prominent rocket logo at trailing end
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Progress text only (percentage REMOVED)
-                Text(
-                  quest.progressText,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: isCompleted ? Colors.green : theme.primaryColor,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                // Progress bar with prominent rocket logo at trailing end
-                Stack(
-                  alignment: Alignment.centerLeft,
-                  clipBehavior: Clip.none,
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: LinearProgressIndicator(
-                        value: quest.progressPercentage,
-                        backgroundColor: Colors.grey.withValues(alpha: 0.3), // More visible background
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          isCompleted ? Colors.green : theme.primaryColor,
-                        ),
-                        minHeight: 10, // Increased from 8 for better visibility
-                      ),
-                    ),
-                    // Rocket logo at trailing end (far right tip) - TOP LAYER, PROMINENT
-                    Positioned(
-                      right: -2,
-                      child: Container(
-                        key: _registerAndGetKey(context, quest.id),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.2),
-                              blurRadius: 4,
-                              spreadRadius: 1,
-                            ),
-                          ],
-                        ),
-                        padding: const EdgeInsets.all(2),
-                        child: SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: Stack(
-                            clipBehavior: Clip.none,
-                            alignment: Alignment.center,
-                            children: [
-                              Image.asset(
-                                'assets/images/currency_rocket1.png',
-                                width: 24,
-                                height: 24,
-                                fit: BoxFit.contain,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return const Icon(
-                                    Icons.rocket_launch_rounded,
-                                    color: Colors.orange,
-                                    size: 22,
-                                  );
-                                },
-                              ),
-                              Positioned(
-                                top: -12,
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    gradient: const LinearGradient(
-                                      colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
-                                    ),
-                                    borderRadius: BorderRadius.circular(12),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withValues(alpha: 0.25),
-                                        blurRadius: 4,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Text(
-                                    '${quest.reward}',
-                                    style: const TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w800,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                              )
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-
-            // Completed badge
-            if (isCompleted)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.check_circle,
-                      color: Colors.green,
-                      size: 16,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Tamamlandı!',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.green,
-                      ),
-                    ),
-                  ],
-                ),
+              BoxShadow(
+                color: const Color(0xFFFFD700).withValues(alpha: 0.2),
+                blurRadius: 15,
+                spreadRadius: 1,
               ),
           ],
         ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Title & Reward
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          quest.title,
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: isCompleted ? Colors.greenAccent : Colors.white,
+                            decoration: isCompleted ? TextDecoration.lineThrough : null,
+                            decorationColor: Colors.greenAccent,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          quest.description,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.white.withValues(alpha: 0.6),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  
+                  // Reward Pill
+                  if (!isCompleted)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Image.asset(
+                            'assets/images/currency_rocket1.png',
+                            width: 16,
+                            height: 16,
+                            errorBuilder: (_, __, ___) => const Icon(Icons.rocket, color: Colors.orange, size: 16),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '+${quest.reward}',
+                            style: const TextStyle(
+                              color: Colors.orangeAccent,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+
+              const SizedBox(height: 16),
+
+              // Progress Section
+              if (isClaimable)
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: NeumorphicButton(
+                    onPressed: () => QuestCelebrationCoordinator.instance.claimQuest(quest),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    borderRadius: 20,
+                    color: const Color(0xFFFFD700),
+                    child: const Text(
+                      'Ödülü Al!',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                )
+              else if (!isCompleted)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          quest.progressText,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: NeumorphicColors.accentBlue,
+                          ),
+                        ),
+                        Text(
+                          '${(quest.progressPercentage * 100).toInt()}%',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.white.withValues(alpha: 0.5),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    // Glowing Gradient Progress Bar
+                    Container(
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.4),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Stack(
+                        children: [
+                          FractionallySizedBox(
+                            widthFactor: quest.progressPercentage.clamp(0.0, 1.0),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
+                                ),
+                                borderRadius: BorderRadius.circular(4),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFFFFA500).withValues(alpha: 0.5),
+                                    blurRadius: 6,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                )
+              else
+                // Completed State
+                Row(
+                  children: const [
+                    Icon(Icons.check_circle_rounded, color: Colors.greenAccent, size: 16),
+                    SizedBox(width: 6),
+                    Text(
+                      'Tamamlandı',
+                      style: TextStyle(
+                        color: Colors.greenAccent,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+            ],
+          ),
+        ),
       ),
-    ));
-  }
-  GlobalKey _registerAndGetKey(BuildContext context, String id) {
-    final key = GlobalKey();
-    QuestCelebrationCoordinator.instance.registerQuestRocketKey(id, key);
-    return key;
+    );
   }
 }

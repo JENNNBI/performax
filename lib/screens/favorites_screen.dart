@@ -4,6 +4,9 @@ import '../blocs/bloc_exports.dart';
 import 'favorite_questions_screen.dart';
 import 'favorite_books_screen.dart';
 import 'favorite_playlists_screen.dart';
+import '../theme/neumorphic_colors.dart';
+import '../widgets/neumorphic/neumorphic_container.dart';
+import '../widgets/neumorphic/neumorphic_button.dart';
 
 class FavoritesScreen extends StatefulWidget {
   static const String id = 'favorites_screen';
@@ -15,62 +18,25 @@ class FavoritesScreen extends StatefulWidget {
 }
 
 class _FavoritesScreenState extends State<FavoritesScreen> with TickerProviderStateMixin {
-  late AnimationController _headerController;
   late AnimationController _cardsController;
-  late Animation<double> _headerFadeAnimation;
-  late Animation<Offset> _headerSlideAnimation;
 
   @override
   void initState() {
     super.initState();
-    
-    try {
-      _headerController = AnimationController(
-        duration: const Duration(milliseconds: 800),
-        vsync: this,
-      );
-      
-      _cardsController = AnimationController(
-        duration: const Duration(milliseconds: 600),
-        vsync: this,
-      );
-      
-      _headerFadeAnimation = Tween<double>(
-        begin: 0.0,
-        end: 1.0,
-      ).animate(CurvedAnimation(
-        parent: _headerController,
-        curve: Curves.easeOut,
-      ));
-      
-      _headerSlideAnimation = Tween<Offset>(
-        begin: const Offset(0, -0.5),
-        end: Offset.zero,
-      ).animate(CurvedAnimation(
-        parent: _headerController,
-        curve: Curves.easeOutCubic,
-      ));
-      
-      // Start animations
-      _headerController.forward();
-      Future.delayed(const Duration(milliseconds: 200), () {
-        if (mounted) {
-          _cardsController.forward();
-        }
-      });
-    } catch (e) {
-      debugPrint('Error initializing Favorites Screen: $e');
-    }
+    _cardsController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+    Future.delayed(const Duration(milliseconds: 200), () {
+      if (mounted) {
+        _cardsController.forward();
+      }
+    });
   }
 
   @override
   void dispose() {
-    try {
-      _headerController.dispose();
-      _cardsController.dispose();
-    } catch (e) {
-      debugPrint('Error disposing Favorites Screen: $e');
-    }
+    _cardsController.dispose();
     super.dispose();
   }
 
@@ -110,11 +76,12 @@ class _FavoritesScreenState extends State<FavoritesScreen> with TickerProviderSt
     required IconData icon,
     required String title,
     required String subtitle,
-    required Color startColor,
-    required Color endColor,
+    required Color accentColor,
     required VoidCallback onTap,
     required int index,
   }) {
+    final textColor = NeumorphicColors.getText(context);
+
     return SlideTransition(
       position: Tween<Offset>(
         begin: const Offset(0, 0.5),
@@ -138,13 +105,55 @@ class _FavoritesScreenState extends State<FavoritesScreen> with TickerProviderSt
             ),
           ),
         ),
-        child: _FavoriteCard(
-          icon: icon,
-          title: title,
-          subtitle: subtitle,
-          startColor: startColor,
-          endColor: endColor,
-          onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 16.0),
+          child: NeumorphicButton(
+            onPressed: onTap,
+            padding: const EdgeInsets.all(20),
+            borderRadius: 20,
+            child: Row(
+              children: [
+                NeumorphicContainer(
+                  padding: const EdgeInsets.all(16),
+                  borderRadius: 16,
+                  color: accentColor.withValues(alpha: 0.1),
+                  child: Icon(
+                    icon,
+                    color: accentColor,
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: textColor,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: textColor.withValues(alpha: 0.6),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: textColor.withValues(alpha: 0.3),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -152,301 +161,96 @@ class _FavoritesScreenState extends State<FavoritesScreen> with TickerProviderSt
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    
     return BlocBuilder<LanguageBloc, LanguageState>(
       builder: (context, languageState) {
         final languageBloc = context.read<LanguageBloc>();
         final bool isEnglish = languageBloc.currentLanguage == 'en';
+        final bgColor = NeumorphicColors.getBackground(context);
+        final textColor = NeumorphicColors.getText(context);
         
         return Scaffold(
-          backgroundColor: theme.scaffoldBackgroundColor,
-          appBar: AppBar(
-            elevation: 0,
-            backgroundColor: Colors.transparent,
-            leading: IconButton(
-              icon: Icon(
-                Icons.arrow_back_ios_rounded,
-                color: theme.primaryColor,
-              ),
-              onPressed: () => Navigator.pop(context),
-            ),
-            title: FadeTransition(
-              opacity: _headerFadeAnimation,
-              child: Text(
-                isEnglish ? 'Favorites' : 'FAVORİLER',
-                style: TextStyle(
-                  color: theme.textTheme.titleLarge?.color,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 24,
-                ),
-              ),
-            ),
-            centerTitle: true,
-          ),
+          backgroundColor: bgColor,
           body: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Animated Header Description
-                  FadeTransition(
-                    opacity: _headerFadeAnimation,
-                    child: SlideTransition(
-                      position: _headerSlideAnimation,
-                      child: Padding(
-                        padding: const EdgeInsets.only(bottom: 24.0, left: 8.0, right: 8.0),
-                        child: Text(
-                          isEnglish 
-                            ? 'Access your favorite content quickly'
-                            : 'Favori içeriklerinize hızlıca ulaşın',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
-                            fontWeight: FontWeight.w400,
-                          ),
+            child: Column(
+              children: [
+                // Header
+                Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Row(
+                    children: [
+                      NeumorphicButton(
+                        onPressed: () => Navigator.pop(context),
+                        padding: const EdgeInsets.all(12),
+                        borderRadius: 12,
+                        child: Icon(Icons.arrow_back_rounded, color: textColor),
+                      ),
+                      const SizedBox(width: 16),
+                      Text(
+                        isEnglish ? 'Favorites' : 'Favoriler',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: textColor,
                         ),
                       ),
-                    ),
+                    ],
                   ),
-                  
-                  // Favorite Cards
-                  Expanded(
-                    child: ListView(
-                      children: [
-                        // 1. FAVORİ SORULAR (Favorite Questions) - WORKING!
-                        _buildAnimatedCard(
-                          icon: Icons.quiz_rounded,
-                          title: isEnglish ? 'FAVORITE QUESTIONS' : 'FAVORİ SORULAR',
-                          subtitle: isEnglish 
-                            ? 'Your saved questions'
-                            : 'Kaydettiğiniz sorular',
-                          startColor: const Color(0xFF667eea),
-                          endColor: const Color(0xFF764ba2),
-                          onTap: _navigateToFavoriteQuestions,  // ✅ WORKING!
-                          index: 0,
+                ),
+                
+                // Content
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.fromLTRB(24, 0, 24, 100),
+                    children: [
+                      // 1. FAVORİ SORULAR
+                      _buildAnimatedCard(
+                        icon: Icons.quiz_rounded,
+                        title: isEnglish ? 'Favorite Questions' : 'Favori Sorular',
+                        subtitle: isEnglish ? 'Your saved questions' : 'Kaydettiğiniz sorular',
+                        accentColor: const Color(0xFF667eea),
+                        onTap: _navigateToFavoriteQuestions,
+                        index: 0,
+                      ),
+                      
+                      // 2. FAVORİ KİTAPLAR
+                      _buildAnimatedCard(
+                        icon: Icons.book_rounded,
+                        title: isEnglish ? 'Favorite Books' : 'Favori Kitaplar',
+                        subtitle: isEnglish ? 'Your saved books' : 'Kaydettiğiniz kitaplar',
+                        accentColor: const Color(0xFF43e97b),
+                        onTap: _navigateToFavoriteBooks,
+                        index: 1,
+                      ),
+                      
+                      // 3. FAVORİ DENEMELER
+                      _buildAnimatedCard(
+                        icon: Icons.assignment_rounded,
+                        title: isEnglish ? 'Favorite Mock Exams' : 'Favori Denemeler',
+                        subtitle: isEnglish ? 'Your saved mock exams' : 'Kaydettiğiniz denemeler',
+                        accentColor: const Color(0xFFf093fb),
+                        onTap: () => _showComingSoonNotification(
+                          isEnglish ? 'Favorite Mock Exams' : 'FAVORİ DENEMELER'
                         ),
-                        
-                        const SizedBox(height: 16),
-                        
-                        // 2. FAVORİ KİTAPLAR (Favorite Books)
-                        _buildAnimatedCard(
-                          icon: Icons.book_rounded,
-                          title: isEnglish ? 'FAVORITE BOOKS' : 'FAVORİ KİTAPLAR',
-                          subtitle: isEnglish 
-                            ? 'Your saved books'
-                            : 'Kaydettiğiniz kitaplar',
-                          startColor: const Color(0xFF43e97b),
-                          endColor: const Color(0xFF38f9d7),
-                          onTap: _navigateToFavoriteBooks,
-                          index: 1,
-                        ),
-                        
-                        const SizedBox(height: 16),
-                        
-                        // 3. FAVORİ DENEMELER (Favorite Mock Exams)
-                        _buildAnimatedCard(
-                          icon: Icons.assignment_rounded,
-                          title: isEnglish ? 'FAVORITE MOCK EXAMS' : 'FAVORİ DENEMELER',
-                          subtitle: isEnglish 
-                            ? 'Your saved mock exams'
-                            : 'Kaydettiğiniz denemeler',
-                          startColor: const Color(0xFFf093fb),
-                          endColor: const Color(0xFFf5576c),
-                          onTap: () => _showComingSoonNotification(
-                            isEnglish ? 'Favorite Mock Exams' : 'FAVORİ DENEMELER'
-                          ),
-                          index: 2,
-                        ),
-                        
-                        const SizedBox(height: 16),
-                        
-                        // 4. FAVORİ PLAYLİSTLER (Favorite Playlists)
-                        _buildAnimatedCard(
-                          icon: Icons.playlist_play_rounded,
-                          title: isEnglish ? 'FAVORITE PLAYLISTS' : 'FAVORİ PLAYLİSTLER',
-                          subtitle: isEnglish 
-                            ? 'Your saved playlists'
-                            : 'Kaydettiğiniz oynatma listeleri',
-                          startColor: const Color(0xFFff6b9d),
-                          endColor: const Color(0xFFc44569),
-                          onTap: _navigateToFavoritePlaylists,
-                          index: 3,
-                        ),
-                      ],
-                    ),
+                        index: 2,
+                      ),
+                      
+                      // 4. FAVORİ PLAYLİSTLER
+                      _buildAnimatedCard(
+                        icon: Icons.playlist_play_rounded,
+                        title: isEnglish ? 'Favorite Playlists' : 'Favori Playlistler',
+                        subtitle: isEnglish ? 'Your saved playlists' : 'Kaydettiğiniz oynatma listeleri',
+                        accentColor: const Color(0xFFff6b9d),
+                        onTap: _navigateToFavoritePlaylists,
+                        index: 3,
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
-// Favorite Card Widget
-class _FavoriteCard extends StatefulWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final Color startColor;
-  final Color endColor;
-  final VoidCallback onTap;
-
-  const _FavoriteCard({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.startColor,
-    required this.endColor,
-    required this.onTap,
-  });
-
-  @override
-  State<_FavoriteCard> createState() => _FavoriteCardState();
-}
-
-class _FavoriteCardState extends State<_FavoriteCard>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _pressController;
-  late Animation<double> _scaleAnimation;
-  late Animation<double> _elevationAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _pressController = AnimationController(
-      duration: const Duration(milliseconds: 150),
-      vsync: this,
-    );
-    
-    _scaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 0.97,
-    ).animate(CurvedAnimation(
-      parent: _pressController,
-      curve: Curves.easeInOut,
-    ));
-    
-    _elevationAnimation = Tween<double>(
-      begin: 4.0,
-      end: 8.0,
-    ).animate(CurvedAnimation(
-      parent: _pressController,
-      curve: Curves.easeOut,
-    ));
-  }
-
-  @override
-  void dispose() {
-    _pressController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _pressController,
-      builder: (context, child) {
-        return Transform.scale(
-          scale: _scaleAnimation.value,
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: widget.startColor.withValues(alpha: 0.3),
-                  blurRadius: _elevationAnimation.value * 3,
-                  offset: Offset(0, _elevationAnimation.value * 0.5),
-                  spreadRadius: _elevationAnimation.value * 0.3,
                 ),
               ],
             ),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(20),
-                onTap: widget.onTap,
-                onTapDown: (_) => _pressController.forward(),
-                onTapUp: (_) => _pressController.reverse(),
-                onTapCancel: () => _pressController.reverse(),
-                child: Ink(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        widget.startColor,
-                        widget.endColor,
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Container(
-                    padding: const EdgeInsets.all(20),
-                    child: Row(
-                      children: [
-                        // Icon Container
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Icon(
-                            widget.icon,
-                            size: 32,
-                            color: Colors.white,
-                          ),
-                        ),
-                        
-                        const SizedBox(width: 16),
-                        
-                        // Text Content
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                widget.title,
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                widget.subtitle,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.white.withValues(alpha: 0.9),
-                                  fontWeight: FontWeight.w400,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        
-                        // Arrow Icon
-                        Icon(
-                          Icons.arrow_forward_ios_rounded,
-                          color: Colors.white.withValues(alpha: 0.8),
-                          size: 20,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
           ),
         );
       },
     );
   }
 }
-

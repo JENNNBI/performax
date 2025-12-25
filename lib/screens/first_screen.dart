@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:performax/screens/login_screen.dart';
+import '../theme/neumorphic_colors.dart';
+import '../widgets/neumorphic/neumorphic_container.dart';
+import '../widgets/neumorphic/neumorphic_button.dart';
 
 class FirstScreen extends StatefulWidget {
   const FirstScreen({super.key});
@@ -69,153 +72,103 @@ class _FirstScreenState extends State<FirstScreen> with SingleTickerProviderStat
     }
   }
 
-  Widget _buildGradientButton({
-    required String text,
-    required IconData icon,
-    required VoidCallback? onPressed,
-    required List<Color> gradientColors,
-  }) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(15),
-        boxShadow: [
-          BoxShadow(
-            color: gradientColors[0].withValues(alpha: 0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onPressed,
-          borderRadius: BorderRadius.circular(15),
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: onPressed == null 
-                    ? [Colors.grey[400]!, Colors.grey[500]!]
-                    : gradientColors,
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(15),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  icon,
-                  color: Colors.white,
-                  size: 24,
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  text,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
+    final bgColor = NeumorphicColors.getBackground(context);
+    final textColor = NeumorphicColors.getText(context);
+
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Theme.of(context).primaryColor.withValues(alpha: 0.8),
-              Theme.of(context).primaryColor,
-              Theme.of(context).primaryColor.withValues(alpha: 0.9),
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: FadeTransition(
-            opacity: _fadeInAnimation,
-            child: SlideTransition(
-              position: _slideAnimation,
+      backgroundColor: bgColor,
+      body: SafeArea(
+        child: FadeTransition(
+          opacity: _fadeInAnimation,
+          child: SlideTransition(
+            position: _slideAnimation,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    margin: const EdgeInsets.symmetric(horizontal: 20),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.9),
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
-                          blurRadius: 10,
-                          spreadRadius: 5,
-                        ),
-                      ],
-                    ),
+                  // Logo Container
+                  NeumorphicContainer(
+                    padding: const EdgeInsets.all(40),
+                    borderRadius: 40,
+                    depth: 10,
                     child: Column(
                       children: [
-                        const Text(
-                          'Hoş Geldiniz',
+                        Icon(
+                          Icons.school_rounded,
+                          size: 64,
+                          color: NeumorphicColors.accentBlue,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Performax',
                           style: TextStyle(
-                            fontSize: 24,
-                            color: Colors.black87,
-                            fontWeight: FontWeight.w300,
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            color: textColor,
+                            letterSpacing: 2,
                           ),
                         ),
                         const SizedBox(height: 8),
-                        ShaderMask(
-                          shaderCallback: (bounds) => LinearGradient(
-                            colors: [
-                              Theme.of(context).primaryColor,
-                              Theme.of(context).colorScheme.secondary,
-                            ],
-                          ).createShader(bounds),
-                          child: const Text(
-                            'Performax',
-                            style: TextStyle(
-                              fontSize: 40,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
+                        Text(
+                          'Hoş Geldiniz',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w300,
+                            color: textColor.withValues(alpha: 0.6),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 40),
-                  _buildGradientButton(
-                    text: 'Öğrenci Olarak Devam Et',
-                    icon: Icons.school_rounded,
+                  
+                  const SizedBox(height: 60),
+                  
+                  // Student Button
+                  NeumorphicButton(
                     onPressed: () => _navigateToLogin(context),
-                    gradientColors: [
-                      Theme.of(context).primaryColor,
-                      Theme.of(context).colorScheme.secondary,
-                    ],
+                    color: NeumorphicColors.accentBlue,
+                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.school_rounded, color: Colors.white),
+                        const SizedBox(width: 12),
+                        const Text(
+                          'Öğrenci Olarak Devam Et',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 20),
-                  _buildGradientButton(
-                    text: 'Öğretmen Olarak Devam Et',
-                    icon: Icons.person_outline_rounded,
+                  
+                  const SizedBox(height: 24),
+                  
+                  // Teacher Button
+                  NeumorphicButton(
                     onPressed: () => _navigateToTeacher(context),
-                    gradientColors: [
-                      Colors.deepPurple,
-                      Colors.purple,
-                    ],
+                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.person_outline_rounded, color: textColor),
+                        const SizedBox(width: 12),
+                        Text(
+                          'Öğretmen Olarak Devam Et',
+                          style: TextStyle(
+                            color: textColor,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -225,4 +178,4 @@ class _FirstScreenState extends State<FirstScreen> with SingleTickerProviderStat
       ),
     );
   }
-} 
+}

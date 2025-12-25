@@ -6,6 +6,10 @@ import '../blocs/bloc_exports.dart';
 import '../screens/register_screen.dart';
 import '../screens/forgot_password_screen.dart';
 import '../services/user_service.dart';
+import '../theme/neumorphic_colors.dart';
+import '../widgets/neumorphic/neumorphic_container.dart';
+import '../widgets/neumorphic/neumorphic_button.dart';
+import '../widgets/neumorphic/neumorphic_text_field.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -64,13 +68,10 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           password: _passwordController.text,
         );
         
-        // Clear guest status when user logs in
         await UserService.clearGuestStatus();
         
-        // Reload user profile in UserProfileBloc to ensure fresh data
         if (mounted) {
           context.read<UserProfileBloc>().add(const LoadUserProfile());
-          // Small delay to allow profile to load before navigation
           await Future.delayed(const Duration(milliseconds: 100));
           if (mounted) {
             Navigator.pushReplacementNamed(context, '/home');
@@ -119,14 +120,10 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       final credential = GoogleAuthProvider.credential(idToken: idToken);
 
       await _auth.signInWithCredential(credential);
-      
-      // Clear guest status when user logs in with Google
       await UserService.clearGuestStatus();
 
-      // Reload user profile in UserProfileBloc to ensure fresh data
       if (mounted) {
         context.read<UserProfileBloc>().add(const LoadUserProfile());
-        // Small delay to allow profile to load before navigation
         await Future.delayed(const Duration(milliseconds: 100));
         if (mounted) {
           Navigator.pushReplacementNamed(context, '/home');
@@ -152,13 +149,9 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   }
 
   Future<void> _continueAsGuest() async {
-    // Set user as guest
     await UserService.setGuestUser(true);
-    
-    // Update UserProfileBloc to reflect guest status
     if (mounted) {
       context.read<UserProfileBloc>().add(const LoadUserProfile());
-      // Small delay to allow profile to load before navigation
       await Future.delayed(const Duration(milliseconds: 100));
       if (mounted) {
         Navigator.pushReplacementNamed(context, '/home');
@@ -175,282 +168,163 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
         final languageBloc = context.read<LanguageBloc>();
         
         return Scaffold(
-          body: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  theme.primaryColor.withValues(alpha: 0.8),
-                  theme.primaryColor,
-                  theme.colorScheme.secondary,
-                ],
-              ),
-            ),
-            child: SafeArea(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const SizedBox(height: 40),
-                        Container(
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.9),
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.1),
-                                blurRadius: 10,
-                                spreadRadius: 5,
+          backgroundColor: NeumorphicColors.getBackground(context),
+          body: SafeArea(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 40),
+                      
+                      // Neumorphic Card
+                      NeumorphicContainer(
+                        padding: const EdgeInsets.all(32),
+                        borderRadius: 30,
+                        child: Column(
+                          children: [
+                            Text(
+                              languageBloc.translate('welcome_back'),
+                              style: theme.textTheme.headlineMedium?.copyWith(
+                                color: NeumorphicColors.getText(context),
+                                fontWeight: FontWeight.bold,
                               ),
-                            ],
-                          ),
-                          child: Column(
-                            children: [
-                              Text(
-                                languageBloc.translate('welcome_back'),
-                                style: theme.textTheme.headlineMedium?.copyWith(
-                                  color: Colors.black87,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              languageBloc.currentLanguage == 'tr'
+                                ? 'Devam etmek için giriş yapın'
+                                : 'Sign in to continue',
+                              style: theme.textTheme.bodyLarge?.copyWith(
+                                color: NeumorphicColors.getText(context).withValues(alpha: 0.6),
                               ),
-                              const SizedBox(height: 8),
-                              Text(
-                                languageBloc.currentLanguage == 'tr'
-                                  ? 'Devam etmek için giriş yapın'
-                                  : 'Sign in to continue',
-                                style: theme.textTheme.bodyLarge?.copyWith(
-                                  color: Colors.black54,
-                                ),
-                              ),
-                              const SizedBox(height: 30),
-                              Form(
-                                key: _formKey,
-                                child: Column(
-                                  children: [
-                                    TextFormField(
-                                      controller: _emailController,
-                                      decoration: InputDecoration(
-                                        labelText: languageBloc.translate('email'),
-                                        prefixIcon: const Icon(AppIcons.email),
+                            ),
+                            const SizedBox(height: 30),
+                            Form(
+                              key: _formKey,
+                              child: Column(
+                                children: [
+                                  // Email Field (Debossed)
+                                  NeumorphicTextField(
+                                    controller: _emailController,
+                                    hintText: languageBloc.translate('email'),
+                                    prefixIcon: Icon(AppIcons.email, color: NeumorphicColors.getText(context).withValues(alpha: 0.5)),
+                                    keyboardType: TextInputType.emailAddress,
+                                  ),
+                                  const SizedBox(height: 24),
+                                  
+                                  // Password Field (Debossed)
+                                  NeumorphicTextField(
+                                    controller: _passwordController,
+                                    hintText: languageBloc.translate('password'),
+                                    prefixIcon: Icon(AppIcons.lock, color: NeumorphicColors.getText(context).withValues(alpha: 0.5)),
+                                    obscureText: !_isPasswordVisible,
+                                    suffixIcon: IconButton(
+                                      icon: Icon(
+                                        _isPasswordVisible ? AppIcons.visibilityOff : AppIcons.visibility,
+                                        color: NeumorphicColors.getText(context).withValues(alpha: 0.5),
                                       ),
-                                      keyboardType: TextInputType.emailAddress,
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return languageBloc.currentLanguage == 'tr'
-                                            ? 'E-posta gereklidir'
-                                            : 'Email is required';
-                                        }
-                                        return null;
+                                      onPressed: () {
+                                        setState(() {
+                                          _isPasswordVisible = !_isPasswordVisible;
+                                        });
                                       },
                                     ),
-                                    const SizedBox(height: 16),
-                                    TextFormField(
-                                      controller: _passwordController,
-                                      decoration: InputDecoration(
-                                        labelText: languageBloc.translate('password'),
-                                        prefixIcon: const Icon(AppIcons.lock),
-                                        suffixIcon: IconButton(
-                                          icon: Icon(
-                                            _isPasswordVisible ? AppIcons.visibilityOff : AppIcons.visibility,
-                                            color: Colors.grey[600],
-                                          ),
-                                          onPressed: () {
-                                            setState(() {
-                                              _isPasswordVisible = !_isPasswordVisible;
-                                            });
-                                          },
-                                        ),
-                                      ),
-                                      obscureText: !_isPasswordVisible,
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return languageBloc.currentLanguage == 'tr'
-                                            ? 'Şifre gereklidir'
-                                            : 'Password is required';
-                                        }
-                                        if (value.length < 6) {
-                                          return languageBloc.currentLanguage == 'tr'
-                                            ? 'Şifre en az 6 karakter olmalıdır'
-                                            : 'Password must be at least 6 characters';
-                                        }
-                                        return null;
-                                      },
-                                    ),
-                                    const SizedBox(height: 24),
-                                    if (_isLoading)
-                                      const CircularProgressIndicator()
-                                    else
-                                      Column(
-                                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                                        children: [
-                                          ElevatedButton(
-                                            onPressed: _login,
-                                            child: Text(languageBloc.translate('login')),
-                                          ),
-                                          const SizedBox(height: 16),
-                                          ElevatedButton.icon(
-                                            onPressed: _signInWithGoogle,
-                                            icon: Image.asset(
-                                              'assets/images/google_logo.png',
-                                              height: 24,
-                                            ),
-                                            label: Text(languageBloc.translate('sign_in_with_google')),
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: Colors.white,
-                                              foregroundColor: Colors.black87,
+                                  ),
+                                  const SizedBox(height: 32),
+                                  
+                                  if (_isLoading)
+                                    const CircularProgressIndicator()
+                                  else
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                                      children: [
+                                        // Login Button
+                                        NeumorphicButton(
+                                          onPressed: _login,
+                                          color: NeumorphicColors.accentBlue,
+                                          child: Center(
+                                            child: Text(
+                                              languageBloc.translate('login'),
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                              ),
                                             ),
                                           ),
-                                        ],
-                                      ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        // Futuristic Forgot Password Button
-                        Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(25),
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.3),
-                              width: 1.5,
-                            ),
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.white.withValues(alpha: 0.1),
-                                Colors.white.withValues(alpha: 0.05),
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.white.withValues(alpha: 0.1),
-                                blurRadius: 10,
-                                spreadRadius: 0,
-                              ),
-                            ],
-                          ),
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(25),
-                              onTap: () {
-                                Navigator.of(context).pushNamed(ForgotPasswordScreen.id);
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    const Icon(
-                                      AppIcons.lock,
-                                      color: Colors.white,
-                                      size: 18,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      languageBloc.translate('forgot_password'),
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        // Futuristic Sign Up Button
-                        Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(25),
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.4),
-                              width: 2,
-                            ),
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.white.withValues(alpha: 0.15),
-                                Colors.white.withValues(alpha: 0.08),
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.white.withValues(alpha: 0.15),
-                                blurRadius: 15,
-                                spreadRadius: 0,
-                              ),
-                            ],
-                          ),
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(25),
-                              onTap: () {
-                                Navigator.of(context).pushNamed(RegisterScreen.id);
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      languageBloc.translate('dont_have_account'),
-                                      style: TextStyle(
-                                        color: Colors.white.withValues(alpha: 0.9),
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(15),
-                                        color: Colors.white.withValues(alpha: 0.2),
-                                      ),
-                                      child: Text(
-                                        languageBloc.translate('register'),
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 14,
                                         ),
-                                      ),
+                                        const SizedBox(height: 24),
+                                        
+                                        // Google Sign In
+                                        NeumorphicButton(
+                                          onPressed: _signInWithGoogle,
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Image.asset(
+                                                'assets/images/google_logo.png',
+                                                height: 24,
+                                              ),
+                                              const SizedBox(width: 12),
+                                              Text(
+                                                languageBloc.translate('sign_in_with_google'),
+                                                style: TextStyle(
+                                                  color: NeumorphicColors.getText(context),
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      
+                      const SizedBox(height: 32),
+                      
+                      // Links
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pushNamed(ForgotPasswordScreen.id),
+                            child: Text(
+                              languageBloc.translate('forgot_password'),
+                              style: TextStyle(color: NeumorphicColors.getText(context)),
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pushNamed(RegisterScreen.id),
+                            child: Text(
+                              languageBloc.translate('register'),
+                              style: TextStyle(
+                                color: NeumorphicColors.accentBlue,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
+                        ],
+                      ),
+                      
+                      const SizedBox(height: 16),
+                      TextButton.icon(
+                        onPressed: _continueAsGuest,
+                        icon: Icon(AppIcons.person, color: NeumorphicColors.getText(context).withValues(alpha: 0.7)),
+                        label: Text(
+                          languageBloc.translate('guest_login'),
+                          style: TextStyle(color: NeumorphicColors.getText(context).withValues(alpha: 0.7)),
                         ),
-                        const SizedBox(height: 16),
-                        OutlinedButton.icon(
-                          onPressed: _continueAsGuest,
-                          icon: const Icon(AppIcons.person),
-                          label: Text(languageBloc.translate('guest_login')),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            side: const BorderSide(color: Colors.white54),
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),
