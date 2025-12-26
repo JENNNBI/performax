@@ -1,6 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart'; // Import Provider
 import '../models/user_profile.dart';
+import '../services/user_provider.dart'; // Import UserProvider
 import '../models/quest.dart';
 import '../blocs/bloc_exports.dart';
 import '../widgets/quest_speech_bubble.dart';
@@ -8,6 +10,7 @@ import '../widgets/quest_list_widget.dart';
 import '../services/quest_service.dart';
 import '../services/quest_celebration_coordinator.dart';
 import '../services/currency_service.dart';
+import '../services/leaderboard_service.dart';
 import '../theme/neumorphic_colors.dart';
 import '../widgets/neumorphic/neumorphic_container.dart';
 
@@ -158,13 +161,12 @@ class _ProfileHomeScreenState extends State<ProfileHomeScreen> with TickerProvid
   }
   
   void _animateCurrencyIncrement(int delta) {
-    final prev = _displayedRocketCurrency;
-    final next = prev + delta;
-    setState(() {
-      _lastAnimatedCurrency = prev;
-      _displayedRocketCurrency = next;
-    });
-    CurrencyService.instance.add(widget.userProfile, delta);
+    // Legacy animation logic removed in favor of UserProvider state management
+    // But we still trigger the UI bounce effect
+    
+    // Call Provider to update logic state
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    userProvider.claimLoginReward();
   }
   
   void _bounceRocketIcon() {
@@ -186,6 +188,11 @@ class _ProfileHomeScreenState extends State<ProfileHomeScreen> with TickerProvid
     final languageBloc = context.read<LanguageBloc>();
     final isEnglish = languageBloc.currentLanguage == 'en';
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    // Get Rank & Gamification Data from Provider
+    final userProvider = Provider.of<UserProvider>(context);
+    final userRank = userProvider.rank;
+    final userRockets = userProvider.rockets;
     
     // Dynamic Background Gradient based on Theme
     final backgroundGradient = LinearGradient(
@@ -280,13 +287,26 @@ class _ProfileHomeScreenState extends State<ProfileHomeScreen> with TickerProvid
                                 builder: (context, child) {
                                   // Simple bounce scale
                                   final scale = 1.0 + (_avatarBounceController.value * 0.05);
+                                  
+                                  // Get Avatar from Provider (Reactive)
+                                  final userProvider = Provider.of<UserProvider>(context);
+                                  final avatarPath = userProvider.currentAvatarPath ?? 'assets/avatars/2d/MALE_AVATAR_1.png';
+
                                   return Transform.scale(
                                     scale: scale,
                                     child: Image.asset(
-                                      'assets/avatars/2d/MALE_AVATAR_1.png',
+                                      avatarPath,
                                       width: 280,
                                       height: 400,
                                       fit: BoxFit.contain,
+                                      errorBuilder: (context, error, stackTrace) {
+                                        return Image.asset(
+                                           'assets/avatars/2d/MALE_AVATAR_1.png',
+                                           width: 280,
+                                           height: 400,
+                                           fit: BoxFit.contain,
+                                        );
+                                      },
                                     ),
                                   );
                                 },
@@ -329,7 +349,7 @@ class _ProfileHomeScreenState extends State<ProfileHomeScreen> with TickerProvid
                   
                   // Floating Stats Bar (Glassmorphic Capsule)
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 120.0, left: 20, right: 20),
+                    padding: const EdgeInsets.only(bottom: 150.0, left: 20, right: 20),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(30),
                       child: BackdropFilter(
@@ -353,6 +373,7 @@ class _ProfileHomeScreenState extends State<ProfileHomeScreen> with TickerProvid
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center, // Center alignment
                             children: [
                               // User Name
                               Text(
@@ -398,7 +419,35 @@ class _ProfileHomeScreenState extends State<ProfileHomeScreen> with TickerProvid
                               ),
                               const SizedBox(width: 8),
                               Text(
-                                '$_displayedRocketCurrency',
+                                '$userRockets', // Use reactive provider value
+                                style: TextStyle(
+                                  color: isDark ? NeumorphicColors.textDark : Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+
+                              const SizedBox(width: 16),
+                              
+                              // Separator 2
+                              Container(
+                                width: 1,
+                                height: 20,
+                                color: Colors.white.withValues(alpha: 0.3),
+                              ),
+                              
+                              const SizedBox(width: 16),
+
+                              // Rank
+                              const Icon(
+                                Icons.emoji_events_rounded,
+                                color: Color(0xFFFFD700), // Gold
+                                size: 24,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                '#$userRank',
                                 style: TextStyle(
                                   color: isDark ? NeumorphicColors.textDark : Colors.white,
                                   fontSize: 16,

@@ -1,5 +1,556 @@
 [
   {
+    "id": "quest_sozel_monthly_legend",
+    "title": "Sözel Efsanesi",
+    "description": "Bu ay toplam 20 farklı günde uygulamaya giriş yap.",
+    "reward_xp": 2000,
+    "reward_currency": 500,
+    "target": 20,
+    "unit": "days",
+    "type": "monthly"
+  },
+  {
+    "id": "quest_sozel_monthly_question_library",
+    "title": "Soru Kütüphanesi",
+    "description": "Bu ay tüm sözel derslerden toplam 1200 soru çöz.",
+    "reward_xp": 3000,
+    "reward_currency": 750,
+    "target": 1200,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_sozel_monthly_lit_archive",
+    "title": "Edebiyatın Piri",
+    "description": "Bu ay Edebiyat dersinden 500 soru devir.",
+    "reward_xp": 1800,
+    "reward_currency": 450,
+    "target": 500,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_sozel_monthly_hist_chronicle",
+    "title": "Tarih Yazıcısı",
+    "description": "Bu ay Tarih dersinden 400 soru çöz.",
+    "reward_xp": 1500,
+    "reward_currency": 350,
+    "target": 400,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_sozel_monthly_geo_atlas",
+    "title": "Atlas Uzmanı",
+    "description": "Bu ay Coğrafya dersinden 300 soru çöz.",
+    "reward_xp": 1300,
+    "reward_currency": 300,
+    "target": 300,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_sozel_monthly_phil_thinker",
+    "title": "Düşünür",
+    "description": "Bu ay Felsefe Grubu (Psikoloji/Sosyoloji/Mantık) derslerinden toplam 250 soru çöz.",
+    "reward_xp": 1200,
+    "reward_currency": 250,
+    "target": 250,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_sozel_monthly_paragraph_titan",
+    "title": "Hızlı ve Öfkeli Okuma",
+    "description": "Bu ay Türkçe dersinden 500 paragraf sorusu çöz.",
+    "reward_xp": 1600,
+    "reward_currency": 400,
+    "target": 500,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_sozel_monthly_trial_master",
+    "title": "Sözel Deneme Kralı",
+    "description": "Bu ay 4 adet AYT Sözel (Ed-Sos-1 + Sos-2) Denemesi bitir.",
+    "reward_xp": 3000,
+    "reward_currency": 800,
+    "target": 4,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_sozel_monthly_video_marathon",
+    "title": "Video Arşivi",
+    "description": "Bu ay toplam 25 farklı ders videosunu tamamla.",
+    "reward_xp": 1400,
+    "reward_currency": 300,
+    "target": 25,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_sozel_monthly_alfred_confidant",
+    "title": "Sanal Etüt Arkadaşı",
+    "description": "Bu ay Alfred ile 15 farklı günde derslerin hakkında etkileşime gir.",
+    "reward_xp": 1000,
+    "reward_currency": 200,
+    "target": 15,
+    "unit": "days",
+    "type": "monthly"
+  },
+  {
+    "id": "quest_sozel_monthly_xp_overlord",
+    "title": "XP Lordu",
+    "description": "Bu ay görevlerden ve sorulardan toplam 5000 XP topla.",
+    "reward_xp": 3000,
+    "reward_currency": 750,
+    "target": 5000,
+    "unit": "xp",
+    "type": "monthly"
+  },
+  {
+    "id": "quest_sozel_monthly_pdf_worm",
+    "title": "Dijital Kütüphane",
+    "description": "Bu ay 20 farklı PDF ders notunu indir veya incele.",
+    "reward_xp": 900,
+    "reward_currency": 180,
+    "target": 20,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_sozel_monthly_night_shift",
+    "title": "Gece Mesaisi",
+    "description": "Bu ay 10 gece saat 23:00'ten sonra aktif ol.",
+    "reward_xp": 1000,
+    "reward_currency": 250,
+    "target": 10,
+    "unit": "nights",
+    "type": "monthly"
+  },
+  {
+    "id": "quest_sozel_monthly_early_riser",
+    "title": "Güneş Doğmadan",
+    "description": "Bu ay 10 sabah saat 08:00'den önce uygulamayı aç.",
+    "reward_xp": 1000,
+    "reward_currency": 250,
+    "target": 10,
+    "unit": "mornings",
+    "type": "monthly"
+  },
+  {
+    "id": "quest_sozel_monthly_full_focus",
+    "title": "Hatasız Seri",
+    "description": "Bu ay toplam 50 soruyu hiç yanlış yapmadan (streak ile) çöz.",
+    "reward_xp": 2000,
+    "reward_currency": 500,
+    "target": 50,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_sozel_monthly_author_encyclopedia",
+    "title": "Ayaklı Ansiklopedi",
+    "description": "Bu ay 30 farklı yazarın hayatı veya eserleri hakkında soru çöz.",
+    "reward_xp": 1500,
+    "reward_currency": 350,
+    "target": 30,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_sozel_monthly_weekend_warrior",
+    "title": "Hafta Sonu Kampı",
+    "description": "Bu ay hafta sonları toplam 400 soru çöz.",
+    "reward_xp": 1500,
+    "reward_currency": 350,
+    "target": 400,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_sozel_monthly_religion_expert",
+    "title": "Din Kültürü Uzmanı",
+    "description": "Bu ay Din Kültürü dersinden 50 soru çöz.",
+    "reward_xp": 500,
+    "reward_currency": 100,
+    "target": 50,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_sozel_monthly_map_master",
+    "title": "Harita Üstadı",
+    "description": "Bu ay Coğrafya harita sorularından (Dünya/Türkiye) 50 tanesini doğru cevapla.",
+    "reward_xp": 800,
+    "reward_currency": 150,
+    "target": 50,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_sozel_monthly_time_master",
+    "title": "Zaman Yönetimi",
+    "description": "Bu ay uygulamada toplam 12 saat (720 dakika) ders çalış.",
+    "reward_xp": 2500,
+    "reward_currency": 600,
+    "target": 720,
+    "unit": "minutes",
+    "type": "monthly"
+  },
+  {
+    "id": "quest_sozel_weekly_lit_marathon",
+    "title": "Edebiyat Maratonu",
+    "description": "Bu hafta Edebiyat dersinden toplam 100 soru çöz.",
+    "reward_xp": 800,
+    "reward_currency": 160,
+    "target": 100,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_sozel_weekly_hist_expert",
+    "title": "Tarih Profesörü",
+    "description": "Bu hafta Tarih dersinden toplam 80 soru çöz.",
+    "reward_xp": 700,
+    "reward_currency": 140,
+    "target": 80,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_sozel_weekly_geo_world",
+    "title": "Dünya Turu",
+    "description": "Bu hafta Coğrafya dersinden toplam 60 soru çöz.",
+    "reward_xp": 550,
+    "reward_currency": 110,
+    "target": 60,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_sozel_weekly_philosophy_mind",
+    "title": "Düşünce Dünyası",
+    "description": "Bu hafta Felsefe, Psikoloji veya Mantık derslerinden toplam 40 soru çöz.",
+    "reward_xp": 500,
+    "reward_currency": 100,
+    "target": 40,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_sozel_weekly_paragraph_king",
+    "title": "Okuma Ustası",
+    "description": "Bu hafta Türkçe/Edebiyat dersinden 120 adet paragraf/anlam sorusu devir.",
+    "reward_xp": 900,
+    "reward_currency": 180,
+    "target": 120,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_sozel_weekly_trial",
+    "title": "Haftalık Sözel Deneme",
+    "description": "Bu hafta 1 adet AYT Sözel (Sos-1 + Sos-2) Denemesi bitir.",
+    "reward_xp": 1000,
+    "reward_currency": 200,
+    "target": 1,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_sozel_weekly_video_series",
+    "title": "Belgesel Tadında",
+    "description": "Bu hafta Tarih veya Coğrafya dersinden 5 farklı video izle.",
+    "reward_xp": 400,
+    "reward_currency": 80,
+    "target": 5,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_sozel_weekly_alfred_research",
+    "title": "Araştırmacı Gazeteci",
+    "description": "Bu hafta Alfred ile 4 farklı günde edebi eserler veya tarihi olaylar hakkında konuş.",
+    "reward_xp": 300,
+    "reward_currency": 60,
+    "target": 4,
+    "unit": "days",
+    "type": "weekly"
+  },
+  {
+    "id": "quest_sozel_weekly_login_streak",
+    "title": "Süreklilik Önemli",
+    "description": "Bu hafta en az 5 farklı günde uygulamaya giriş yap.",
+    "reward_xp": 450,
+    "reward_currency": 90,
+    "target": 5,
+    "unit": "days",
+    "type": "weekly"
+  },
+  {
+    "id": "quest_sozel_weekly_author_memorize",
+    "title": "Yazar-Eser Haftası",
+    "description": "Bu hafta Cumhuriyet veya Tanzimat dönemi yazarlarıyla ilgili 50 soru çöz.",
+    "reward_xp": 500,
+    "reward_currency": 100,
+    "target": 50,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_sozel_weekly_pdf_archive",
+    "title": "Not Karıştırıcı",
+    "description": "Bu hafta 5 farklı Sözel ders notunu (PDF) aç ve çalış.",
+    "reward_xp": 250,
+    "reward_currency": 50,
+    "target": 5,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_sozel_weekly_night_owl",
+    "title": "Gece Okumaları",
+    "description": "Bu hafta 3 gece saat 23:00'ten sonra çalışma oturumu yap.",
+    "reward_xp": 350,
+    "reward_currency": 70,
+    "target": 3,
+    "unit": "nights",
+    "type": "weekly"
+  },
+  {
+    "id": "quest_sozel_weekly_early_bird",
+    "title": "Güne Erken Başla",
+    "description": "Bu hafta 3 sabah saat 08:30'dan önce uygulamayı aç.",
+    "reward_xp": 350,
+    "reward_currency": 70,
+    "target": 3,
+    "unit": "mornings",
+    "type": "weekly"
+  },
+  {
+    "id": "quest_sozel_weekly_xp_collector",
+    "title": "Bilgi Hazinesi",
+    "description": "Bu hafta görevlerden toplam 1200 XP topla.",
+    "reward_xp": 1200,
+    "reward_currency": 240,
+    "target": 1200,
+    "unit": "xp",
+    "type": "weekly"
+  },
+  {
+    "id": "quest_sozel_weekly_variety_pack",
+    "title": "Dört Koldan Saldırı",
+    "description": "Bu hafta Ed, Tar, Coğ ve Fel derslerinin hepsinden en az bir test çöz.",
+    "reward_xp": 600,
+    "reward_currency": 120,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_sozel_weekly_focus_time",
+    "title": "Derin Okuma",
+    "description": "Bu hafta uygulamada toplam 300 dakika (5 saat) aktif kal.",
+    "reward_xp": 600,
+    "reward_currency": 120,
+    "target": 300,
+    "unit": "minutes",
+    "type": "weekly"
+  },
+  {
+    "id": "quest_sozel_weekly_religion_culture",
+    "title": "Din Kültürü Haftası",
+    "description": "Bu hafta Din Kültürü dersinden 20 soru çöz.",
+    "reward_xp": 250,
+    "reward_currency": 50,
+    "target": 20,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_sozel_weekly_no_wrong",
+    "title": "Dikkatli Okuyucu",
+    "description": "Bu hafta bir testte arka arkaya 12 doğru cevap ver.",
+    "reward_xp": 500,
+    "reward_currency": 100,
+    "target": 12,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_sozel_weekly_weekend_warrior",
+    "title": "Hafta Sonu Tekrarı",
+    "description": "Cumartesi ve Pazar günleri toplam 60 soru çöz.",
+    "reward_xp": 500,
+    "reward_currency": 100,
+    "target": 60,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_sozel_weekly_inkilap_special",
+    "title": "İnkılap Tarihi Özel",
+    "description": "Bu hafta sadece İnkılap Tarihi konularından 40 soru çöz.",
+    "reward_xp": 400,
+    "reward_currency": 80,
+    "target": 40,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_sozel_hist_ottoman",
+    "title": "Osmanlı Tarihi",
+    "description": "Tarih dersinden Osmanlı Yükselme Dönemi ile ilgili 15 soru çöz.",
+    "reward_xp": 100,
+    "reward_currency": 20,
+    "target": 15,
+    "type": "daily"
+  },
+  {
+    "id": "quest_sozel_geo_turkey",
+    "title": "Türkiye Coğrafyası",
+    "description": "Coğrafya dersinden Türkiye'nin Yer Şekilleri konusuna çalış.",
+    "reward_xp": 90,
+    "reward_currency": 15,
+    "target": 1,
+    "type": "daily"
+  },
+  {
+    "id": "quest_sozel_lit_poetry",
+    "title": "Şiir Tahlili",
+    "description": "Edebiyat dersinden Şiir Bilgisi (Ahenk, Uyak, Redif) testinden 10 soru çöz.",
+    "reward_xp": 80,
+    "reward_currency": 15,
+    "target": 10,
+    "type": "daily"
+  },
+  {
+    "id": "quest_sozel_phil_terms",
+    "title": "Felsefe Kavramları",
+    "description": "Alfred'e bir felsefe akımını (örneğin: Rasyonalizm) sor ve öğren.",
+    "reward_xp": 50,
+    "reward_currency": 10,
+    "target": 1,
+    "type": "daily"
+  },
+  {
+    "id": "quest_sozel_turk_paragraph",
+    "title": "Hızlı Okuma",
+    "description": "Türkçe dersinden süre tutarak 20 paragraf sorusu çöz.",
+    "reward_xp": 120,
+    "reward_currency": 25,
+    "target": 20,
+    "type": "daily"
+  },
+  {
+    "id": "quest_sozel_hist_video",
+    "title": "Tarih Belgeseli Tadında",
+    "description": "Tarih dersinden herhangi bir konu anlatım videosunu bitir.",
+    "reward_xp": 100,
+    "reward_currency": 20,
+    "target": 1,
+    "type": "daily"
+  },
+  {
+    "id": "quest_sozel_lit_divan",
+    "title": "Divan Edebiyatı",
+    "description": "Divan Edebiyatı şairleri veya eserleri hakkında 10 soru çöz.",
+    "reward_xp": 90,
+    "reward_currency": 15,
+    "target": 10,
+    "type": "daily"
+  },
+  {
+    "id": "quest_sozel_geo_maps",
+    "title": "Dilsiz Harita",
+    "description": "Coğrafya dersinden Harita Bilgisi ile ilgili 10 soru çöz.",
+    "reward_xp": 80,
+    "reward_currency": 15,
+    "target": 10,
+    "type": "daily"
+  },
+  {
+    "id": "quest_sozel_alfred_author",
+    "title": "Yazar Kim?",
+    "description": "Alfred'e bir eser ismi söyle ve yazarının kim olduğunu sor.",
+    "reward_xp": 40,
+    "reward_currency": 5,
+    "target": 1,
+    "type": "daily"
+  },
+  {
+    "id": "quest_sozel_logic_solve",
+    "title": "Mantık Yürütme",
+    "description": "Felsefe grubu derslerinden (Psikoloji/Sosyoloji/Mantık) 10 soru çöz.",
+    "reward_xp": 90,
+    "reward_currency": 15,
+    "target": 10,
+    "type": "daily"
+  },
+  {
+    "id": "quest_sozel_pdf_study",
+    "title": "Not Karıştırma",
+    "description": "Sözel derslerden birine ait PDF notunu aç ve 5 dakika incele.",
+    "reward_xp": 50,
+    "reward_currency": 10,
+    "target": 1,
+    "type": "daily"
+  },
+  {
+    "id": "quest_sozel_hist_inkilap",
+    "title": "Cumhuriyetin İlanı",
+    "description": "İnkılap Tarihi konusundan 15 soru çöz.",
+    "reward_xp": 100,
+    "reward_currency": 20,
+    "target": 15,
+    "type": "daily"
+  },
+  {
+    "id": "quest_sozel_lit_folk",
+    "title": "Halk Edebiyatı",
+    "description": "Halk Edebiyatı (Anonim/Aşık/Tekke) konusundan 10 soru çöz.",
+    "reward_xp": 80,
+    "reward_currency": 15,
+    "target": 10,
+    "type": "daily"
+  },
+  {
+    "id": "quest_sozel_relig_culture",
+    "title": "Din Kültürü Pratiği",
+    "description": "Din Kültürü ve Ahlak Bilgisi dersinden 10 soru çöz.",
+    "reward_xp": 70,
+    "reward_currency": 10,
+    "target": 10,
+    "type": "daily"
+  },
+  {
+    "id": "quest_sozel_streak_daily",
+    "title": "Zinciri Kırma",
+    "description": "Bugün de uygulamaya girerek çalışma serini devam ettir.",
+    "reward_xp": 50,
+    "reward_currency": 10,
+    "target": 1,
+    "type": "daily"
+  },
+  {
+    "id": "quest_sozel_night_read",
+    "title": "Gece Okuması",
+    "description": "Saat 22:00'den sonra Sözel branşlardan herhangi birinden 5 soru çöz.",
+    "reward_xp": 70,
+    "reward_currency": 15,
+    "target": 5,
+    "type": "daily"
+  },
+  {
+    "id": "quest_sozel_geo_climate",
+    "title": "İklim Bilgisi",
+    "description": "Coğrafya dersinden İklim Tipleri veya Atmosfer konusuyla ilgili test çöz.",
+    "reward_xp": 80,
+    "reward_currency": 15,
+    "target": 1,
+    "type": "daily"
+  },
+  {
+    "id": "quest_sozel_alfred_vocab",
+    "title": "Kelime Hazinesi",
+    "description": "Alfred'e Edebiyat terimi veya eski Türkçe bir kelimenin anlamını sor.",
+    "reward_xp": 40,
+    "reward_currency": 5,
+    "target": 1,
+    "type": "daily"
+  },
+  {
+    "id": "quest_sozel_mix_test",
+    "title": "Ortaya Karışık",
+    "description": "Tarih ve Edebiyat derslerinin ikisinden de en az birer test bitir.",
+    "reward_xp": 150,
+    "reward_currency": 30,
+    "target": 2,
+    "type": "daily"
+  },
+  {
+    "id": "quest_sozel_lit_period",
+    "title": "Dönem Karşılaştırma",
+    "description": "Alfred'e 'Tanzimat ve Servet-i Fünun arasındaki farklar neler?' diye sor.",
+    "reward_xp": 60,
+    "reward_currency": 10,
+    "target": 1,
+    "type": "daily"
+  },
+  {
     "id": "daily_sozel_login",
     "title": "Güne Başla",
     "description": "Uygulamaya giriş yap ve yoklamanı al",

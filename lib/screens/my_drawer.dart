@@ -2,9 +2,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
+import 'package:provider/provider.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart'; // Modern icon library
 import 'package:performax/screens/login_screen.dart';
 import '../widgets/profile_overlay.dart';
 import '../services/user_service.dart';
+import '../services/user_provider.dart';
 import '../blocs/bloc_exports.dart';
 import 'settings_screen.dart';
 import 'denemeler_screen.dart';
@@ -13,6 +16,8 @@ import 'home_screen.dart';
 import '../theme/neumorphic_colors.dart';
 import '../widgets/neumorphic/neumorphic_container.dart';
 import '../widgets/neumorphic/neumorphic_button.dart';
+
+import '../widgets/user_avatar_circle.dart';
 
 class MyDrawer extends StatefulWidget {
   final Function(int)? onTabChange;
@@ -138,7 +143,7 @@ class _MyDrawerState extends State<MyDrawer> with TickerProviderStateMixin {
   }
 
   Widget _buildNeumorphicMenuItem({
-    required IconData icon,
+    required PhosphorIconData icon,
     required String title,
     required VoidCallback onTap,
     String? subtitle,
@@ -160,7 +165,7 @@ class _MyDrawerState extends State<MyDrawer> with TickerProviderStateMixin {
               borderRadius: 12,
               depth: 2,
               color: isDanger ? Colors.red.withValues(alpha: 0.1) : null,
-              child: Icon(
+              child: PhosphorIcon(
                 icon,
                 color: isDanger ? Colors.red : (iconColor ?? NeumorphicColors.accentBlue),
                 size: 22,
@@ -192,9 +197,10 @@ class _MyDrawerState extends State<MyDrawer> with TickerProviderStateMixin {
                 ],
               ),
             ),
-            Icon(
-              Icons.chevron_right_rounded,
+            PhosphorIcon(
+              PhosphorIcons.caretRight(PhosphorIconsStyle.bold),
               color: textColor.withValues(alpha: 0.3),
+              size: 18,
             ),
           ],
         ),
@@ -230,17 +236,9 @@ class _MyDrawerState extends State<MyDrawer> with TickerProviderStateMixin {
                         borderRadius: 24,
                         child: Column(
                           children: [
-                            CircleAvatar(
+                            const UserAvatarCircle(
                               radius: 40,
-                              backgroundColor: NeumorphicColors.accentBlue,
-                              child: Text(
-                                _getInitials(userData),
-                                style: const TextStyle(
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
+                              showBorder: true,
                             ),
                             const SizedBox(height: 16),
                             Text(
@@ -273,7 +271,7 @@ class _MyDrawerState extends State<MyDrawer> with TickerProviderStateMixin {
                         children: [
                           if (!isGuest)
                             _buildNeumorphicMenuItem(
-                              icon: Icons.person_rounded,
+                              icon: PhosphorIcons.user(PhosphorIconsStyle.duotone),
                               title: _safeTranslate(languageBloc, 'profile', 'Profile'),
                               onTap: () {
                                 Navigator.pop(context);
@@ -288,31 +286,31 @@ class _MyDrawerState extends State<MyDrawer> with TickerProviderStateMixin {
                             ),
                           
                           _buildNeumorphicMenuItem(
-                            icon: Icons.home_rounded,
+                            icon: PhosphorIcons.house(PhosphorIconsStyle.duotone),
                             title: languageBloc.currentLanguage == 'en' ? 'Home' : 'Ana Sayfa',
                             onTap: () => _navigateFromDrawer(context, tabIndex: 0),
                           ),
 
                           _buildNeumorphicMenuItem(
-                            icon: Icons.school_rounded,
+                            icon: PhosphorIcons.graduationCap(PhosphorIconsStyle.duotone),
                             title: languageBloc.currentLanguage == 'en' ? 'Courses' : 'Dersler',
                             onTap: () => _navigateFromDrawer(context, tabIndex: 1),
                           ),
 
                           _buildNeumorphicMenuItem(
-                            icon: Icons.assignment_rounded,
+                            icon: PhosphorIcons.notebook(PhosphorIconsStyle.duotone),
                             title: languageBloc.currentLanguage == 'en' ? 'Mock Exams' : 'Denemeler',
                             onTap: () => _navigateFromDrawer(context, routeName: DenemelerScreen.id),
                           ),
 
                           _buildNeumorphicMenuItem(
-                            icon: Icons.favorite_rounded,
+                            icon: PhosphorIcons.heart(PhosphorIconsStyle.duotone),
                             title: languageBloc.currentLanguage == 'en' ? 'Favorites' : 'Favoriler',
                             onTap: () => _navigateFromDrawer(context, routeName: FavoritesScreen.id),
                           ),
 
                           _buildNeumorphicMenuItem(
-                            icon: Icons.settings_rounded,
+                            icon: PhosphorIcons.gear(PhosphorIconsStyle.duotone),
                             title: _safeTranslate(languageBloc, 'settings', 'Settings'),
                             onTap: () => _navigateFromDrawer(
                               context,
@@ -327,7 +325,9 @@ class _MyDrawerState extends State<MyDrawer> with TickerProviderStateMixin {
                           ),
 
                           _buildNeumorphicMenuItem(
-                            icon: isGuest ? Icons.login_rounded : Icons.logout_rounded,
+                            icon: isGuest 
+                              ? PhosphorIcons.signIn(PhosphorIconsStyle.bold)
+                              : PhosphorIcons.signOut(PhosphorIconsStyle.bold),
                             title: isGuest 
                               ? _safeTranslate(languageBloc, 'login', 'Login')
                               : _safeTranslate(languageBloc, 'logout', 'Logout'),
@@ -336,16 +336,40 @@ class _MyDrawerState extends State<MyDrawer> with TickerProviderStateMixin {
                               if (_isLoggingOut) return;
                               setState(() => _isLoggingOut = true);
                               try {
+                                debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                                debugPrint('🚪 LOGOUT FLOW STARTED');
+                                debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                                
+                                // 1️⃣ Clear UserProvider RAM state (preserves disk data)
+                                if (context.mounted) {
+                                  await Provider.of<UserProvider>(context, listen: false).clearSession();
+                                  debugPrint('✅ Step 1: UserProvider session cleared (RAM only)');
+                                }
+                                
+                                // 2️⃣ Clear UserProfileBloc state
                                 if (context.mounted) {
                                   context.read<UserProfileBloc>().add(const ClearUserProfile());
+                                  debugPrint('✅ Step 2: UserProfileBloc cleared');
                                 }
+                                
+                                // 3️⃣ Sign out from Firebase
                                 await FirebaseAuth.instance.signOut();
+                                debugPrint('✅ Step 3: Firebase sign-out complete');
+                                
+                                // 4️⃣ Clear other user services
                                 await UserService.clearAllUserData();
+                                debugPrint('✅ Step 4: UserService data cleared');
+                                
+                                debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                                debugPrint('✅ LOGOUT COMPLETE');
+                                debugPrint('📁 User data preserved on disk for next login');
+                                debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                                
                                 if (context.mounted) {
                                   Navigator.of(context).pushReplacementNamed(LoginScreen.id);
                                 }
                               } catch (e) {
-                                debugPrint('Error logging out: $e');
+                                debugPrint('❌ Error during logout: $e');
                               } finally {
                                 if (mounted) setState(() => _isLoggingOut = false);
                               }

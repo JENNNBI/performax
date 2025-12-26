@@ -16,6 +16,8 @@ import 'firebase_options.dart';
 import 'services/statistics_service.dart';
 import 'services/quest_service.dart';
 import 'services/debug_manager.dart';
+import 'services/user_provider.dart'; // Import UserProvider
+import 'package:provider/provider.dart'; // Import Provider
 
 void main() async {
   try {
@@ -125,8 +127,16 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
+    return MultiProvider( // Changed from MultiBlocProvider to MultiProvider to mix providers
       providers: [
+        // Provider for Avatar State
+        // NOTE: UserProvider data is loaded AFTER login via loadUserData(userId)
+        // We don't load here because we need a userId for proper data isolation
+        ChangeNotifierProvider(
+          create: (context) => UserProvider(),
+        ),
+        
+        // BLoC Providers
         BlocProvider(create: (context) => KonuAnlatimliVideolarBloc()),
         BlocProvider(create: (context) => SoruCozumVideolariBloc()),
         BlocProvider(create: (context) => OrnekYazililarBloc()),

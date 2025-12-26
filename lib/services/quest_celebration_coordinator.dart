@@ -73,13 +73,10 @@ class QuestCelebrationCoordinator {
     }
   }
 
-  void _spawnParticles(Quest quest, {VoidCallback? onArriveAll}) {
+  void _spawnParticles(Quest quest, GlobalKey startKey, {VoidCallback? onArriveAll}) {
     if (_homeContext == null || _rocketIconKey == null) return;
     final overlay = Overlay.of(_homeContext!);
     if (overlay == null) return;
-
-    final startKey = _questRocketKeys[quest.id];
-    if (startKey == null) return;
 
     final startBox = startKey.currentContext?.findRenderObject() as RenderBox?;
     final endBox = _rocketIconKey!.currentContext?.findRenderObject() as RenderBox?;
@@ -88,9 +85,8 @@ class QuestCelebrationCoordinator {
     final start = startBox.localToGlobal(Offset(startBox.size.width / 2, startBox.size.height / 2));
     final end = endBox.localToGlobal(Offset(endBox.size.width / 2, endBox.size.height / 2));
 
-    const int maxParticles = 16;
-    final count = min(14, maxParticles);
-    final entries = <OverlayEntry>[];
+    const int maxParticles = 20;
+    final count = min(20, maxParticles);
     bool finalHandled = false;
     for (int i = 0; i < count; i++) {
       final delayMs = 40 * i;
@@ -123,15 +119,14 @@ class QuestCelebrationCoordinator {
           );
         },
       );
-      entries.add(entry);
       overlay.insert(entry);
     }
-    // Per-particle removal handled by each entry's onRemove
   }
 
   /// Public API: trigger claim animation and finalize quest
-  void claimQuest(Quest quest) {
-    _spawnParticles(quest, onArriveAll: () {
+  /// Requires the specific GlobalKey of the claim button/icon clicked
+  void claimQuest(Quest quest, GlobalKey buttonKey) {
+    _spawnParticles(quest, buttonKey, onArriveAll: () {
       QuestService.instance.claimById(quest.id);
     });
   }
@@ -158,17 +153,17 @@ class _ParticleFlightState extends State<_ParticleFlight> with SingleTickerProvi
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 800));
-    _t = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
+    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 1000));
+    _t = CurvedAnimation(parent: _controller, curve: Curves.easeInOutCubic);
     // Quadratic bezier control point with jitter and upward arc
     final midX = (widget.start.dx + widget.end.dx) / 2;
     final midY = (widget.start.dy + widget.end.dy) / 2;
-    final jitterX = (_rng.nextDouble() - 0.5) * 60.0;
-    final arcY = -80.0 + (_rng.nextDouble() - 0.5) * 40.0;
+    final jitterX = (_rng.nextDouble() - 0.5) * 80.0;
+    final arcY = -120.0 + (_rng.nextDouble() - 0.5) * 60.0;
     _controlPoint = Offset(midX + jitterX, midY + arcY);
     // Rotation parameters for confetti-like tumble
-    _rotSpeed = (_rng.nextDouble() * 2 - 1) * 1.8; // radians per progress unit
-    _baseRot = (_rng.nextDouble() * (pi / 6)) - (pi / 12);
+    _rotSpeed = (_rng.nextDouble() * 2 - 1) * 3.0; // radians per progress unit
+    _baseRot = (_rng.nextDouble() * (pi / 2));
     Future.delayed(widget.delay, () {
       if (mounted) _controller.forward();
     });
@@ -197,23 +192,25 @@ class _ParticleFlightState extends State<_ParticleFlight> with SingleTickerProvi
         // Quadratic Bezier: B(t) = (1-t)^2*P0 + 2(1-t)t*C + t^2*P1
         final bx = (q * q * widget.start.dx) + (2 * q * p * _controlPoint.dx) + (p * p * widget.end.dx);
         final by = (q * q * widget.start.dy) + (2 * q * p * _controlPoint.dy) + (p * p * widget.end.dy);
-        final s = 0.8 + 0.3 * p;
-        final a = 1.0 - (p * 0.12);
+        final s = 1.0 - (0.5 * p); // Scale down slightly as it flies
+        final a = 1.0;
         final rot = _baseRot + _rotSpeed * p * 2 * pi;
         return Positioned(
           left: bx,
           top: by,
-          child: Opacity(
-            opacity: a,
-            child: Transform.rotate(
-              angle: rot,
-              child: Transform.scale(
-                scale: s,
-                child: Image.asset(
-                  'assets/images/currency_rocket1.png',
-                  width: 22,
-                  height: 22,
-                  fit: BoxFit.contain,
+          child: IgnorePointer(
+            child: Opacity(
+              opacity: a,
+              child: Transform.rotate(
+                angle: rot,
+                child: Transform.scale(
+                  scale: s,
+                  child: Image.asset(
+                    'assets/images/currency_rocket1.png',
+                    width: 24,
+                    height: 24,
+                    fit: BoxFit.contain,
+                  ),
                 ),
               ),
             ),

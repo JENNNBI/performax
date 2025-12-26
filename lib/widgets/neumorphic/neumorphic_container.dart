@@ -30,28 +30,67 @@ class NeumorphicContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bgColor = color ?? NeumorphicColors.getBackground(context);
-    final topShadow = NeumorphicColors.getShadowTop(context);
-    final bottomShadow = NeumorphicColors.getShadowBottom(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    // ✨ THEME-AWARE SHADOW SYSTEM - Perfect Balance ✨
+    // Dark Mode: Restore subtle premium glow
+    // Light Mode: Clean, neutral soft shadows
+    
+    final Color topShadow;
+    final Color bottomShadow;
+    final Color ambientShadow;
+    final Color highlightColor;
+    final Color borderColor;
+    
+    if (isDark) {
+      // --- DARK MODE (Subtle Premium Glow - RESTORED) ---
+      // Elegant colored rim light for depth without bloom
+      topShadow = Colors.black.withOpacity(0.3); // Soft structural shadow
+      bottomShadow = Colors.black.withOpacity(0.4); // Depth definition
+      ambientShadow = NeumorphicColors.accentBlue.withOpacity(0.15); // ✨ RESTORED - Subtle blue glow
+      highlightColor = Colors.white.withOpacity(0.03); // Gentle highlight
+      borderColor = Colors.white.withOpacity(0.08); // Subtle rim
+    } else {
+      // --- LIGHT MODE (Clean Soft UI) ---
+      // Neutral grey shadows, no colored glow
+      topShadow = Colors.white; // Light source from top
+      bottomShadow = Colors.black.withOpacity(0.06); // 🎯 NEUTRAL grey shadow (not colored)
+      ambientShadow = Colors.transparent; // No colored glow in light mode
+      highlightColor = Colors.white.withOpacity(0.8); // Bright highlight
+      borderColor = Colors.black.withOpacity(0.05); // Subtle neutral border
+    }
 
     List<BoxShadow> shadows = [];
     
-    // Use absolute value for blurRadius to prevent assertion errors
-    final blurRadius = depth.abs() * 2;
-    // Use actual depth for offsets to maintain direction
-    final offsetDepth = depth;
+    // ✨ Balanced Shadow Parameters
+    final blurRadius = isDark ? 10.0 : 12.0; // Moderate blur for both modes
+    final offsetDistance = isDark ? 3.0 : 4.0; // Gentle offset
+    final spreadRadius = isDark ? 0.0 : 0.0; // No spread in both modes
 
     if (!isPressed) {
       shadows = [
+        // Top-Left Light Source (Highlight)
         BoxShadow(
-          color: topShadow.withValues(alpha: 0.6),
-          offset: Offset(-offsetDepth, -offsetDepth),
+          color: isDark ? highlightColor : topShadow,
+          offset: Offset(-offsetDistance/2, -offsetDistance/2),
           blurRadius: blurRadius,
+          spreadRadius: isDark ? 0 : 1.0, // Slight spread for light mode highlight
         ),
+        // Bottom-Right Drop Shadow (Depth)
         BoxShadow(
-          color: bottomShadow.withValues(alpha: 0.3),
-          offset: Offset(offsetDepth, offsetDepth),
+          color: bottomShadow,
+          offset: Offset(offsetDistance, offsetDistance),
           blurRadius: blurRadius,
+          spreadRadius: spreadRadius,
         ),
+        // Ambient Glow (Dark Mode Only) - RESTORED with subtlety
+        if (isDark)
+          BoxShadow(
+            color: ambientShadow, // 0.15 opacity - visible but controlled
+            offset: const Offset(0, 2), // Gentle offset
+            blurRadius: 12, // Moderate bloom
+            spreadRadius: 0, // No spread - contained glow
+          ),
       ];
     }
 
@@ -64,6 +103,10 @@ class NeumorphicContainer extends StatelessWidget {
         borderRadius: shape == BoxShape.rectangle ? BorderRadius.circular(borderRadius) : null,
         shape: shape,
         boxShadow: shadows,
+        border: Border.all(
+          color: borderColor,
+          width: isDark ? 0.6 : 1.0, // Visible border for both modes
+        ),
         gradient: isPressed 
           ? LinearGradient(
               begin: Alignment.topLeft,

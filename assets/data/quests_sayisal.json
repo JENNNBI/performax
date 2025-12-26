@@ -1,5 +1,555 @@
 [
   {
+    "id": "quest_sayisal_monthly_legend",
+    "title": "Sayısal Efsanesi",
+    "description": "Bu ay toplam 20 farklı günde uygulamaya giriş yap.",
+    "reward_xp": 2000,
+    "reward_currency": 500,
+    "target": 20,
+    "unit": "days",
+    "type": "monthly"
+  },
+  {
+    "id": "quest_sayisal_monthly_question_factory",
+    "title": "Soru Fabrikası",
+    "description": "Bu ay tüm sayısal derslerden toplam 1500 soru çöz.",
+    "reward_xp": 3500,
+    "reward_currency": 800,
+    "target": 1500,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_sayisal_monthly_math_god",
+    "title": "Matematik Dehası",
+    "description": "Bu ay AYT Matematik dersinden 500 soru çöz.",
+    "reward_xp": 2000,
+    "reward_currency": 450,
+    "target": 500,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_sayisal_monthly_physics_engineer",
+    "title": "Başmühendis",
+    "description": "Bu ay Fizik dersinden 400 soru çöz.",
+    "reward_xp": 1600,
+    "reward_currency": 350,
+    "target": 400,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_sayisal_monthly_chem_lab",
+    "title": "Laboratuvar Şefi",
+    "description": "Bu ay Kimya dersinden 400 soru çöz.",
+    "reward_xp": 1600,
+    "reward_currency": 350,
+    "target": 400,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_sayisal_monthly_bio_prof",
+    "title": "Tıp Fakültesi Adayı",
+    "description": "Bu ay Biyoloji dersinden 400 soru çöz.",
+    "reward_xp": 1600,
+    "reward_currency": 350,
+    "target": 400,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_sayisal_monthly_trial_king",
+    "title": "AYT Deneme Kralı",
+    "description": "Bu ay 4 adet AYT Sayısal (Mat + Fen) Denemesi bitir.",
+    "reward_xp": 3000,
+    "reward_currency": 800,
+    "target": 4,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_sayisal_monthly_integral_master",
+    "title": "İntegral Üstadı",
+    "description": "Bu ay sadece İntegral konusundan 150 soru çöz.",
+    "reward_xp": 1200,
+    "reward_currency": 300,
+    "target": 150,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_sayisal_monthly_video_archive",
+    "title": "Video Arşivi",
+    "description": "Bu ay toplam 30 farklı ders videosunu tamamla.",
+    "reward_xp": 1500,
+    "reward_currency": 350,
+    "target": 30,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_sayisal_monthly_alfred_partner",
+    "title": "Lab Ortağı",
+    "description": "Bu ay Alfred ile 15 farklı günde derslerin hakkında etkileşime gir.",
+    "reward_xp": 1000,
+    "reward_currency": 250,
+    "target": 15,
+    "unit": "days",
+    "type": "monthly"
+  },
+  {
+    "id": "quest_sayisal_monthly_xp_overlord",
+    "title": "XP Lordu",
+    "description": "Bu ay görevlerden ve sorulardan toplam 6000 XP topla.",
+    "reward_xp": 4000,
+    "reward_currency": 900,
+    "target": 6000,
+    "unit": "xp",
+    "type": "monthly"
+  },
+  {
+    "id": "quest_sayisal_monthly_pdf_library",
+    "title": "Teorik Fizikçi",
+    "description": "Bu ay 20 farklı PDF ders notunu indir veya incele.",
+    "reward_xp": 900,
+    "reward_currency": 200,
+    "target": 20,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_sayisal_monthly_night_shift",
+    "title": "Gece Vardiyası",
+    "description": "Bu ay 10 gece saat 23:00'ten sonra aktif ol.",
+    "reward_xp": 1200,
+    "reward_currency": 300,
+    "target": 10,
+    "unit": "nights",
+    "type": "monthly"
+  },
+  {
+    "id": "quest_sayisal_monthly_early_riser",
+    "title": "Sabah İnsanı",
+    "description": "Bu ay 10 sabah saat 07:00'den önce uygulamayı aç.",
+    "reward_xp": 1200,
+    "reward_currency": 300,
+    "target": 10,
+    "unit": "mornings",
+    "type": "monthly"
+  },
+  {
+    "id": "quest_sayisal_monthly_flawless",
+    "title": "Kusursuz Seri",
+    "description": "Bu ay toplam 50 soruyu hiç yanlış yapmadan (streak ile) çöz.",
+    "reward_xp": 2500,
+    "reward_currency": 600,
+    "target": 50,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_sayisal_monthly_organic_wizard",
+    "title": "Organik Büyücüsü",
+    "description": "Bu ay Organik Kimya konusundan 200 soru çöz.",
+    "reward_xp": 1500,
+    "reward_currency": 350,
+    "target": 200,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_sayisal_monthly_weekend_warrior",
+    "title": "Hafta Sonu Kampı",
+    "description": "Bu ay hafta sonları toplam 500 soru çöz.",
+    "reward_xp": 1800,
+    "reward_currency": 400,
+    "target": 500,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_sayisal_monthly_topic_finisher",
+    "title": "Konu Bitirici",
+    "description": "Bu ay 5 zor konuyu (Video + Test) tamamen bitir.",
+    "reward_xp": 3000,
+    "reward_currency": 700,
+    "target": 5,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_sayisal_monthly_time_master",
+    "title": "Zaman Yönetimi",
+    "description": "Bu ay uygulamada toplam 1000 dakika (yaklaşık 16 saat) ders çalış.",
+    "reward_xp": 3000,
+    "reward_currency": 750,
+    "target": 1000,
+    "unit": "minutes",
+    "type": "monthly"
+  },
+  {
+    "id": "quest_sayisal_monthly_formula_hunter",
+    "title": "Formül Avcısı",
+    "description": "Bu ay Alfred ile 20 farklı formül veya teorem üzerine çalış.",
+    "reward_xp": 1200,
+    "reward_currency": 300,
+    "target": 20,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_sayisal_weekly_math_titan",
+    "title": "Matematik Titanı",
+    "description": "Bu hafta AYT Matematik (Türev/İntegral/Trigo) konularından toplam 80 soru çöz.",
+    "reward_xp": 800,
+    "reward_currency": 160,
+    "target": 80,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_sayisal_weekly_physics_lab",
+    "title": "Fizik Laboratuvarı",
+    "description": "Bu hafta Fizik dersinden toplam 60 soru çöz.",
+    "reward_xp": 600,
+    "reward_currency": 120,
+    "target": 60,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_sayisal_weekly_chem_reaction",
+    "title": "Kimyasal Reaksiyon",
+    "description": "Bu hafta Kimya dersinden toplam 60 soru çöz.",
+    "reward_xp": 600,
+    "reward_currency": 120,
+    "target": 60,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_sayisal_weekly_bio_life",
+    "title": "Yaşam Bilimi",
+    "description": "Bu hafta Biyoloji dersinden toplam 60 soru çöz.",
+    "reward_xp": 600,
+    "reward_currency": 120,
+    "target": 60,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_sayisal_weekly_trial_ayt",
+    "title": "Haftalık AYT Denemesi",
+    "description": "Bu hafta 1 adet AYT Sayısal (Mat + Fen) Denemesi bitir.",
+    "reward_xp": 1000,
+    "reward_currency": 200,
+    "target": 1,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_sayisal_weekly_video_series",
+    "title": "Konu Kampı",
+    "description": "Bu hafta Sayısal derslerden 5 farklı konu anlatım videosu izle.",
+    "reward_xp": 450,
+    "reward_currency": 90,
+    "target": 5,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_sayisal_weekly_alfred_assistant",
+    "title": "Laboratuvar Asistanı",
+    "description": "Bu hafta Alfred'e Fen dersleriyle ilgili 5 farklı soru sor.",
+    "reward_xp": 300,
+    "reward_currency": 60,
+    "target": 5,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_sayisal_weekly_login_streak",
+    "title": "İstikrarlı Fizikçi",
+    "description": "Bu hafta en az 5 farklı günde uygulamaya giriş yap.",
+    "reward_xp": 500,
+    "reward_currency": 100,
+    "target": 5,
+    "unit": "days",
+    "type": "weekly"
+  },
+  {
+    "id": "quest_sayisal_weekly_organic_focus",
+    "title": "Organik Kimya Haftası",
+    "description": "Bu hafta sadece Organik Kimya konularından 40 soru çöz.",
+    "reward_xp": 500,
+    "reward_currency": 100,
+    "target": 40,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_sayisal_weekly_mechanics_master",
+    "title": "Mekanik Ustası",
+    "description": "Bu hafta Fizik (Kuvvet/Hareket/Enerji) konularından 50 soru çöz.",
+    "reward_xp": 550,
+    "reward_currency": 110,
+    "target": 50,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_sayisal_weekly_systems_expert",
+    "title": "Sistemler Uzmanı",
+    "description": "Bu hafta Biyoloji (İnsan Fizyolojisi) sistemlerinden 50 soru çöz.",
+    "reward_xp": 550,
+    "reward_currency": 110,
+    "target": 50,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_sayisal_weekly_night_owl",
+    "title": "Gece Denklemleri",
+    "description": "Bu hafta 3 gece saat 23:00'ten sonra soru çözümü yap.",
+    "reward_xp": 400,
+    "reward_currency": 80,
+    "target": 3,
+    "unit": "nights",
+    "type": "weekly"
+  },
+  {
+    "id": "quest_sayisal_weekly_early_bird",
+    "title": "Sabah Zihni",
+    "description": "Bu hafta 3 sabah saat 08:00'den önce uygulamayı aç.",
+    "reward_xp": 400,
+    "reward_currency": 80,
+    "target": 3,
+    "unit": "mornings",
+    "type": "weekly"
+  },
+  {
+    "id": "quest_sayisal_weekly_xp_hunter",
+    "title": "XP Reaktörü",
+    "description": "Bu hafta görevlerden toplam 1500 XP topla.",
+    "reward_xp": 1500,
+    "reward_currency": 300,
+    "target": 1500,
+    "unit": "xp",
+    "type": "weekly"
+  },
+  {
+    "id": "quest_sayisal_weekly_variety_pack",
+    "title": "Fen Kokteyli",
+    "description": "Bu hafta Mat, Fiz, Kim ve Biy derslerinin hepsinden en az bir test çöz.",
+    "reward_xp": 600,
+    "reward_currency": 120,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_sayisal_weekly_focus_time",
+    "title": "Derin Odaklanma",
+    "description": "Bu hafta uygulamada toplam 360 dakika (6 saat) aktif kal.",
+    "reward_xp": 700,
+    "reward_currency": 140,
+    "target": 360,
+    "unit": "minutes",
+    "type": "weekly"
+  },
+  {
+    "id": "quest_sayisal_weekly_pdf_research",
+    "title": "Teori Çalışması",
+    "description": "Bu hafta 5 farklı Sayısal ders notunu (PDF) indir ve çalış.",
+    "reward_xp": 300,
+    "reward_currency": 60,
+    "target": 5,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_sayisal_weekly_no_wrong",
+    "title": "İşlem Hatası Yok",
+    "description": "Bu hafta bir testte arka arkaya 10 doğru cevap ver (Streak).",
+    "reward_xp": 600,
+    "reward_currency": 120,
+    "target": 10,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_sayisal_weekly_weekend_warrior",
+    "title": "Hafta Sonu Kampı",
+    "description": "Cumartesi ve Pazar günleri toplam 80 soru çöz.",
+    "reward_xp": 600,
+    "reward_currency": 120,
+    "target": 80,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_sayisal_weekly_integral_special",
+    "title": "İntegral Haftası",
+    "description": "Bu hafta sadece İntegral konusundan 30 soru çöz.",
+    "reward_xp": 500,
+    "reward_currency": 100,
+    "target": 30,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_sayisal_math_deriv",
+    "title": "Türev Alma Kuralları",
+    "description": "Matematik dersinden Türev konusuyla ilgili 15 soru çöz.",
+    "reward_xp": 120,
+    "reward_currency": 25,
+    "target": 15,
+    "type": "daily"
+  },
+  {
+    "id": "quest_sayisal_phy_newton",
+    "title": "Newton'un Yasaları",
+    "description": "Fizik dersinden Kuvvet ve Hareket (Dinamik) ile ilgili 10 soru çöz.",
+    "reward_xp": 100,
+    "reward_currency": 20,
+    "target": 10,
+    "type": "daily"
+  },
+  {
+    "id": "quest_sayisal_chem_organic",
+    "title": "Karbon Kimyası",
+    "description": "Kimya dersinden Organik Bileşiklere Giriş konusuna çalış (Video veya PDF).",
+    "reward_xp": 90,
+    "reward_currency": 15,
+    "target": 1,
+    "type": "daily"
+  },
+  {
+    "id": "quest_sayisal_bio_systems",
+    "title": "Sistemler Kontrolü",
+    "description": "Biyoloji dersinden İnsan Fizyolojisi (Sistemler) ile ilgili 10 soru çöz.",
+    "reward_xp": 100,
+    "reward_currency": 20,
+    "target": 10,
+    "type": "daily"
+  },
+  {
+    "id": "quest_sayisal_math_integral",
+    "title": "İntegral Başlangıç",
+    "description": "Matematik dersinden Belirsiz İntegral konusuyla ilgili 10 soru çöz.",
+    "reward_xp": 120,
+    "reward_currency": 25,
+    "target": 10,
+    "type": "daily"
+  },
+  {
+    "id": "quest_sayisal_alfred_formula",
+    "title": "Formül Hatırlatıcı",
+    "description": "Alfred'e bir Fizik veya Kimya formülünü sor ve açıklamasını iste.",
+    "reward_xp": 50,
+    "reward_currency": 10,
+    "target": 1,
+    "type": "daily"
+  },
+  {
+    "id": "quest_sayisal_phy_electricity",
+    "title": "Elektrik Akımı",
+    "description": "Fizik dersinden Elektrik ve Manyetizma ile ilgili 10 soru çöz.",
+    "reward_xp": 100,
+    "reward_currency": 20,
+    "target": 10,
+    "type": "daily"
+  },
+  {
+    "id": "quest_sayisal_chem_gas",
+    "title": "Gaz Yasaları",
+    "description": "Kimya dersinden Gazlar ünitesiyle ilgili 10 soru çöz.",
+    "reward_xp": 90,
+    "reward_currency": 15,
+    "target": 10,
+    "type": "daily"
+  },
+  {
+    "id": "quest_sayisal_bio_photosyn",
+    "title": "Enerji Dönüşümleri",
+    "description": "Biyoloji dersinden Fotosentez veya Solunum konusuyla ilgili video izle.",
+    "reward_xp": 80,
+    "reward_currency": 15,
+    "target": 1,
+    "type": "daily"
+  },
+  {
+    "id": "quest_sayisal_math_trig",
+    "title": "Trigonometri Pratiği",
+    "description": "Matematik dersinden Trigonometri (Yarım Açı/Dönüşüm) 15 soru çöz.",
+    "reward_xp": 110,
+    "reward_currency": 20,
+    "target": 15,
+    "type": "daily"
+  },
+  {
+    "id": "quest_sayisal_math_log",
+    "title": "Logaritma",
+    "description": "Matematik dersinden Logaritma veya Diziler konusundan 10 soru çöz.",
+    "reward_xp": 90,
+    "reward_currency": 15,
+    "target": 10,
+    "type": "daily"
+  },
+  {
+    "id": "quest_sayisal_phy_modern",
+    "title": "Modern Fizik",
+    "description": "Fizik dersinden Modern Fiziğe Giriş veya Atom Fiziği ile ilgili notları oku.",
+    "reward_xp": 60,
+    "reward_currency": 10,
+    "target": 1,
+    "type": "daily"
+  },
+  {
+    "id": "quest_sayisal_chem_speed",
+    "title": "Tepkime Hızı",
+    "description": "Kimya dersinden Tepkimelerde Hız ve Denge ile ilgili 10 soru çöz.",
+    "reward_xp": 100,
+    "reward_currency": 20,
+    "target": 10,
+    "type": "daily"
+  },
+  {
+    "id": "quest_sayisal_bio_genetic",
+    "title": "Genetik Şifre",
+    "description": "Biyoloji dersinden DNA, RNA veya Protein Sentezi ile ilgili 10 soru çöz.",
+    "reward_xp": 100,
+    "reward_currency": 20,
+    "target": 10,
+    "type": "daily"
+  },
+  {
+    "id": "quest_sayisal_pdf_formula",
+    "title": "Formül Kağıdı",
+    "description": "Sayısal derslerden birine ait özet PDF notunu indir ve incele.",
+    "reward_xp": 40,
+    "reward_currency": 5,
+    "target": 1,
+    "type": "daily"
+  },
+  {
+    "id": "quest_sayisal_video_focus",
+    "title": "Konu Pekiştirme",
+    "description": "Anlamadığın bir Fen (Fiz/Kim/Biy) konusunun videosunu sonuna kadar izle.",
+    "reward_xp": 80,
+    "reward_currency": 15,
+    "target": 1,
+    "type": "daily"
+  },
+  {
+    "id": "quest_sayisal_streak_daily",
+    "title": "İşleyen Demir",
+    "description": "Bugün de uygulamaya girerek çalışma serini (streak) koru.",
+    "reward_xp": 50,
+    "reward_currency": 10,
+    "target": 1,
+    "type": "daily"
+  },
+  {
+    "id": "quest_sayisal_night_solve",
+    "title": "Gece Matçısı",
+    "description": "Saat 22:00'den sonra Matematik veya Geometri dersinden 5 soru çöz.",
+    "reward_xp": 70,
+    "reward_currency": 15,
+    "target": 5,
+    "type": "daily"
+  },
+  {
+    "id": "quest_sayisal_alfred_hard",
+    "title": "Zor Soru",
+    "description": "Alfred'e çözmekte zorlandığın bir sayısal sorusunun fotoğrafını at veya sor.",
+    "reward_xp": 60,
+    "reward_currency": 10,
+    "target": 1,
+    "type": "daily"
+  },
+  {
+    "id": "quest_sayisal_math_limit",
+    "title": "Limit ve Süreklilik",
+    "description": "Matematik dersinden Limit konusuyla ilgili 10 soru çöz.",
+    "reward_xp": 100,
+    "reward_currency": 20,
+    "target": 10,
+    "type": "daily"
+  },
+  {
     "id": "daily_sayisal_login",
     "title": "Güne Başla",
     "description": "Uygulamaya giriş yap ve yoklamanı al",

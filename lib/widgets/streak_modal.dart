@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'dart:math' as math;
+import 'dart:ui' as ui;
+import 'package:provider/provider.dart';
 import '../services/streak_service.dart';
+import '../services/user_provider.dart';
 
-/// Modal dialog to display user's login streak
-/// Shows with animation on app launch
+/// High-Fidelity Holographic Streak Pop-up
+/// Implements a futuristic, neon/cyber aesthetic with dynamic animations.
 class StreakModal extends StatefulWidget {
   final StreakData streakData;
-  
+
   const StreakModal({
     super.key,
     required this.streakData,
@@ -13,22 +17,15 @@ class StreakModal extends StatefulWidget {
 
   /// Show the streak modal with animation
   static Future<void> show(BuildContext context, StreakData streakData) async {
-    debugPrint('🚀 Showing streak modal with streak: ${streakData.currentStreak}');
-    try {
-      return await showDialog(
-        context: context,
-        barrierDismissible: true,
-        barrierColor: Colors.black87, // Dark background for high contrast and visibility
-        useSafeArea: true,
-        builder: (context) {
-          debugPrint('📦 Building StreakModal widget in showDialog');
-          return StreakModal(streakData: streakData);
-        },
-      );
-    } catch (e) {
-      debugPrint('❌ Error in StreakModal.show: $e');
-      rethrow;
-    }
+    return await showDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierColor: Colors.black.withOpacity(0.8), // Darker barrier for neon contrast
+      useSafeArea: true,
+      builder: (context) {
+        return StreakModal(streakData: streakData);
+      },
+    );
   }
 
   @override
@@ -36,321 +33,210 @@ class StreakModal extends StatefulWidget {
 }
 
 class _StreakModalState extends State<StreakModal> with TickerProviderStateMixin {
-  late AnimationController _scaleController;
-  late AnimationController _fadeController;
-  late AnimationController _bounceController;
+  // 1. Entrance Animation
+  late AnimationController _entranceController;
   late Animation<double> _scaleAnimation;
   late Animation<double> _fadeAnimation;
-  late Animation<double> _bounceAnimation;
+  late Animation<Offset> _slideTextAnimation;
+
+  // 2. Loop Animations (Orbit, Pulse, Shimmer)
+  late AnimationController _orbitController;
+  late AnimationController _pulseController;
+  late AnimationController _shimmerController;
+  late AnimationController _flameController;
+
+  // 3. Button Interaction
+  late AnimationController _buttonController;
+  late Animation<double> _buttonScaleAnimation;
+
+  // 4. Day Check-in Animation
+  late AnimationController _checkInController;
+  late Animation<double> _dayFillAnimation;
+  late Animation<double> _checkScaleAnimation;
 
   @override
   void initState() {
     super.initState();
-    
-    _scaleController = AnimationController(
-      duration: const Duration(milliseconds: 400),
+
+    // -- Entrance --
+    _entranceController = AnimationController(
+      duration: const Duration(milliseconds: 1200),
       vsync: this,
     );
-    
-    _fadeController = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-    
-    _bounceController = AnimationController(
-      duration: const Duration(milliseconds: 1000),
-      vsync: this,
-    );
-    
+
     _scaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _scaleController, curve: Curves.easeOutBack),
+      CurvedAnimation(
+        parent: _entranceController,
+        curve: Curves.elasticOut, // The "Pop" effect
+      ),
     );
-    
+
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _fadeController, curve: Curves.easeIn),
+      CurvedAnimation(
+        parent: _entranceController,
+        curve: const Interval(0.0, 0.4, curve: Curves.easeIn),
+      ),
     );
-    
-    _bounceAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _bounceController, curve: Curves.easeOut),
+
+    _slideTextAnimation = Tween<Offset>(begin: const Offset(0, 0.5), end: Offset.zero).animate(
+      CurvedAnimation(
+        parent: _entranceController,
+        curve: const Interval(0.3, 0.8, curve: Curves.easeOutCubic),
+      ),
     );
-    
-    // Start animations immediately
+
+    // -- Loops --
+    _orbitController = AnimationController(
+      duration: const Duration(seconds: 8),
+      vsync: this,
+    )..repeat();
+
+    _pulseController = AnimationController(
+      duration: const Duration(seconds: 3),
+      vsync: this,
+    )..repeat(reverse: true); // Breathing effect
+
+    _shimmerController = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat(); // Continuous flow
+
+    _flameController = AnimationController(
+        duration: const Duration(milliseconds: 1500),
+        vsync: this
+    )..repeat(reverse: true);
+
+    // -- Button --
+    _buttonController = AnimationController(
+      duration: const Duration(milliseconds: 100),
+      vsync: this,
+    );
+    _buttonScaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
+      CurvedAnimation(parent: _buttonController, curve: Curves.easeInOut),
+    );
+
+    // -- Day Check-in --
+    _checkInController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    );
+
+    _dayFillAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _checkInController,
+        curve: const Interval(0.0, 0.6, curve: Curves.elasticOut),
+      ),
+    );
+
+    _checkScaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _checkInController,
+        curve: const Interval(0.4, 0.8, curve: Curves.elasticOut),
+      ),
+    );
+
+    // Start Entrance
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _fadeController.forward();
-        _scaleController.forward();
-        debugPrint('🎬 Streak modal animations started');
-      }
-    });
-    
-    Future.delayed(const Duration(milliseconds: 200), () {
-      if (mounted) {
-        _bounceController.forward();
-      }
+      _entranceController.forward();
+      // Start check-in animation shortly after entrance
+      Future.delayed(const Duration(milliseconds: 800), () {
+        if (mounted) _checkInController.forward();
+      });
     });
   }
 
   @override
   void dispose() {
-    _scaleController.dispose();
-    _fadeController.dispose();
-    _bounceController.dispose();
+    _entranceController.dispose();
+    _orbitController.dispose();
+    _pulseController.dispose();
+    _shimmerController.dispose();
+    _flameController.dispose();
+    _buttonController.dispose();
+    _checkInController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final streakColor = widget.streakData.getColor();
-    final streakIcon = widget.streakData.getIcon();
-    final streakMessage = widget.streakData.getMessage();
-    
-    debugPrint('🎨 Building streak modal: Streak ${widget.streakData.currentStreak}');
-    
+    final streakColor = const Color(0xFF00E5FF); // Cyan Neon
+    final secondaryColor = const Color(0xFF9D00FF); // Purple Neon
+
     return FadeTransition(
       opacity: _fadeAnimation,
       child: Dialog(
         backgroundColor: Colors.transparent,
-        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         elevation: 0,
         child: ScaleTransition(
           scale: _scaleAnimation,
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  streakColor.withValues(alpha: 0.15),
-                  streakColor.withValues(alpha: 0.08),
-                ],
-              ),
-              color: Colors.white, // Solid white background for maximum visibility
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  color: streakColor.withValues(alpha: 0.5),
-                  blurRadius: 30,
-                  spreadRadius: 5,
-                  offset: const Offset(0, 10),
-                ),
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.15),
-                  blurRadius: 20,
-                  spreadRadius: 2,
-                  offset: const Offset(0, 5),
-                ),
-              ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
+          child: SizedBox(
+            width: 340,
+            height: 420,
+            child: Stack(
+              clipBehavior: Clip.none,
+              alignment: Alignment.center,
               children: [
-                // Animated Icon
-                AnimatedBuilder(
-                  animation: _bounceAnimation,
-                  builder: (context, child) {
-                    return Transform.scale(
-                      scale: 0.5 + (_bounceAnimation.value * 0.5),
-                      child: Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              streakColor,
-                              streakColor.withValues(alpha: 0.85),
+                // 1. The Holographic Card
+                _buildHolographicCard(streakColor, secondaryColor),
+
+                // 2. The Hero Icon (Orbits & Flame) - Positioned overlapping top
+                Positioned(
+                  top: -60,
+                  child: _buildHeroIcon(streakColor, secondaryColor),
+                ),
+
+                // 3. Content (Text & Button)
+                Positioned.fill(
+                  top: 80, // Space for the icon
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Staggered Entrance for Text
+                        SlideTransition(
+                          position: _slideTextAnimation,
+                          child: Column(
+                            children: [
+                              // Title
+                              Text(
+                                "Streak ${widget.streakData.currentStreak}!",
+                                style: TextStyle(
+                                  fontFamily: 'Orbitron', // Assuming a futuristic font, or fallback
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                  shadows: [
+                                    Shadow(color: streakColor, blurRadius: 20),
+                                    Shadow(color: streakColor, blurRadius: 40),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              // Subtitle
+                              Text(
+                                "Bugün zaten giriş yaptınız!",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.white.withOpacity(0.8),
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
                             ],
                           ),
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: streakColor.withValues(alpha: 0.6),
-                              blurRadius: 25,
-                              spreadRadius: 8,
-                            ),
-                          ],
                         ),
-                        child: Icon(
-                          streakIcon,
-                          size: 48,
-                          color: Colors.white,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                
-                const SizedBox(height: 24),
-                
-                // Streak Count
-                AnimatedBuilder(
-                  animation: _bounceAnimation,
-                  builder: (context, child) {
-                    return Opacity(
-                      opacity: _bounceAnimation.value.clamp(0.0, 1.0),
-                      child: Column(
-                        children: [
-                          Text(
-                            'Streak ${widget.streakData.currentStreak}',
-                            style: TextStyle(
-                              fontSize: 36,
-                              fontWeight: FontWeight.bold,
-                              color: streakColor,
-                              letterSpacing: 1,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: streakColor.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: streakColor.withValues(alpha: 0.6),
-                                width: 2,
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.local_fire_department_rounded,
-                                  size: 20,
-                                  color: streakColor,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  '${widget.streakData.currentStreak} ${widget.streakData.currentStreak == 1 ? "Gün" : "Gün"}',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: streakColor,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-                
-                const SizedBox(height: 20),
-                
-                // Message
-                AnimatedBuilder(
-                  animation: _bounceAnimation,
-                  builder: (context, child) {
-                    return Opacity(
-                      opacity: _bounceAnimation.value.clamp(0.0, 1.0),
-                      child: Text(
-                        streakMessage,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey[900], // Darker text for better visibility
-                          fontWeight: FontWeight.w600,
-                          height: 1.4,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                
-                const SizedBox(height: 24),
-                
-                // Motivational message based on streak
-                if (widget.streakData.currentStreak >= 7)
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFFD700).withValues(alpha: 0.25),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: const Color(0xFFFFD700).withValues(alpha: 0.4),
-                        width: 1.5,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.emoji_events_rounded,
-                          color: Color(0xFFFFD700),
-                          size: 20,
-                        ),
-                        const SizedBox(width: 8),
-                        Flexible(
-                          child: Text(
-                            'Muhteşem! Bir haftadır devam ediyorsun!',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.grey[900],
-                              fontWeight: FontWeight.w700,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
+                        
+                        const SizedBox(height: 24),
+                        
+                        // 4. Weekly Tracker
+                        _buildWeeklyTracker(streakColor),
+                        
+                        const Spacer(),
+                        // Button
+                        _buildActionButton(streakColor, secondaryColor),
+                        const SizedBox(height: 30),
                       ],
-                    ),
-                  ),
-                
-                if (widget.streakData.currentStreak >= 30)
-                  Container(
-                    margin: const EdgeInsets.only(top: 8),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFF6B35).withValues(alpha: 0.25),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: const Color(0xFFFF6B35).withValues(alpha: 0.4),
-                        width: 1.5,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.star_rounded,
-                          color: Color(0xFFFF6B35),
-                          size: 20,
-                        ),
-                        const SizedBox(width: 8),
-                        Flexible(
-                          child: Text(
-                            'İnanılmaz! Bir aydır kesintisiz!',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.grey[900],
-                              fontWeight: FontWeight.w700,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                
-                const SizedBox(height: 20),
-                
-                // Close Button
-                ElevatedButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: streakColor,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    elevation: 3,
-                  ),
-                  child: const Text(
-                    'Devam Et',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.5,
                     ),
                   ),
                 ),
@@ -360,6 +246,549 @@ class _StreakModalState extends State<StreakModal> with TickerProviderStateMixin
         ),
       ),
     );
+  }
+
+  Widget _buildWeeklyTracker(Color activeColor) {
+    // Current Day Logic (1 = Mon, 7 = Sun)
+    final now = DateTime.now();
+    final currentWeekday = now.weekday; 
+    
+    // Get actual user login history from Provider
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    
+    // Logic:
+    // "User registers on Friday -> Mon-Thu empty, Fri checked".
+    // We simulate "Registration Date" based on the current streak count.
+    // If Streak = 1, it means the user started today (or broke streak and restarted today).
+    // If Streak = N, it means the user started N-1 days ago.
+    
+    // Calculate the "Start Date" of the current streak
+    // Streak 1: Start = Today
+    // Streak 2: Start = Yesterday
+    // StartDate = Today - (Streak - 1) days
+    final streakStartDate = now.subtract(Duration(days: widget.streakData.currentStreak - 1));
+    
+    // We only care about the weekday of the start date relative to the current week window (Mon-Sun).
+    // Actually, we just need to check if a specific past day (Mon, Tue...) is >= StreakStartDate.
+    
+    // Let's normalize dates to midnight for comparison
+    final todayMidnight = DateTime(now.year, now.month, now.day);
+    final streakStartMidnight = DateTime(streakStartDate.year, streakStartDate.month, streakStartDate.day);
+    
+    // Determine the Monday of the current week
+    final currentMonday = todayMidnight.subtract(Duration(days: currentWeekday - 1));
+
+    final days = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
+
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.1),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: List.generate(7, (index) {
+          // Calculate the date for this specific column (Mon..Sun)
+          final columnDate = currentMonday.add(Duration(days: index));
+          
+          final isFuture = columnDate.isAfter(todayMidnight);
+          final isToday = columnDate.isAtSameMomentAs(todayMidnight);
+          final isPast = columnDate.isBefore(todayMidnight);
+          
+          bool isCompleted = false;
+          bool isPastEmpty = false;
+
+          if (isToday) {
+            isCompleted = true; // Today is always checked in this "Claim Reward" popup
+          } else if (isPast) {
+            // It is completed ONLY if the date is on or after the streak start date
+            // e.g. If Streak starts Friday, then Mon-Thu are NOT completed (Empty)
+            if (columnDate.isAtSameMomentAs(streakStartMidnight) || columnDate.isAfter(streakStartMidnight)) {
+              isCompleted = true;
+            } else {
+              isCompleted = false;
+              isPastEmpty = true; // User wasn't active/registered yet
+            }
+          }
+          
+          return _buildDayWidget(days[index], isPast && isCompleted, isToday, activeColor, isPastEmpty);
+        }),
+      ),
+    );
+  }
+
+  Widget _buildDayWidget(String label, bool isPastCompleted, bool isToday, Color activeColor, bool isPastEmpty) {
+    // 3 States:
+    // Past Completed -> Orange Check
+    // Past Empty -> Empty Circle (Greyed out)
+    // Today -> Animates to Completed
+    // Future -> Empty (Blue Outline)
+    
+    final orangeColor = const Color(0xFFFF6B35); // Reference Orange
+    
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            color: Colors.white.withOpacity(0.9),
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        
+        if (isPastCompleted)
+          // Static Completed State
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: orangeColor,
+              boxShadow: [
+                BoxShadow(
+                  color: orangeColor.withOpacity(0.4),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: const Icon(
+              Icons.check_rounded,
+              color: Colors.white,
+              size: 20,
+            ),
+          )
+        else if (isToday)
+          // Animated Check-in State
+          AnimatedBuilder(
+            animation: _checkInController,
+            builder: (context, child) {
+              // Interpolate between Outline Blue -> Filled Orange
+              final progress = _dayFillAnimation.value;
+              final currentColor = Color.lerp(
+                activeColor.withOpacity(0.3), 
+                orangeColor, 
+                progress
+              )!;
+              
+              final currentScale = 1.0 + (math.sin(progress * math.pi) * 0.2); // Bouncy scale
+              
+              return Transform.scale(
+                scale: currentScale,
+                child: Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: progress > 0.1 ? currentColor : Colors.transparent,
+                    border: Border.all(
+                      color: progress > 0.1 ? currentColor : activeColor,
+                      width: 2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: currentColor.withOpacity(0.4 * progress),
+                        blurRadius: 8 + (4 * progress),
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Opacity(
+                    opacity: _checkScaleAnimation.value.clamp(0.0, 1.0),
+                    child: Transform.scale(
+                      scale: _checkScaleAnimation.value,
+                      child: const Icon(
+                        Icons.check_rounded,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          )
+        else if (isPastEmpty)
+           // Past but MISSED/Empty
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white.withOpacity(0.05), // Faint fill
+              border: Border.all(
+                color: Colors.white.withOpacity(0.1), // Faint outline
+                width: 1,
+              ),
+            ),
+             child: Icon(
+              Icons.close_rounded, // Optional: Show X or just empty
+              color: Colors.white.withOpacity(0.1),
+              size: 16,
+            ),
+          )
+        else
+          // Future State
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: activeColor.withOpacity(0.5), // Blue Glow Outline
+                width: 2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: activeColor.withOpacity(0.1),
+                  blurRadius: 4,
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildHolographicCard(Color primary, Color secondary) {
+    return AnimatedBuilder(
+      animation: Listenable.merge([_pulseController, _shimmerController]),
+      builder: (context, child) {
+        return CustomPaint(
+          painter: _HolographicCardPainter(
+            pulseValue: _pulseController.value,
+            shimmerValue: _shimmerController.value,
+            primaryColor: primary,
+            secondaryColor: secondary,
+          ),
+          child: Container(
+            width: double.infinity,
+            height: double.infinity,
+            decoration: BoxDecoration(
+              // Fallback/Base decoration
+              borderRadius: BorderRadius.circular(20),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildHeroIcon(Color primary, Color secondary) {
+    return SizedBox(
+      width: 150,
+      height: 150,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Orbit 1 (X-Axis dominant)
+          AnimatedBuilder(
+            animation: _orbitController,
+            builder: (context, child) {
+              return Transform(
+                alignment: Alignment.center,
+                transform: Matrix4.identity()
+                  ..rotateX(_orbitController.value * 2 * math.pi)
+                  ..rotateY(_orbitController.value * math.pi * 0.5)
+                  ..rotateZ(math.pi / 6),
+                child: Container(
+                  width: 140,
+                  height: 140,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: primary.withOpacity(0.6),
+                      width: 2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(color: primary.withOpacity(0.4), blurRadius: 10, spreadRadius: 1),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+          // Orbit 2 (Y-Axis dominant)
+          AnimatedBuilder(
+            animation: _orbitController,
+            builder: (context, child) {
+              return Transform(
+                alignment: Alignment.center,
+                transform: Matrix4.identity()
+                  ..rotateY(_orbitController.value * 2 * math.pi) // Counter rotation
+                  ..rotateX(_orbitController.value * math.pi * 0.3)
+                  ..rotateZ(-math.pi / 6),
+                child: Container(
+                  width: 120,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: secondary.withOpacity(0.6),
+                      width: 2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(color: secondary.withOpacity(0.4), blurRadius: 10, spreadRadius: 1),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+          // Inner Flame & Text
+          AnimatedBuilder(
+            animation: _flameController,
+            builder: (context, child) {
+              return Transform.scale(
+                scale: 1.0 + (_flameController.value * 0.05), // Subtle breathing
+                child: Container(
+                  width: 90,
+                  height: 90,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        primary.withOpacity(0.2),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Using Icon as flame placeholder
+                      Icon(
+                        Icons.local_fire_department_rounded,
+                        size: 40,
+                        color: primary,
+                        shadows: [
+                          Shadow(color: primary, blurRadius: 15),
+                        ],
+                      ),
+                      Text(
+                        "${widget.streakData.currentStreak}",
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          height: 1,
+                        ),
+                      ),
+                      const Text(
+                        "Gün",
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.white70,
+                          fontWeight: FontWeight.bold,
+                          height: 1,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionButton(Color primary, Color secondary) {
+    return GestureDetector(
+      onTapDown: (_) => _buttonController.forward(),
+      onTapUp: (_) {
+        _buttonController.reverse();
+        Navigator.of(context).pop();
+      },
+      onTapCancel: () => _buttonController.reverse(),
+      child: AnimatedBuilder(
+        animation: _buttonController,
+        builder: (context, child) {
+          return ScaleTransition(
+            scale: _buttonScaleAnimation,
+            child: Container(
+              width: double.infinity,
+              height: 56,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                gradient: LinearGradient(
+                  colors: [
+                    // Dynamic glow on press could be added here
+                    primary.withOpacity(0.8),
+                    secondary.withOpacity(0.8),
+                  ],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: primary.withOpacity(0.5 + (_buttonController.value * 0.3)), // Glow up on press
+                    blurRadius: 20,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.3),
+                  width: 1,
+                ),
+              ),
+              alignment: Alignment.center,
+              child: const Text(
+                "Devam Et",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  letterSpacing: 1,
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// Custom Painter for the Tech/Circuit Card Background
+class _HolographicCardPainter extends CustomPainter {
+  final double pulseValue;
+  final double shimmerValue;
+  final Color primaryColor;
+  final Color secondaryColor;
+
+  _HolographicCardPainter({
+    required this.pulseValue,
+    required this.shimmerValue,
+    required this.primaryColor,
+    required this.secondaryColor,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = Rect.fromLTWH(0, 0, size.width, size.height);
+    final paint = Paint();
+
+    // 1. Background Fill (Dark Tech Blue)
+    paint.shader = LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [
+        const Color(0xFF0F172A).withOpacity(0.9), // Dark slate
+        const Color(0xFF1E293B).withOpacity(0.95),
+      ],
+    ).createShader(rect);
+
+    // Chamfered Corners (Tech Shape)
+    final path = Path()
+      ..moveTo(20, 0)
+      ..lineTo(size.width - 20, 0)
+      ..lineTo(size.width, 20)
+      ..lineTo(size.width, size.height - 20)
+      ..lineTo(size.width - 20, size.height)
+      ..lineTo(20, size.height)
+      ..lineTo(0, size.height - 20)
+      ..lineTo(0, 20)
+      ..close();
+
+    canvas.drawPath(path, paint);
+
+    // 2. Circuit Shimmer Effect
+    // Create a gradient that moves horizontally
+    final shimmerPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.centerLeft,
+        end: Alignment.centerRight,
+        colors: [
+          Colors.transparent,
+          primaryColor.withOpacity(0.1),
+          Colors.transparent,
+        ],
+        stops: const [0.0, 0.5, 1.0],
+        transform: GradientRotation(shimmerValue * math.pi * 2), // Rotate or Translate?
+        // Actually, we want translation. Let's use matrix logic if GradientRotation isn't enough.
+        // Simplified: just pulse opacity for now or use alignment
+      ).createShader(rect);
+    
+    // Better Shimmer: Draw lines
+    canvas.save();
+    canvas.clipPath(path);
+    final linePaint = Paint()
+      ..color = primaryColor.withOpacity(0.05)
+      ..strokeWidth = 1
+      ..style = PaintingStyle.stroke;
+    
+    // Grid pattern
+    const step = 30.0;
+    for (double i = 0; i < size.width; i += step) {
+      canvas.drawLine(Offset(i, 0), Offset(i, size.height), linePaint);
+    }
+    for (double i = 0; i < size.height; i += step) {
+      canvas.drawLine(Offset(0, i), Offset(size.width, i), linePaint);
+    }
+    
+    // Moving shimmer highlight bar
+    final highlightX = size.width * ((shimmerValue * 2) % 2 - 0.5); // Moves -0.5 to 1.5
+    final highlightPaint = Paint()
+      ..shader = LinearGradient(
+        colors: [Colors.transparent, primaryColor.withOpacity(0.2), Colors.transparent],
+        stops: const [0.0, 0.5, 1.0],
+      ).createShader(Rect.fromLTWH(highlightX - 50, 0, 100, size.height));
+    
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), highlightPaint);
+    canvas.restore();
+
+
+    // 3. Neon Border (Breathing)
+    final borderPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [primaryColor, secondaryColor],
+      ).createShader(rect);
+
+    // Glow Shadow
+    final shadowPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 4 + (pulseValue * 4) // Breathing width
+      ..color = primaryColor.withOpacity(0.3 + (pulseValue * 0.3)) // Breathing opacity
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
+
+    canvas.drawPath(path, shadowPaint);
+    canvas.drawPath(path, borderPaint);
+    
+    // 4. Tech Accents (Corner brackets)
+    final accentPaint = Paint()
+      ..color = Colors.white.withOpacity(0.8)
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
+      
+    // Top-Left Bracket
+    canvas.drawPath(
+      Path()..moveTo(0, 40)..lineTo(0, 20)..lineTo(20, 0)..lineTo(40, 0), 
+      accentPaint
+    );
+    // Bottom-Right Bracket
+    canvas.drawPath(
+      Path()..moveTo(size.width, size.height - 40)..lineTo(size.width, size.height - 20)..lineTo(size.width - 20, size.height)..lineTo(size.width - 40, size.height), 
+      accentPaint
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _HolographicCardPainter oldDelegate) {
+    return oldDelegate.pulseValue != pulseValue || oldDelegate.shimmerValue != shimmerValue;
   }
 }
 

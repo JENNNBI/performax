@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
+import 'package:provider/provider.dart'; // Import Provider
+import 'package:shared_preferences/shared_preferences.dart'; // Import SharedPreferences
 import '../models/institution.dart';
 import '../models/avatar.dart';
+import '../models/user_profile.dart'; // Import UserProfile
+import '../services/user_provider.dart'; // Import UserProvider
 import '../widgets/searchable_institution_dropdown.dart';
 import '../widgets/date_picker_field.dart';
 import '../widgets/avatar_placeholder.dart';
@@ -12,6 +16,7 @@ import '../services/user_service.dart';
 import '../services/sms_otp_service.dart';
 import '../services/quest_service.dart';
 import 'avatar_selection_screen.dart';
+import 'home_screen.dart'; // Import HomeScreen
 
 class RegistrationDetailsScreen extends StatefulWidget {
   static const String id = '/registration_details';
@@ -138,6 +143,21 @@ class _RegistrationDetailsScreenState extends State<RegistrationDetailsScreen>
     );
 
     _animationController.forward();
+    
+    // Sync avatar selection with provider if available
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final userProvider = Provider.of<UserProvider>(context, listen: false);
+        
+        // Sync local state with provider if already set
+        if (userProvider.currentAvatarId != null) {
+          setState(() {
+            _selectedAvatarId = userProvider.currentAvatarId;
+          });
+          debugPrint('🔄 Registration: Synced avatar from provider: ${userProvider.currentAvatarId}');
+        }
+      }
+    });
   }
 
   @override
@@ -512,12 +532,96 @@ class _RegistrationDetailsScreenState extends State<RegistrationDetailsScreen>
       );
 
       if (userCredential.user != null) {
+        final String uid = userCredential.user!.uid;
+
+        // 1. Enforce Clean Slate immediately
+        final userProvider = Provider.of<UserProvider>(context, listen: false);
+        await userProvider.clearSession();
+        
+        // 2. Prepare Fresh User Profile
+        final userProfile = UserProfile(
+          userId: uid,
+          fullName: _fullNameController.text.trim(),
+          firstName: _fullNameController.text.trim().split(' ').first,
+          lastName: _fullNameController.text.trim().split(' ').length > 1 
+              ? _fullNameController.text.trim().split(' ').sublist(1).join(' ') 
+              : '',
+          email: widget.email,
+          phoneNumber: _formattedPhoneNumber ?? _phoneNumberController.text.trim(),
+          isPhoneVerified: true, // We verified it via OTP
+          studentClass: _selectedClass,
+          school: _useManualInstitution ? _manualInstitutionController.text.trim() : _selectedInstitution?.name,
+          gradeLevel: _selectedClass,
+          gender: _selectedGender,
+          avatarId: _selectedAvatarId,
+          // STRICT DEFAULTS FOR NEW USER
+          rocketCurrency: 100, 
+          leaderboardScore: 100,
+        );
+
+        // 3. Save to Firestore
+        // Note: _saveUserData uses 'set', effectively overwriting/creating new doc
+        // We will call it, but we need to ensure it uses our 'userProfile' object values
+        // or we manually update the fields inside _saveUserData to match our strict defaults.
+        // Actually, _saveUserData constructs the map from controllers.
+        // Let's rely on _saveUserData but pass the ID.
+        // Wait, _saveUserData doesn't take UserProfile object, it takes userId.
+        // We should ensure _saveUserData writes the correct rocket/score values.
+        
+        // Let's modify _saveUserData call or update the map it writes.
+        // For now, let's just manually write the critical gamification stats to Firestore here
+        // or update _saveUserData to include them.
+        // Since _saveUserData is complex, let's call it, then update the gamification stats explicitly.
+        
         // Clear old quest data for new user
         await QuestService.instance.resetLocalData();
-        await _saveUserData(userCredential.user!.uid);
+        
+        await _saveUserData(uid); // This saves profile info
+        
+        // Explicitly set gamification defaults in Firestore
+        await _firestore.collection('users').doc(uid).update({
+          'rocketCurrency': 100,
+          'leaderboardScore': 100,
+        });
+        
+        // 4. 🎯 CRITICAL: Initialize UserProvider with user-specific data
+        debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        debugPrint('📝 REGISTRATION: Initializing UserProvider');
+        debugPrint('   User ID: $uid');
+        debugPrint('   Avatar ID: $_selectedAvatarId');
+        debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        
+        // First, load the user session (sets _currentUserId)
+        await userProvider.loadUserData(uid);
+        debugPrint('✅ Step 1: User session loaded');
+        
+        // Set avatar in provider if selected
+        if (_selectedAvatarId != null) {
+          final avatar = Avatar.getById(_selectedAvatarId!);
+          debugPrint('   Avatar Path: ${avatar.bust2DPath}');
+          
+          // 🎯 CRITICAL: Save avatar WITH userId
+          await userProvider.saveAvatar(
+            avatar.bust2DPath, 
+            _selectedAvatarId!,
+            userId: uid, // Explicitly pass userId
+          );
+          debugPrint('✅ Step 2: Avatar saved with user-specific keys');
+        }
+        
+        // Update gamification stats in provider
+        await userProvider.updateStats(
+          score: 100,
+          rockets: 100,
+          rank: 1982,
+        );
+        debugPrint('✅ Step 3: Stats initialized');
+        
+        debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        debugPrint('✅ REGISTRATION COMPLETE - UserProvider ready');
+        debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         
         // Force refresh user profile to cache it locally immediately
-        // This ensures QuestService can access the correct grade/field data
         await UserService().getCurrentUserProfile(forceRefresh: true);
       }
 
@@ -531,7 +635,10 @@ class _RegistrationDetailsScreenState extends State<RegistrationDetailsScreen>
       QuestService.instance.updateProgress(type: 'login', amount: 1);
 
       if (mounted) {
-        Navigator.pushReplacementNamed(context, '/home');
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+          (route) => false,
+        );
       }
     } on FirebaseAuthException catch (e) {
       if (mounted) {
@@ -678,503 +785,439 @@ class _RegistrationDetailsScreenState extends State<RegistrationDetailsScreen>
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    // Dark Theme / Gamified Aesthetic
+    // Primary Color: Deep Blue (0xFF0F172A) or similar dark shade
+    // Accent Color: Neon Blue/Cyan
     
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              theme.primaryColor.withValues(alpha: 0.8),
-              theme.primaryColor,
-              theme.colorScheme.secondary,
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: FadeTransition(
-            opacity: _fadeAnimation,
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                children: [
-                  const SizedBox(height: 20),
-                  
-                  // Progress indicator
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+      backgroundColor: const Color(0xFF0F172A), // Dark Deep Blue Background
+      body: SafeArea(
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 20),
+                
+                // Header (No Progress Bar needed if it looks clunky, but let's keep it subtle)
+                Center(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(25),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.3),
-                        width: 1,
+                      color: Colors.white.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.white.withOpacity(0.1)),
+                    ),
+                    child: const Text(
+                      'Step 2/2',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.0,
                       ),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.7),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Container(
-                          width: 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          'Adım 2/2',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
                   ),
-                  
-                  const SizedBox(height: 24),
-                  
-                  // Main content card
-                  Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.95),
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
-                          blurRadius: 15,
-                          spreadRadius: 5,
+                ),
+                
+                const SizedBox(height: 30),
+                
+                // Title
+                const Text(
+                  'Personal Profile',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Complete your gamer profile to start.',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.6),
+                    fontSize: 16,
+                  ),
+                ),
+                
+                const SizedBox(height: 40),
+                
+                Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Full Name
+                      _ModernTextField(
+                        controller: _fullNameController,
+                        label: 'Full Name',
+                        icon: Icons.person_rounded,
+                        validator: _validateFullName,
+                      ),
+                      const SizedBox(height: 20),
+                      
+                      // Phone Number
+                      _ModernTextField(
+                        controller: _phoneNumberController,
+                        label: 'Phone Number',
+                        icon: Icons.phone_iphone_rounded,
+                        inputType: TextInputType.phone,
+                        validator: _validatePhoneNumber,
+                      ),
+                      const SizedBox(height: 20),
+                      
+                      // Class Selection
+                      _ModernDropdown(
+                        value: _selectedClass,
+                        label: 'Class',
+                        icon: Icons.school_rounded,
+                        items: _classOptions,
+                        onChanged: _isLoading ? null : (val) {
+                          setState(() {
+                             _selectedClass = val;
+                             if (val == '9. Sınıf' || val == '10. Sınıf') _selectedStudyField = null;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Study Field (Conditional)
+                      if (_selectedClass == '11. Sınıf' || _selectedClass == '12. Sınıf' || _selectedClass == 'Mezun') ...[
+                        _ModernDropdown(
+                          value: _selectedStudyField,
+                          label: 'Field of Study',
+                          icon: Icons.category_rounded,
+                          items: _studyFieldOptions,
+                          onChanged: _isLoading ? null : (val) => setState(() => _selectedStudyField = val),
                         ),
+                        const SizedBox(height: 20),
                       ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Kişisel Bilgiler',
-                          style: theme.textTheme.headlineMedium?.copyWith(
-                            color: Colors.black87,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Lütfen kişisel bilgilerinizi tamamlayın',
-                          style: theme.textTheme.bodyLarge?.copyWith(
-                            color: Colors.black54,
-                          ),
-                        ),
-                        const SizedBox(height: 30),
-                        
-                        Form(
-                          key: _formKey,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Full Name Field
-                              TextFormField(
-                                controller: _fullNameController,
-                                decoration: const InputDecoration(
-                                  labelText: 'Ad Soyad',
-                                  hintText: 'Adınızı ve soyadınızı girin',
-                                  prefixIcon: Icon(Icons.person_outline),
+                      
+                      // Gender
+                      _ModernDropdown(
+                        value: _selectedGender,
+                        label: 'Gender',
+                        icon: Icons.transgender_rounded, // or person
+                        items: const ['male', 'female'], // You might want to map these to 'Erkek'/'Kadın' for display
+                        displayMap: const {'male': 'Erkek', 'female': 'Kadın'},
+                        onChanged: _isLoading ? null : (val) {
+                          setState(() {
+                            _selectedGender = val;
+                            _selectedAvatarId ??= Avatar.getDefaultByGender(val!).id;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 24),
+                      
+                      // Avatar Selection (Action Tile)
+                      if (_selectedGender != null) ...[
+                        Consumer<UserProvider>(
+                          builder: (context, userProvider, child) {
+                            final displayId = userProvider.currentAvatarId ?? _selectedAvatarId;
+                            final displayPath = userProvider.currentAvatarPath ?? 
+                                (displayId != null ? Avatar.getById(displayId).bust2DPath : null);
+                            
+                            return GestureDetector(
+                              onTap: () async {
+                                final selected = await Navigator.push<String>(
+                                  context, 
+                                  MaterialPageRoute(builder: (_) => AvatarSelectionScreen(userGender: _selectedGender!, currentAvatarId: displayId))
+                                );
+                                if (selected != null) setState(() => _selectedAvatarId = selected);
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.05),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(color: Colors.cyanAccent.withOpacity(0.3)), // Glowing border
                                 ),
-                                keyboardType: TextInputType.name,
-                                textCapitalization: TextCapitalization.words,
-                                validator: _validateFullName,
-                                enabled: !_isLoading,
-                              ),
-                              const SizedBox(height: 20),
-                              
-                              // Phone Number Field
-                              TextFormField(
-                                controller: _phoneNumberController,
-                                decoration: const InputDecoration(
-                                  labelText: 'Telefon Numarası',
-                                  hintText: '05551234567',
-                                  prefixIcon: Icon(Icons.phone_outlined),
-                                ),
-                                keyboardType: TextInputType.phone,
-                                validator: _validatePhoneNumber,
-                                enabled: !_isLoading,
-                              ),
-                              const SizedBox(height: 20),
-                              
-                              // Class Selection
-                              DropdownButtonFormField<String>(
-                                initialValue: _selectedClass,
-                                decoration: const InputDecoration(
-                                  labelText: 'Sınıf',
-                                  prefixIcon: Icon(Icons.school_outlined),
-                                ),
-                                items: _classOptions.map((String className) {
-                                  return DropdownMenuItem<String>(
-                                    value: className,
-                                    child: Text(className),
-                                  );
-                                }).toList(),
-                                onChanged: _isLoading ? null : (value) {
-                                  setState(() {
-                                    _selectedClass = value;
-                                    // Reset study field if 9th or 10th grade is selected
-                                    if (value == '9. Sınıf' || value == '10. Sınıf') {
-                                      _selectedStudyField = null;
-                                    }
-                                  });
-                                },
-                                validator: _validateClass,
-                              ),
-                              const SizedBox(height: 20),
-                              
-                              // Field of Study Selection (Alan Seçimi)
-                              // Only show for 11th, 12th grade and Graduates
-                              if (_selectedClass == '11. Sınıf' || 
-                                  _selectedClass == '12. Sınıf' || 
-                                  _selectedClass == 'Mezun') ...[
-                                DropdownButtonFormField<String>(
-                                  initialValue: _selectedStudyField,
-                                  decoration: const InputDecoration(
-                                    labelText: 'Alan Seçimi',
-                                    prefixIcon: Icon(Icons.category_outlined),
-                                  ),
-                                  items: _studyFieldOptions.map((String field) {
-                                    return DropdownMenuItem<String>(
-                                      value: field,
-                                      child: Text(field),
-                                    );
-                                  }).toList(),
-                                  onChanged: _isLoading ? null : (value) {
-                                    setState(() {
-                                      _selectedStudyField = value;
-                                    });
-                                  },
-                                  validator: _validateStudyField,
-                                ),
-                                const SizedBox(height: 20),
-                              ],
-                              
-                              // Gender Selection
-                              DropdownButtonFormField<String>(
-                                initialValue: _selectedGender,
-                                decoration: const InputDecoration(
-                                  labelText: 'Cinsiyet',
-                                  prefixIcon: Icon(Icons.person_outline),
-                                ),
-                                items: const [
-                                  DropdownMenuItem(
-                                    value: 'male',
-                                    child: Text('Erkek'),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: 'female',
-                                    child: Text('Kadın'),
-                                  ),
-                                ],
-                                onChanged: _isLoading ? null : (value) {
-                                  setState(() {
-                                    _selectedGender = value;
-                                    // Auto-select default avatar based on gender
-                                    _selectedAvatarId ??= Avatar.getDefaultByGender(value).id;
-                                  });
-                                },
-                                validator: _validateGender,
-                              ),
-                              const SizedBox(height: 20),
-                              
-                              // Avatar Selection
-                              if (_selectedGender != null) ...[
-                                const Text(
-                                  'Avatar',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                GestureDetector(
-                                  onTap: _isLoading ? null : () async {
-                                    final selected = await Navigator.push<String>(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => AvatarSelectionScreen(
-                                          userGender: _selectedGender!,
-                                          currentAvatarId: _selectedAvatarId,
-                                        ),
-                                      ),
-                                    );
-                                    if (selected != null) {
-                                      setState(() {
-                                        _selectedAvatarId = selected;
-                                      });
-                                    }
-                                  },
-                                  child: Container(
-                                    padding: const EdgeInsets.all(16),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(
-                                        color: theme.primaryColor.withValues(alpha: 0.3),
-                                        width: 2,
-                                      ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withValues(alpha: 0.05),
-                                          blurRadius: 5,
-                                          spreadRadius: 1,
-                                        ),
-                                      ],
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        if (_selectedAvatarId != null)
-                                          AvatarPlaceholder(
-                                            avatar: Avatar.getById(_selectedAvatarId),
-                                            size: 60,
-                                            showBorder: false,
-                                          )
-                                        else
-                                          Container(
-                                            width: 60,
-                                            height: 60,
-                                            decoration: BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              color: Colors.grey[300],
-                                            ),
-                                            child: const Icon(
-                                              Icons.person_add,
-                                              color: Colors.grey,
-                                              size: 30,
-                                            ),
-                                          ),
-                                        const SizedBox(width: 16),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                _selectedAvatarId != null
-                                                    ? Avatar.getById(_selectedAvatarId).displayName
-                                                    : 'Avatar Seç',
-                                                style: const TextStyle(
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w600,
-                                                  color: Colors.black87,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 4),
-                                              Text(
-                                                _selectedAvatarId != null
-                                                    ? 'Değiştirmek için dokun'
-                                                    : 'Seni temsil edecek avatarı seç',
-                                                style: TextStyle(
-                                                  fontSize: 12,
-                                                  color: Colors.grey[600],
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        Icon(
-                                          Icons.arrow_forward_ios,
-                                          color: theme.primaryColor,
-                                          size: 20,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 20),
-                              ],
-                              
-                              // Date of Birth Field
-                              DatePickerField(
-                                labelText: 'Doğum Tarihi',
-                                selectedDate: _selectedBirthDate,
-                                onChanged: (date) {
-                                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                                    if (mounted) {
-                                      setState(() {
-                                        _selectedBirthDate = date;
-                                      });
-                                    }
-                                  });
-                                },
-                                validator: _validateBirthDate,
-                                enabled: !_isLoading,
-                                firstDate: DateTime(DateTime.now().year - 100),
-                                lastDate: DateTime.now(),
-                              ),
-                              const SizedBox(height: 24),
-                              
-                              // Institution Selection Section
-                              Text(
-                                'Okul/Dershane Bilgisi',
-                                style: theme.textTheme.titleMedium?.copyWith(
-                                  color: Colors.black87,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Okulunuzu veya dershanenizi seçin',
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: Colors.grey[600],
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              
-                              // Institution selection logic
-                              if (!_useManualInstitution) ...[
-                                SearchableInstitutionDropdown(
-                                  labelText: 'Okul/Dershane Seçin',
-                                  selectedInstitution: _selectedInstitution,
-                                  onChanged: (institution) {
-                                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                                      if (mounted) {
-                                        setState(() {
-                                          _selectedInstitution = institution;
-                                        });
-                                      }
-                                    });
-                                  },
-                                  validator: _validateInstitution,
-                                  enabled: !_isLoading,
-                                ),
-                                const SizedBox(height: 12),
-                                TextButton.icon(
-                                  onPressed: _isLoading ? null : () {
-                                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                                      if (mounted) {
-                                        setState(() {
-                                          _useManualInstitution = true;
-                                          _selectedInstitution = null;
-                                        });
-                                      }
-                                    });
-                                  },
-                                  icon: const Icon(Icons.edit),
-                                  label: const Text('Bulamıyorum, manuel gireceğim'),
-                                ),
-                              ] else ...[
-                                // Manual Institution Input
-                                Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(12),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withValues(alpha: 0.1),
-                                        blurRadius: 10,
-                                        spreadRadius: 0,
-                                      ),
-                                    ],
-                                  ),
-                                  child: TextFormField(
-                                    controller: _manualInstitutionController,
-                                    decoration: const InputDecoration(
-                                      labelText: 'Okul/Dershane Adı',
-                                      hintText: 'Okul veya dershane adını yazın',
-                                      prefixIcon: Icon(Icons.school),
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.all(Radius.circular(12)),
-                                        borderSide: BorderSide.none,
-                                      ),
-                                      filled: true,
-                                      fillColor: Colors.transparent,
-                                    ),
-                                    validator: _validateManualInstitution,
-                                    enabled: !_isLoading,
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                TextButton.icon(
-                                  onPressed: _isLoading ? null : () {
-                                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                                      if (mounted) {
-                                        setState(() {
-                                          _useManualInstitution = false;
-                                          _manualInstitutionController.clear();
-                                        });
-                                      }
-                                    });
-                                  },
-                                  icon: const Icon(Icons.search),
-                                  label: const Text('Listeden seç'),
-                                ),
-                              ],
-                              const SizedBox(height: 32),
-                              
-                              // Complete Registration Button
-                              // OTP will be sent automatically when form is submitted
-                              if (_isLoading || _isSendingOtp)
-                                const Center(child: CircularProgressIndicator())
-                              else
-                                Column(
+                                child: Row(
                                   children: [
-                                    SizedBox(
-                                      width: double.infinity,
-                                      child: ElevatedButton.icon(
-                                        onPressed: _completeRegistration,
-                                        icon: const Icon(Icons.check_circle_outline),
-                                        label: const Text('Kaydı Tamamla'),
-                                        style: ElevatedButton.styleFrom(
-                                          padding: const EdgeInsets.symmetric(vertical: 16),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(12),
+                                    // Headshot
+                                    Container(
+                                      width: 64, height: 64,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        border: Border.all(color: Colors.cyanAccent, width: 2),
+                                        boxShadow: [
+                                          BoxShadow(color: Colors.cyanAccent.withOpacity(0.2), blurRadius: 10),
+                                        ],
+                                        image: displayPath != null ? DecorationImage(
+                                          image: AssetImage(displayPath),
+                                          fit: BoxFit.cover,
+                                          alignment: Alignment.topCenter,
+                                        ) : null,
+                                        color: Colors.grey[800],
+                                      ),
+                                      child: displayPath == null ? const Icon(Icons.add, color: Colors.white) : null,
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            displayId != null ? Avatar.getById(displayId).displayName : 'Select Avatar',
+                                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
                                           ),
-                                        ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            'Tap to change character',
+                                            style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12),
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                    const SizedBox(height: 12),
-                                    SizedBox(
-                                      width: double.infinity,
-                                      child: OutlinedButton.icon(
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                        },
-                                        icon: const Icon(Icons.arrow_back),
-                                        label: const Text('Geri Dön'),
-                                        style: OutlinedButton.styleFrom(
-                                          padding: const EdgeInsets.symmetric(vertical: 16),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(12),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
+                                    const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white54, size: 16),
                                   ],
                                 ),
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 24),
+                      ],
+
+                      // Date Picker (Action Tile Style)
+                       GestureDetector(
+                         onTap: () async {
+                            final date = await showDatePicker(
+                              context: context,
+                              initialDate: DateTime.now().subtract(const Duration(days: 365 * 15)),
+                              firstDate: DateTime(1950),
+                              lastDate: DateTime.now(),
+                              builder: (context, child) {
+                                return Theme(
+                                  data: ThemeData.dark().copyWith(
+                                    colorScheme: const ColorScheme.dark(primary: Colors.cyanAccent),
+                                  ),
+                                  child: child!,
+                                );
+                              }
+                            );
+                            if (date != null) setState(() => _selectedBirthDate = date);
+                         },
+                         child: Container(
+                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+                           decoration: BoxDecoration(
+                             color: Colors.white.withOpacity(0.05),
+                             borderRadius: BorderRadius.circular(30),
+                             border: Border.all(color: Colors.white.withOpacity(0.1)),
+                           ),
+                           child: Row(
+                             children: [
+                               Icon(Icons.calendar_today_rounded, color: Colors.white.withOpacity(0.7)),
+                               const SizedBox(width: 12),
+                               Text(
+                                 _selectedBirthDate == null 
+                                   ? 'Date of Birth' 
+                                   : '${_selectedBirthDate!.day}/${_selectedBirthDate!.month}/${_selectedBirthDate!.year}',
+                                 style: TextStyle(
+                                   color: _selectedBirthDate == null ? Colors.white54 : Colors.white,
+                                   fontSize: 16,
+                                 ),
+                               ),
+                             ],
+                           ),
+                         ),
+                       ),
+                       
+                       const SizedBox(height: 24),
+
+                       // Institution / School Selection
+                       if (!_useManualInstitution) ...[
+                          SearchableInstitutionDropdown(
+                            labelText: 'School / Institution',
+                            hintText: 'Search for your school...',
+                            selectedInstitution: _selectedInstitution,
+                            onChanged: _isLoading ? (_) {} : (inst) => setState(() => _selectedInstitution = inst),
+                            validator: _validateInstitution,
+                            enabled: !_isLoading,
+                          ),
+                          const SizedBox(height: 8),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton(
+                              onPressed: _isLoading ? null : () => setState(() {
+                                _useManualInstitution = true;
+                                _selectedInstitution = null;
+                              }),
+                              child: Text(
+                                "I can't find it, I will enter manually",
+                                style: TextStyle(
+                                  color: Colors.cyanAccent.withOpacity(0.7),
+                                  fontSize: 12,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                          ),
+                       ] else ...[
+                          // Manual Entry
+                          _ModernTextField(
+                            controller: _manualInstitutionController,
+                            label: 'School Name',
+                            icon: Icons.school_rounded,
+                            validator: _validateManualInstitution,
+                          ),
+                          const SizedBox(height: 8),
+                           Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton(
+                              onPressed: _isLoading ? null : () => setState(() {
+                                _useManualInstitution = false;
+                                _manualInstitutionController.clear();
+                              }),
+                              child: Text(
+                                "Back to List Search",
+                                style: TextStyle(
+                                  color: Colors.cyanAccent.withOpacity(0.7),
+                                  fontSize: 12,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                          ),
+                       ],
+
+                       const SizedBox(height: 40),
+
+                       // Action Button
+                      if (_isLoading || _isSendingOtp)
+                        const Center(child: CircularProgressIndicator(color: Colors.cyanAccent))
+                      else
+                        Container(
+                          width: double.infinity,
+                          height: 56,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF00E5FF), Color(0xFF2979FF)], // Cyan to Blue
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(color: const Color(0xFF2979FF).withOpacity(0.4), blurRadius: 20, offset: const Offset(0, 8)),
                             ],
                           ),
+                          child: ElevatedButton(
+                            onPressed: _completeRegistration,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.transparent,
+                              shadowColor: Colors.transparent,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            ),
+                            child: const Text(
+                              'Complete Registration',
+                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                            ),
+                          ),
                         ),
-                      ],
-                    ),
+                        
+                       const SizedBox(height: 20),
+                    ],
                   ),
-                  
-                  const SizedBox(height: 24),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
       ),
+    );
+  }
+}
+
+// Custom Modern Widgets
+class _ModernTextField extends StatelessWidget {
+  final TextEditingController controller;
+  final String label;
+  final IconData icon;
+  final TextInputType inputType;
+  final String? Function(String?)? validator;
+
+  const _ModernTextField({
+    required this.controller,
+    required this.label,
+    required this.icon,
+    this.inputType = TextInputType.text,
+    this.validator,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: inputType,
+      style: const TextStyle(color: Colors.white), // Input text color
+      validator: validator,
+      decoration: InputDecoration(
+        filled: true,
+        fillColor: Colors.white.withOpacity(0.05),
+        labelText: label,
+        labelStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+        prefixIcon: Icon(icon, color: Colors.white.withOpacity(0.7)),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(30),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(30),
+          borderSide: const BorderSide(color: Colors.cyanAccent),
+        ),
+        contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+      ),
+    );
+  }
+}
+
+class _ModernDropdown extends StatelessWidget {
+  final String? value;
+  final String label;
+  final IconData icon;
+  final List<String> items;
+  final Map<String, String>? displayMap;
+  final Function(String?)? onChanged;
+
+  const _ModernDropdown({
+    required this.value,
+    required this.label,
+    required this.icon,
+    required this.items,
+    this.displayMap,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return DropdownButtonFormField<String>(
+      value: value,
+      items: items.map((item) {
+        return DropdownMenuItem(
+          value: item,
+          child: Text(
+            displayMap?[item] ?? item,
+            style: const TextStyle(color: Colors.white), // Dropdown item text
+          ),
+        );
+      }).toList(),
+      onChanged: onChanged,
+      dropdownColor: const Color(0xFF1E293B), // Dark dropdown menu
+      icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white54),
+      decoration: InputDecoration(
+        filled: true,
+        fillColor: Colors.white.withOpacity(0.05),
+        labelText: label,
+        labelStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+        prefixIcon: Icon(icon, color: Colors.white.withOpacity(0.7)),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(30),
+          borderSide: BorderSide.none,
+        ),
+        contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+      ),
+      style: const TextStyle(color: Colors.white), // Selected text color
     );
   }
 } 

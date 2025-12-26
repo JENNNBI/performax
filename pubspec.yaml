@@ -48,6 +48,7 @@ dependencies:
   animations: ^2.0.11
   shimmer: ^3.0.0
   lottie: ^3.1.2
+  phosphor_flutter: ^2.1.0  # Modern icon library for premium UI
   flutter_staggered_animations: ^1.1.1
   flutter_animate: ^4.5.0
   badges: ^3.1.2
@@ -91,6 +92,7 @@ dependencies:
 
   # App Configuration
   flutter_launcher_icons: ^0.14.4
+  scrollable_positioned_list: ^0.3.8
 
 dev_dependencies:
   flutter_test:

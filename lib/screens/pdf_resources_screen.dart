@@ -18,7 +18,8 @@ class _PDFResourcesScreenState extends State<PDFResourcesScreen> {
   
   final List<String> _subjects = [
     'All', 'Biology', 'Mathematics', 'Physics', 'Chemistry',
-    'Turkish', 'History', 'Geography', 'Philosophy'
+    'Turkish', 'History', 'Geography', 'Philosophy',
+    'Literature', 'Religious Culture'
   ];
   
   final List<String> _grades = [
@@ -68,6 +69,42 @@ class _PDFResourcesScreenState extends State<PDFResourcesScreen> {
     }).toList();
   }
 
+  List<String> _getAvailableGrades() {
+    // Strict Data Constraint: Subject vs. Grade Mapping
+    // Matrix:
+    // * Türkçe: 9, 10
+    // * Felsefe: 10, 11 (No 9 or 12)
+    // * Others: 9, 10, 11, 12
+    
+    // Convert subject to English if needed for mapping, or check key
+    // List _subjects uses English keys: 'Turkish', 'Philosophy', etc.
+    
+    if (_selectedSubject == 'Turkish') {
+       return ['9', '10'];
+    } else if (_selectedSubject == 'Philosophy') {
+       return ['10', '11'];
+    }
+    
+    // Others: All grades allowed (9, 10, 11, 12)
+    // Note: _grades list contains 'All', '9', '10', '11', '12'.
+    // If we want strict filtering, we should probably keep 'All' or remove it depending on logic.
+    // The previous implementation used _grades.where, which kept 'All' implicitly? 
+    // No, _grades = ['All', '9', '10', '11', '12'].
+    // Previous code: return _grades.where((g) => !['9', '10'].contains(g)).toList();
+    // This kept 'All', '11', '12'.
+    
+    // So for Turkish: Keep 'All', '9', '10'.
+    // For Philosophy: Keep 'All', '10', '11'.
+    
+    if (_selectedSubject == 'Turkish') {
+       return _grades.where((g) => ['All', '9', '10'].contains(g)).toList();
+    } else if (_selectedSubject == 'Philosophy') {
+       return _grades.where((g) => ['All', '10', '11'].contains(g)).toList();
+    }
+    
+    return _grades;
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<LanguageBloc, LanguageState>(
@@ -105,6 +142,21 @@ class _PDFResourcesScreenState extends State<PDFResourcesScreen> {
                         onChanged: (value) {
                           setState(() {
                             _selectedSubject = value!;
+                            
+                            // Reset grade if invalid for new subject
+                            // Get allowed grades for the NEW subject
+                            List<String> allowed = [];
+                            if (_selectedSubject == 'Turkish') {
+                               allowed = ['All', '9', '10'];
+                            } else if (_selectedSubject == 'Philosophy') {
+                               allowed = ['All', '10', '11'];
+                            } else {
+                               allowed = _grades; // All
+                            }
+                            
+                            if (!allowed.contains(_selectedGrade)) {
+                               _selectedGrade = allowed.contains('All') ? 'All' : allowed.first;
+                            }
                           });
                         },
                       ),
@@ -113,6 +165,7 @@ class _PDFResourcesScreenState extends State<PDFResourcesScreen> {
                     // Grade filter
                     Expanded(
                       child: DropdownButtonFormField<String>(
+                        key: ValueKey('grade_dropdown_$_selectedSubject'),
                         initialValue: _selectedGrade,
                         decoration: InputDecoration(
                           labelText: languageBloc.translate('grade'),
@@ -124,7 +177,7 @@ class _PDFResourcesScreenState extends State<PDFResourcesScreen> {
                             vertical: 8,
                           ),
                         ),
-                        items: _grades.map((grade) {
+                        items: _getAvailableGrades().map((grade) {
                           return DropdownMenuItem(
                             value: grade,
                             child: Text(grade),

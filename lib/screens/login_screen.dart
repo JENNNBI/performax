@@ -11,9 +11,13 @@ import '../widgets/neumorphic/neumorphic_container.dart';
 import '../widgets/neumorphic/neumorphic_button.dart';
 import '../widgets/neumorphic/neumorphic_text_field.dart';
 
+import 'package:provider/provider.dart';
+import '../services/user_provider.dart';
+
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
   static const String id = 'login_screen';
+  
+  const LoginScreen({super.key});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -63,25 +67,63 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
         _isLoading = true;
       });
       try {
-        await _auth.signInWithEmailAndPassword(
+        debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        debugPrint('🔐 LOGIN FLOW STARTED');
+        debugPrint('   Email: ${_emailController.text.trim()}');
+        debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        
+        // 1️⃣ Clear previous session RAM state
+        await Provider.of<UserProvider>(context, listen: false).clearSession();
+        debugPrint('✅ Step 1: Previous session cleared');
+
+        // 2️⃣ Authenticate with Firebase
+        final credential = await _auth.signInWithEmailAndPassword(
           email: _emailController.text.trim(),
           password: _passwordController.text,
         );
+        debugPrint('✅ Step 2: Firebase authentication successful');
         
         await UserService.clearGuestStatus();
         
-        if (mounted) {
+        if (mounted && credential.user != null) {
+          final userId = credential.user!.uid;
+          debugPrint('   User ID: $userId');
+          
+          // 3️⃣ 🎯 CRITICAL: Load user-specific data from disk
+          final userProvider = Provider.of<UserProvider>(context, listen: false);
+          await userProvider.loadUserData(userId);
+          debugPrint('✅ Step 3: User data loaded from disk');
+          
+          // 4️⃣ Load user profile from Firestore
           context.read<UserProfileBloc>().add(const LoadUserProfile());
+          debugPrint('✅ Step 4: User profile bloc triggered');
+          
           await Future.delayed(const Duration(milliseconds: 100));
+          
           if (mounted) {
+            debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+            debugPrint('✅ LOGIN SUCCESSFUL - Navigating to Home');
+            debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
             Navigator.pushReplacementNamed(context, '/home');
           }
         }
       } on FirebaseAuthException catch (e) {
+        debugPrint('❌ LOGIN FAILED: ${e.message}');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(e.message ?? context.read<LanguageBloc>().translate('login_failed')),
+              backgroundColor: Colors.red,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      } catch (e) {
+        debugPrint('❌ UNEXPECTED ERROR during login: $e');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Login error: $e'),
               backgroundColor: Colors.red,
               behavior: SnackBarBehavior.floating,
             ),
@@ -102,6 +144,13 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       _isLoading = true;
     });
     try {
+      debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      debugPrint('🔐 GOOGLE SIGN-IN FLOW STARTED');
+      debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      
+      // 1️⃣ Clear previous session
+      await Provider.of<UserProvider>(context, listen: false).clearSession();
+      
       await _googleSignIn.initialize();
       final Future<GoogleSignInAuthenticationEvent> eventFuture =
           _googleSignIn.authenticationEvents.first;
@@ -119,10 +168,21 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       }
       final credential = GoogleAuthProvider.credential(idToken: idToken);
 
-      await _auth.signInWithCredential(credential);
+      // 2️⃣ Authenticate with Firebase
+      final userCredential = await _auth.signInWithCredential(credential);
+      debugPrint('✅ Google authentication successful');
+      
       await UserService.clearGuestStatus();
 
-      if (mounted) {
+      if (mounted && userCredential.user != null) {
+        final userId = userCredential.user!.uid;
+        debugPrint('   User ID: $userId');
+        
+        // 3️⃣ 🎯 CRITICAL: Load user-specific data
+        final userProvider = Provider.of<UserProvider>(context, listen: false);
+        await userProvider.loadUserData(userId);
+        debugPrint('✅ User data loaded from disk');
+        
         context.read<UserProfileBloc>().add(const LoadUserProfile());
         await Future.delayed(const Duration(milliseconds: 100));
         if (mounted) {
@@ -168,7 +228,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
         final languageBloc = context.read<LanguageBloc>();
         
         return Scaffold(
-          backgroundColor: NeumorphicColors.getBackground(context),
+          backgroundColor: const Color(0xFF0F172A), // Deep Blue / Dark Background
           body: SafeArea(
             child: SingleChildScrollView(
               child: Padding(
@@ -184,12 +244,13 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                       NeumorphicContainer(
                         padding: const EdgeInsets.all(32),
                         borderRadius: 30,
+                        color: const Color(0xFF1E293B), // Darker Card Background
                         child: Column(
                           children: [
                             Text(
-                              languageBloc.translate('welcome_back'),
+                              'Hoşgeldin', // Updated Copy
                               style: theme.textTheme.headlineMedium?.copyWith(
-                                color: NeumorphicColors.getText(context),
+                                color: Colors.white, // Bright White
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -199,7 +260,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                 ? 'Devam etmek için giriş yapın'
                                 : 'Sign in to continue',
                               style: theme.textTheme.bodyLarge?.copyWith(
-                                color: NeumorphicColors.getText(context).withValues(alpha: 0.6),
+                                color: Colors.white70, // Off-White
                               ),
                             ),
                             const SizedBox(height: 30),
@@ -207,37 +268,57 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                               key: _formKey,
                               child: Column(
                                 children: [
-                                  // Email Field (Debossed)
-                                  NeumorphicTextField(
+                                  // Email Field (Dark Filled Style)
+                                  TextFormField(
                                     controller: _emailController,
-                                    hintText: languageBloc.translate('email'),
-                                    prefixIcon: Icon(AppIcons.email, color: NeumorphicColors.getText(context).withValues(alpha: 0.5)),
                                     keyboardType: TextInputType.emailAddress,
+                                    style: const TextStyle(color: Colors.white),
+                                    decoration: InputDecoration(
+                                      hintText: languageBloc.translate('email'),
+                                      hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+                                      prefixIcon: Icon(AppIcons.email, color: Colors.white.withOpacity(0.5)),
+                                      filled: true,
+                                      fillColor: Colors.black.withOpacity(0.2),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(16),
+                                        borderSide: BorderSide.none,
+                                      ),
+                                    ),
                                   ),
                                   const SizedBox(height: 24),
                                   
-                                  // Password Field (Debossed)
-                                  NeumorphicTextField(
+                                  // Password Field (Dark Filled Style)
+                                  TextFormField(
                                     controller: _passwordController,
-                                    hintText: languageBloc.translate('password'),
-                                    prefixIcon: Icon(AppIcons.lock, color: NeumorphicColors.getText(context).withValues(alpha: 0.5)),
                                     obscureText: !_isPasswordVisible,
-                                    suffixIcon: IconButton(
-                                      icon: Icon(
-                                        _isPasswordVisible ? AppIcons.visibilityOff : AppIcons.visibility,
-                                        color: NeumorphicColors.getText(context).withValues(alpha: 0.5),
+                                    style: const TextStyle(color: Colors.white),
+                                    decoration: InputDecoration(
+                                      hintText: languageBloc.translate('password'),
+                                      hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+                                      prefixIcon: Icon(AppIcons.lock, color: Colors.white.withOpacity(0.5)),
+                                      filled: true,
+                                      fillColor: Colors.black.withOpacity(0.2),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(16),
+                                        borderSide: BorderSide.none,
                                       ),
-                                      onPressed: () {
-                                        setState(() {
-                                          _isPasswordVisible = !_isPasswordVisible;
-                                        });
-                                      },
+                                      suffixIcon: IconButton(
+                                        icon: Icon(
+                                          _isPasswordVisible ? AppIcons.visibilityOff : AppIcons.visibility,
+                                          color: Colors.white.withOpacity(0.5),
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            _isPasswordVisible = !_isPasswordVisible;
+                                          });
+                                        },
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(height: 32),
                                   
                                   if (_isLoading)
-                                    const CircularProgressIndicator()
+                                    const CircularProgressIndicator(color: Colors.cyanAccent)
                                   else
                                     Column(
                                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -262,6 +343,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                         // Google Sign In
                                         NeumorphicButton(
                                           onPressed: _signInWithGoogle,
+                                          color: Colors.white, // Keep Google button white/light for brand compliance or contrast
                                           child: Row(
                                             mainAxisAlignment: MainAxisAlignment.center,
                                             children: [
@@ -272,8 +354,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                               const SizedBox(width: 12),
                                               Text(
                                                 languageBloc.translate('sign_in_with_google'),
-                                                style: TextStyle(
-                                                  color: NeumorphicColors.getText(context),
+                                                style: const TextStyle(
+                                                  color: Colors.black87,
                                                   fontWeight: FontWeight.bold,
                                                 ),
                                               ),

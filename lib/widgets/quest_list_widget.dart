@@ -217,6 +217,8 @@ class _QuestCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isCompleted = quest.isCompleted;
     final isClaimable = quest.isClaimable;
+    // Create a GlobalKey to track the claim button position
+    final GlobalKey buttonKey = GlobalKey();
     
     // Card Colors
     final cardColor = const Color(0xFF353941);
@@ -225,7 +227,7 @@ class _QuestCard extends StatelessWidget {
         : (isCompleted ? Colors.green : Colors.white.withValues(alpha: 0.1));
 
     return GestureDetector(
-      onTap: isClaimable ? () => QuestCelebrationCoordinator.instance.claimQuest(quest) : null,
+      onTap: isClaimable ? () => QuestCelebrationCoordinator.instance.claimQuest(quest, buttonKey) : null,
       child: Container(
         decoration: BoxDecoration(
           color: cardColor,
@@ -330,7 +332,8 @@ class _QuestCard extends StatelessWidget {
                 Align(
                   alignment: Alignment.centerRight,
                   child: NeumorphicButton(
-                    onPressed: () => QuestCelebrationCoordinator.instance.claimQuest(quest),
+                    key: buttonKey,
+                    onPressed: () => QuestCelebrationCoordinator.instance.claimQuest(quest, buttonKey),
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                     borderRadius: 20,
                     color: const Color(0xFFFFD700),

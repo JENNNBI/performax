@@ -9,6 +9,7 @@ class Quest extends Equatable {
   final int progress;
   final int target;
   final String icon;
+  final String type; // Added type field
   final bool completed;
   final bool claimed;
 
@@ -20,6 +21,7 @@ class Quest extends Equatable {
     required this.progress,
     required this.target,
     required this.icon,
+    required this.type, // Added type field
     required this.completed,
     this.claimed = false,
   });
@@ -41,13 +43,14 @@ class Quest extends Equatable {
   /// Create Quest from JSON
   factory Quest.fromJson(Map<String, dynamic> json) {
     return Quest(
-      id: json['id'] as String,
-      title: json['title'] as String,
-      description: json['description'] as String,
-      reward: json['reward'] as int,
-      progress: json['progress'] as int,
-      target: json['target'] as int,
-      icon: json['icon'] as String,
+      id: json['id'] as String? ?? 'unknown',
+      title: json['title'] as String? ?? 'No Title',
+      description: json['description'] as String? ?? '',
+      reward: (json['reward'] as num?)?.toInt() ?? 0,
+      progress: (json['progress'] as num?)?.toInt() ?? 0,
+      target: (json['target'] as num?)?.toInt() ?? 1,
+      icon: json['icon'] as String? ?? 'help_outline',
+      type: json['type'] as String? ?? 'generic', // Added type field with default
       completed: json['completed'] as bool? ?? false,
       claimed: json['claimed'] as bool? ?? false,
     );
@@ -63,6 +66,7 @@ class Quest extends Equatable {
       'progress': progress,
       'target': target,
       'icon': icon,
+      'type': type, // Added type field
       'completed': completed,
       'claimed': claimed,
     };
@@ -77,6 +81,7 @@ class Quest extends Equatable {
     int? progress,
     int? target,
     String? icon,
+    String? type, // Added type field
     bool? completed,
     bool? claimed,
   }) {
@@ -88,13 +93,14 @@ class Quest extends Equatable {
       progress: progress ?? this.progress,
       target: target ?? this.target,
       icon: icon ?? this.icon,
+      type: type ?? this.type, // Added type field
       completed: completed ?? this.completed,
       claimed: claimed ?? this.claimed,
     );
   }
 
   @override
-  List<Object?> get props => [id, title, description, reward, progress, target, icon, completed, claimed];
+  List<Object?> get props => [id, title, description, reward, progress, target, icon, type, completed, claimed];
 }
 
 /// Quest data container for all quest types

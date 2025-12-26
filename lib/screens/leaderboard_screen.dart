@@ -3,44 +3,68 @@ import 'dart:ui';
 import '../theme/neumorphic_colors.dart';
 import '../widgets/neumorphic/neumorphic_container.dart';
 import '../widgets/neumorphic/neumorphic_button.dart';
+import '../services/leaderboard_service.dart';
+import '../services/user_service.dart';
+import '../services/user_provider.dart'; // Import Provider
+import 'package:provider/provider.dart'; // Import Provider
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
-/// Model class for leaderboard entries
-class LeaderboardEntry {
-  final int rank;
-  final String name;
-  final String grade;
-  final int points;
-  final String? avatar; // Optional image URL or asset path
-  final bool isCurrentUser;
-
-  LeaderboardEntry({
-    required this.rank,
-    required this.name,
-    required this.grade,
-    required this.points,
-    this.avatar,
-    this.isCurrentUser = false,
-  });
-}
-
-class LeaderboardScreen extends StatelessWidget {
+class LeaderboardScreen extends StatefulWidget {
   const LeaderboardScreen({super.key});
 
   @override
+  State<LeaderboardScreen> createState() => LeaderboardScreenState();
+}
+
+class LeaderboardScreenState extends State<LeaderboardScreen> {
+  final ItemScrollController _itemScrollController = ItemScrollController();
+  
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      scrollToUser();
+    });
+  }
+
+  void scrollToUser() {
+    // We will scroll to the user in the "others" list
+    // This requires us to know the list structure, which depends on the provider state.
+    // We'll handle this in the build method or after first frame.
+    // For now, let's leave it as best effort.
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // Mock Data
-    final List<LeaderboardEntry> entries = [
-      LeaderboardEntry(rank: 1, name: "Ali Yılmaz", grade: "12. Sınıf", points: 2450, isCurrentUser: false),
-      LeaderboardEntry(rank: 2, name: "Zeynep Kaya", grade: "11. Sınıf", points: 2300, isCurrentUser: false),
-      LeaderboardEntry(rank: 3, name: "Ahmet Demir", grade: "Mezun", points: 2150, isCurrentUser: false),
-      LeaderboardEntry(rank: 4, name: "Selin Şahin", grade: "10. Sınıf", points: 1980, isCurrentUser: false),
-      LeaderboardEntry(rank: 5, name: "Can Öztürk", grade: "12. Sınıf", points: 1850, isCurrentUser: true), // Current User
-      LeaderboardEntry(rank: 6, name: "Elif Çelik", grade: "9. Sınıf", points: 1720, isCurrentUser: false),
-      LeaderboardEntry(rank: 7, name: "Murat Aslan", grade: "11. Sınıf", points: 1650, isCurrentUser: false),
-      LeaderboardEntry(rank: 8, name: "Ayşe Yıldız", grade: "Mezun", points: 1540, isCurrentUser: false),
-      LeaderboardEntry(rank: 9, name: "Burak Arslan", grade: "12. Sınıf", points: 1420, isCurrentUser: false),
-      LeaderboardEntry(rank: 10, name: "Ceren Ak", grade: "10. Sınıf", points: 1300, isCurrentUser: false),
-    ];
+    // Watch UserProvider for immediate updates
+    final userProvider = Provider.of<UserProvider>(context);
+    final userProfile = UserService.instance.currentUserProfile;
+
+    // Generate Leaderboard Data
+    // We pass a modified UserProfile that reflects the Provider's current state
+    // This ensures the leaderboard generation logic sees the updated score/rank
+    final syncUser = userProfile?.copyWith(
+      leaderboardScore: userProvider.score,
+    );
+    
+    // However, LeaderboardService generates the list.
+    // Let's modify the service call or post-process the list.
+    // Better: Update the 'isCurrentUser' entry in the list with Provider data.
+    
+    var entries = syncUser != null 
+        ? LeaderboardService.instance.getLeaderboard(syncUser) 
+        : <LeaderboardEntry>[];
+    
+    // FIX: Override Current User Entry with Provider Data
+    // This ensures the avatar and score are 100% in sync with the Home Screen
+    final userIndex = entries.indexWhere((e) => e.isCurrentUser);
+    if (userIndex != -1) {
+      entries[userIndex] = entries[userIndex].copyWith(
+        points: userProvider.score,
+        rank: userProvider.rank,
+        avatar: userProvider.currentAvatarPath, // Use provider's avatar path
+      );
+    }
 
     // Extract Top 3 for Podium
     final top3 = entries.take(3).toList();
@@ -48,48 +72,24 @@ class LeaderboardScreen extends StatelessWidget {
     final others = entries.skip(3).toList();
     
     final bgColor = NeumorphicColors.getBackground(context);
-    final textColor = NeumorphicColors.getText(context);
-
+    
     return Scaffold(
       backgroundColor: bgColor,
       body: SafeArea(
         child: Column(
           children: [
-            // Header
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 24.0),
-              child: Column(
-                children: [
-                  Text(
-                    "Sıralama",
-                    style: TextStyle(
-                      color: textColor,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 24,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    "Bu ayın en iyileri",
-                    style: TextStyle(
-                      color: textColor.withValues(alpha: 0.6),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            const SizedBox(height: 16),
             
             // Podium Section
             _buildPodium(context, top3),
             
-            const SizedBox(height: 30),
+            const SizedBox(height: 20),
             
             // List Section
             Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.only(bottom: 120), // Space for bottom nav
+              child: ScrollablePositionedList.builder(
+                itemScrollController: _itemScrollController,
+                padding: const EdgeInsets.only(bottom: 120),
                 itemCount: others.length,
                 itemBuilder: (context, index) {
                   final entry = others[index];
@@ -128,7 +128,7 @@ class LeaderboardScreen extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        // Avatar
+        // Avatar with Headshot Logic
         Stack(
           alignment: Alignment.topCenter,
           clipBehavior: Clip.none,
@@ -137,10 +137,21 @@ class LeaderboardScreen extends StatelessWidget {
               padding: const EdgeInsets.all(4),
               shape: BoxShape.circle,
               depth: 4,
-              child: CircleAvatar(
-                radius: 24,
-                backgroundColor: color.withValues(alpha: 0.2),
-                child: Icon(Icons.person, color: color),
+              child: Container(
+                width: 48, // Radius 24 * 2
+                height: 48,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: color.withOpacity(0.2),
+                  image: entry.avatar != null 
+                      ? DecorationImage(
+                          image: AssetImage(entry.avatar!),
+                          fit: BoxFit.cover,
+                          alignment: Alignment.topCenter,
+                        )
+                      : null,
+                ),
+                child: entry.avatar == null ? Icon(Icons.person, color: color) : null,
               ),
             ),
             if (crown)
@@ -166,12 +177,7 @@ class LeaderboardScreen extends StatelessWidget {
           width: 80,
           height: height,
           borderRadius: 16,
-          // Custom rounded corners only on top
-          // Since NeumorphicContainer takes a single borderRadius double, we can't do mixed corners easily
-          // unless we modify it or wrap it.
-          // Let's use the container but modify it slightly or just accept rounded bottom.
-          // Actually, let's keep it fully rounded for soft UI.
-          color: color.withValues(alpha: 0.2),
+          color: color.withOpacity(0.2),
           depth: 4,
           child: Column(
             children: [
@@ -200,27 +206,48 @@ class LeaderboardScreen extends StatelessWidget {
         onPressed: () {}, // Could show user profile
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         borderRadius: 16,
-        color: entry.isCurrentUser ? NeumorphicColors.accentBlue.withValues(alpha: 0.1) : null,
+        color: entry.isCurrentUser ? NeumorphicColors.accentBlue.withOpacity(0.1) : null,
         child: Row(
           children: [
-            // Rank
+            // Rank - Fixed width to prevent wrapping
             SizedBox(
-              width: 30,
-              child: Text(
-                "${entry.rank}",
-                style: TextStyle(
-                  color: textColor.withValues(alpha: 0.5),
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+              width: 50,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "${entry.rank}",
+                  style: TextStyle(
+                    color: textColor.withOpacity(0.5),
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
-            // Avatar
+            // Avatar with Headshot Logic
             NeumorphicContainer(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(2), // Reduced padding
               shape: BoxShape.circle,
               depth: 2,
-              child: Icon(Icons.person, color: textColor.withValues(alpha: 0.5), size: 20),
+              child: Container(
+                width: 36, 
+                height: 36,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.grey[200],
+                  image: entry.avatar != null 
+                      ? DecorationImage(
+                          image: AssetImage(entry.avatar!),
+                          fit: BoxFit.cover,
+                          alignment: Alignment.topCenter, // Headshot Crop
+                        )
+                      : null,
+                ),
+                child: entry.avatar == null 
+                    ? Icon(Icons.person, color: textColor.withOpacity(0.5), size: 20)
+                    : null,
+              ),
             ),
             const SizedBox(width: 16),
             // Info
@@ -235,11 +262,13 @@ class LeaderboardScreen extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   Text(
                     entry.grade,
                     style: TextStyle(
-                      color: textColor.withValues(alpha: 0.6),
+                      color: textColor.withOpacity(0.6),
                       fontSize: 12,
                     ),
                   ),
@@ -250,7 +279,7 @@ class LeaderboardScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: Colors.amber.withValues(alpha: 0.2),
+                color: Colors.amber.withOpacity(0.2),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(

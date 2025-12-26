@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'settings_screen.dart';
 import '../services/user_service.dart';
+import '../widgets/user_avatar_circle.dart';
 
 class ProfileScreen extends StatefulWidget {
   static const String id = '/profile';
@@ -307,17 +308,10 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                                 ),
                                 child: Column(
                                   children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(16),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white.withValues(alpha: 0.2),
-                                        borderRadius: BorderRadius.circular(50),
-                                      ),
-                                                            child: const Icon(
-                        Icons.person_outline,
-                        size: 40,
-                        color: Colors.white,
-                      ),
+                                    const UserAvatarCircle(
+                                      radius: 40,
+                                      showBorder: true,
+                                      borderColor: Colors.white,
                                     ),
                                     const SizedBox(height: 16),
                                     Text(

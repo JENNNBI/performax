@@ -14,12 +14,17 @@ class UserService {
   static const String _cachedProfileTimestampKey = 'cached_profile_timestamp';
   
   // Singleton instance
-  static final UserService _instance = UserService._internal();
-  factory UserService() => _instance;
+  static final UserService instance = UserService._internal();
+  factory UserService() => instance;
   UserService._internal();
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  
+  // In-memory cache for quick access
+  UserProfile? _inMemoryProfile;
+  
+  UserProfile? get currentUserProfile => _inMemoryProfile;
   
   // Cache expiration: 24 hours
   static const Duration _cacheExpiration = Duration(hours: 24);
@@ -53,6 +58,9 @@ class UserService {
       // Save profile data as JSON
       final profileMap = profile.toMap();
       final profileJson = jsonEncode(profileMap);
+      
+      // Update in-memory
+      _inMemoryProfile = profile;
       
       await prefs.setString(_cachedProfileKey, profileJson);
       await prefs.setString(_cachedProfileUserIdKey, user.uid);
@@ -99,6 +107,9 @@ class UserService {
       
       final profileMap = jsonDecode(cachedJson) as Map<String, dynamic>;
       final profile = UserProfile.fromMap(user.uid, profileMap);
+      
+      // Update in-memory
+      _inMemoryProfile = profile;
       
       debugPrint('✅ Profile loaded from cache for ${profile.displayName}');
       return profile;

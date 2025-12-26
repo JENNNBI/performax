@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:provider/provider.dart';
 import 'onboarding_screen.dart';
 import 'first_screen.dart';
 import 'login_screen.dart';
 import 'home_screen.dart';
 import '../theme/neumorphic_colors.dart';
 import '../widgets/neumorphic/neumorphic_container.dart';
+import '../services/user_provider.dart';
 
 /// Enhanced Splash screen with Neumorphic logo animation
 class SplashScreen extends StatefulWidget {
@@ -61,6 +63,30 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
     if (!mounted) return;
     
     try {
+      // 🎯 CRITICAL: Ensure UserProvider is fully loaded before proceeding
+      debugPrint('🔄 SplashScreen: Waiting for UserProvider to load...');
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      
+      // Wait for UserProvider to load (it should already be loading from main.dart)
+      int attempts = 0;
+      while (!userProvider.isLoaded && attempts < 50) {
+        await Future.delayed(const Duration(milliseconds: 100));
+        attempts++;
+      }
+      
+      if (userProvider.isLoaded) {
+        debugPrint('✅ SplashScreen: UserProvider loaded successfully!');
+        if (userProvider.currentAvatarPath != null) {
+          debugPrint('   Avatar: ${userProvider.currentAvatarPath}');
+        } else {
+          debugPrint('   No avatar selected yet');
+        }
+      } else {
+        debugPrint('⚠️ SplashScreen: UserProvider load timeout, proceeding anyway');
+      }
+      
+      if (!mounted) return;
+      
       SharedPreferences? prefs;
       bool hasCompletedOnboarding = false;
       bool hasSeenFirstScreen = false;
@@ -90,23 +116,39 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
       
       if (currentUser != null) {
         if (mounted && context.mounted) {
+          debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+          debugPrint('🔄 SplashScreen: AUTO-LOGIN DETECTED');
+          debugPrint('   User ID: ${currentUser.uid}');
+          debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+          
+          // 🎯 CRITICAL: Load user's saved data before showing HomeScreen
+          final userProvider = Provider.of<UserProvider>(context, listen: false);
+          await userProvider.loadUserData(currentUser.uid);
+          
+          debugPrint('✅ User data loaded for auto-login');
+          debugPrint('🏠 SplashScreen: Navigating to HomeScreen');
+          debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+          
           Navigator.of(context).pushReplacementNamed(HomeScreen.id);
         }
       } else if (!hasCompletedOnboarding) {
         if (mounted && context.mounted) {
+          debugPrint('📖 SplashScreen: Navigating to OnboardingScreen');
           Navigator.of(context).pushReplacementNamed(OnboardingScreen.id);
         }
       } else if (hasSeenFirstScreen) {
         if (mounted && context.mounted) {
+          debugPrint('🔐 SplashScreen: Navigating to LoginScreen');
           Navigator.of(context).pushReplacementNamed(LoginScreen.id);
         }
       } else {
         if (mounted && context.mounted) {
+          debugPrint('🎬 SplashScreen: Navigating to FirstScreen');
           Navigator.of(context).pushReplacementNamed(FirstScreen.id);
         }
       }
     } catch (e) {
-      debugPrint('Error during initialization: $e');
+      debugPrint('❌ Error during initialization: $e');
       if (mounted && context.mounted) {
         Navigator.of(context).pushReplacementNamed(OnboardingScreen.id);
       }

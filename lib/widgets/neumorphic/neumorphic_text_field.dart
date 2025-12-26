@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../theme/neumorphic_colors.dart';
-import 'inner_shadow.dart';
 
 class NeumorphicTextField extends StatelessWidget {
   final TextEditingController? controller;
@@ -24,43 +23,54 @@ class NeumorphicTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bgColor = NeumorphicColors.getBackground(context);
-    final topShadow = NeumorphicColors.getShadowTop(context);
-    final bottomShadow = NeumorphicColors.getShadowBottom(context);
-    final textColor = NeumorphicColors.getText(context);
+    // Override colors for explicit visibility as requested
+    // Background: Solid Dark Grey #252830
+    const bgColor = Color(0xFF252830);
+    
+    // Text Color: Pure White #FFFFFF
+    const textColor = Colors.white;
+    
+    // Placeholder Color: Light Gray #9CA3AF
+    const placeholderColor = Color(0xFF9CA3AF);
 
-    return InnerShadow(
-      shadows: [
-        Shadow(
-          color: bottomShadow.withValues(alpha: 0.5),
-          blurRadius: 4,
-          offset: const Offset(2, 2),
+    // Border: Subtle White/Transparent
+    final border = Border.all(
+      color: Colors.white.withValues(alpha: 0.15),
+      width: 1,
+    );
+
+    return Container(
+      height: 60, // Consistent height
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(20),
+        border: border,
+        // No heavy shadows for this flat/clean override.
+        // The prompt asked for "Solid, lighter surface color", implying less reliance on heavy neumorphic shadows 
+        // and more on distinct visibility.
+      ),
+      child: TextField(
+        controller: controller,
+        obscureText: obscureText,
+        keyboardType: keyboardType,
+        onChanged: onChanged,
+        style: const TextStyle(
+          color: textColor,
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
         ),
-        Shadow(
-          color: topShadow.withValues(alpha: 0.8),
-          blurRadius: 4,
-          offset: const Offset(-2, -2),
-        ),
-      ],
-      child: Container(
-        decoration: BoxDecoration(
-          color: bgColor,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: TextField(
-          controller: controller,
-          obscureText: obscureText,
-          keyboardType: keyboardType,
-          onChanged: onChanged,
-          style: TextStyle(color: textColor),
-          decoration: InputDecoration(
-            hintText: hintText,
-            hintStyle: TextStyle(color: textColor.withValues(alpha: 0.5)),
-            border: InputBorder.none,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            prefixIcon: prefixIcon,
-            suffixIcon: suffixIcon,
+        cursorColor: NeumorphicColors.accentBlue,
+        decoration: InputDecoration(
+          hintText: hintText,
+          hintStyle: const TextStyle(
+            color: placeholderColor,
+            fontSize: 15,
+            fontWeight: FontWeight.w400,
           ),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+          prefixIcon: prefixIcon,
+          suffixIcon: suffixIcon,
         ),
       ),
     );

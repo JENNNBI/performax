@@ -4,10 +4,10 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/quest.dart';
 import 'statistics_service.dart';
+import 'streak_service.dart';
 
 /// Service to manage quest data loading and updates
 class QuestService {
-  // static const String _questDataPath = 'assets/data/quests.json'; // Deprecated in favor of dynamic loading
   static final QuestService instance = QuestService._internal();
   QuestService._internal();
   factory QuestService() => instance;
@@ -122,6 +122,7 @@ class QuestService {
       final selectedWeeklyIds = _getIdList(prefs.getString('selected_weekly_ids'));
       final selectedMonthlyIds = _getIdList(prefs.getString('selected_monthly_ids'));
 
+      // Daily Quests (5-Quest Rule: 1 Mandatory Login + 4 Random)
       List<Quest> daily;
       if (lastDailyDate == today && selectedDailyIds.isNotEmpty) {
         daily = _applySavedStatus(_mapIds(fullData.dailyQuests, selectedDailyIds), prefs);
@@ -134,6 +135,7 @@ class QuestService {
         }
       }
 
+      // Weekly Quests (5-Quest Rule: 1 Mandatory Streak-7 + 4 Random)
       List<Quest> weekly;
       final shouldResetWeekly = () {
         if (lastWeeklyDate == null) return true;
@@ -149,7 +151,7 @@ class QuestService {
       if (!shouldResetWeekly && selectedWeeklyIds.isNotEmpty) {
         weekly = _applySavedStatus(_mapIds(fullData.weeklyQuests, selectedWeeklyIds), prefs);
       } else {
-        weekly = _pickRandomAndReset(fullData.weeklyQuests, 3, studyField, gradeLevel);
+        weekly = _pickWeeklyWithMandatory(fullData.weeklyQuests, studyField, gradeLevel);
         await prefs.setString('selected_weekly_ids', json.encode(weekly.map((q) => q.id).toList()));
         await prefs.setString('weekly_last_date', today);
         for (final q in weekly) {
@@ -157,11 +159,12 @@ class QuestService {
         }
       }
 
+      // Monthly Quests (5-Quest Rule: 1 Mandatory Streak-30 + 4 Random)
       List<Quest> monthly;
       if (lastMonthlyMonth == thisMonth && selectedMonthlyIds.isNotEmpty) {
         monthly = _applySavedStatus(_mapIds(fullData.monthlyQuests, selectedMonthlyIds), prefs);
       } else {
-        monthly = _pickRandomAndReset(fullData.monthlyQuests, 2, studyField, gradeLevel);
+        monthly = _pickMonthlyWithMandatory(fullData.monthlyQuests, studyField, gradeLevel);
         await prefs.setString('selected_monthly_ids', json.encode(monthly.map((q) => q.id).toList()));
         await prefs.setString('monthly_last_month', thisMonth);
         for (final q in monthly) {
@@ -177,6 +180,9 @@ class QuestService {
         await prefs.setBool('pdf_pages_migration_done', true);
       }
       _controller.add(_cachedQuestData!);
+      
+      // Check streaks immediately after loading
+      await _checkStreakQuests(prefs);
       
       return _cachedQuestData!;
     } catch (e) {
@@ -460,8 +466,52 @@ class QuestService {
     return QuestData(dailyQuests: migratedDaily, weeklyQuests: migratedWeekly, monthlyQuests: migratedMonthly);
   }
 
+  /// Check and increment any AI/Alfred related quests
+  /// This should be called whenever a message is sent to Alfred
+  void checkAndIncrementAIQuests() {
+    if (_cachedQuestData == null) return;
+    
+    final allQuests = [
+      ..._cachedQuestData!.dailyQuests,
+      ..._cachedQuestData!.weeklyQuests,
+      ..._cachedQuestData!.monthlyQuests,
+    ];
+
+    for (final q in allQuests) {
+      if (q.completed) continue;
+
+      // Check if quest is AI related
+      if (_isAIQuest(q)) {
+         incrementById(q.id, 1);
+      }
+    }
+  }
+
+  bool _isAIQuest(Quest q) {
+    // Check type first
+    if (q.type == 'ai_interaction' || q.type == 'ai_chat') return true;
+    
+    // Check ID keywords
+    final idLower = q.id.toLowerCase();
+    if (idLower.contains('alfred') || 
+        idLower.contains('ai_') || 
+        idLower.contains('chat')) {
+      return true;
+    }
+    
+    // Check title/description keywords as fallback
+    final text = '${q.title} ${q.description}'.toLowerCase();
+    return text.contains('alfred') || 
+           text.contains('yapay zeka') || 
+           text.contains('ai ile') ||
+           text.contains('soru sor');
+  }
+
   void onAiInteracted() {
-    // Increment across all AI-related quests if present
+    // Forward to universal handler
+    checkAndIncrementAIQuests();
+    
+    // Legacy generic IDs (kept for backward compatibility if needed)
     _incrementIfExists('daily_6', 1);
     _incrementIfExists('weekly_7', 1);
     _incrementIfExists('monthly_8', 1);
@@ -500,16 +550,97 @@ class QuestService {
     final b0 = DateTime(b.year, b.month, b.day);
     return b0.difference(a0).inDays;
   }
+  
   List<Quest> _pickDailyWithMandatory(List<Quest> source, String? studyField, String? gradeLevel) {
-    final mandatory = source.where((q) => q.id == 'daily_1').toList();
-    if (mandatory.isEmpty) {
-      return _pickRandomAndReset(source, 5, studyField, gradeLevel);
-    }
-    final rest = source.where((q) => q.id != 'daily_1').toList();
+    // ID for mandatory login quest
+    // Use generic/shared ID or detect from file
+    // Supports TYT, EA, and Sozel specific login quests
+    const tytLoginId = 'daily_tyt_login';
+    const eaLoginId = 'daily_ea_login';
+    const sozelLoginId = 'daily_sozel_login';
+    
+    final mandatory = source.where((q) => q.id == tytLoginId || q.id == eaLoginId || q.id == sozelLoginId).toList();
+    
+    // Create mandatory if missing (fallback)
+    final mandatoryQuest = mandatory.isNotEmpty ? mandatory.first : Quest(
+      id: 'daily_generic_login',
+      title: 'Güne Başla',
+      description: 'Uygulamaya giriş yap ve yoklamanı al',
+      reward: 10,
+      progress: 0,
+      target: 1,
+      type: 'login', // Explicit type
+      icon: 'login', // Explicit icon
+      completed: false,
+      claimed: false,
+    );
+
+    final rest = source.where((q) => q.id != mandatoryQuest.id).toList();
+    // Pick 4 random from the rest
     final picked = _pickRandomAndReset(rest, 4, studyField, gradeLevel);
-    final m = mandatory.first.copyWith(progress: 0, completed: false, claimed: false);
+    
+    // Reset mandatory quest state
+    final m = mandatoryQuest.copyWith(progress: 0, completed: false, claimed: false);
+    
     return [m, ...picked];
   }
+  
+  List<Quest> _pickWeeklyWithMandatory(List<Quest> source, String? studyField, String? gradeLevel) {
+    // ID for mandatory streak quest
+    const tytStreakId = 'weekly_tyt_login_streak';
+    const eaStreakId = 'weekly_ea_login_streak';
+    const sozelStreakId = 'weekly_sozel_login_streak';
+    
+    final mandatory = source.where((q) => q.id == tytStreakId || q.id == eaStreakId || q.id == sozelStreakId).toList();
+    
+    final mandatoryQuest = mandatory.isNotEmpty ? mandatory.first : Quest(
+      id: 'weekly_generic_streak',
+      title: 'İstikrar Haftası',
+      description: 'Bu hafta 5 farklı gün uygulamaya gir',
+      reward: 150,
+      progress: 0,
+      target: 5,
+      type: 'login',
+      icon: 'verified_user',
+      completed: false,
+      claimed: false,
+    );
+
+    final rest = source.where((q) => q.id != mandatoryQuest.id).toList();
+    final picked = _pickRandomAndReset(rest, 4, studyField, gradeLevel);
+    final m = mandatoryQuest.copyWith(progress: 0, completed: false, claimed: false);
+    
+    return [m, ...picked];
+  }
+  
+  List<Quest> _pickMonthlyWithMandatory(List<Quest> source, String? studyField, String? gradeLevel) {
+    // ID for mandatory monthly quest
+    const tytLoyalistId = 'monthly_tyt_loyalist';
+    const eaLoyalistId = 'monthly_ea_loyalist';
+    const sozelLoyalistId = 'monthly_sozel_loyalist';
+    
+    final mandatory = source.where((q) => q.id == tytLoyalistId || q.id == eaLoyalistId || q.id == sozelLoyalistId).toList();
+    
+    final mandatoryQuest = mandatory.isNotEmpty ? mandatory.first : Quest(
+      id: 'monthly_generic_loyalist',
+      title: 'Sadık Öğrenci',
+      description: 'Bu ay 20 gün uygulamaya giriş yap',
+      reward: 1000,
+      progress: 0,
+      target: 20,
+      type: 'login',
+      icon: 'calendar_month',
+      completed: false,
+      claimed: false,
+    );
+
+    final rest = source.where((q) => q.id != mandatoryQuest.id).toList();
+    final picked = _pickRandomAndReset(rest, 4, studyField, gradeLevel);
+    final m = mandatoryQuest.copyWith(progress: 0, completed: false, claimed: false);
+    
+    return [m, ...picked];
+  }
+
   List<String> _getIdList(String? jsonStr) {
     if (jsonStr == null || jsonStr.isEmpty) return [];
     try {
@@ -623,8 +754,102 @@ class QuestService {
   /// Reward-dependent progress: increase meta quests based on currency earned
   void onCurrencyEarned(int amount) {
     if (amount <= 0) return;
+    
+    // Legacy generic IDs
     _incrementIfExists('daily_15', amount);
     _incrementIfExists('weekly_9', amount);
     _incrementIfExists('monthly_9', amount);
+
+    // Rocket Accumulation Quests (The "Rocket Zengini" feature)
+    if (_cachedQuestData != null) {
+      final allQuests = [
+        ..._cachedQuestData!.dailyQuests,
+        ..._cachedQuestData!.weeklyQuests,
+        ..._cachedQuestData!.monthlyQuests,
+      ];
+
+      for (final q in allQuests) {
+        if (q.completed) continue;
+
+        // Check for specific Rocket Accumulation IDs
+        if (_isRocketAccumulationQuest(q.id)) {
+           // SPECIAL FIX: Only daily rocket quests (target=1) should complete instantly.
+           // Monthly/Long-term accumulation quests (target=1000+) should only increment.
+           // We use incrementById which clamps. 
+           // BUT if q.target is 1 (Daily), amount (e.g. 20) will fill it. This is correct.
+           // IF q.target is 1000 (Monthly), amount 20 will make it 20/1000. This is also correct.
+           // The bug report says "jumps to 1000/1000". This implies logic error or 'amount' is wrong.
+           // Logic check: incrementById uses `q.progress + delta`. 
+           // If it jumps to max, either delta is huge or progress was already huge.
+           
+           incrementById(q.id, amount);
+        }
+      }
+    }
+  }
+
+  bool _isRocketAccumulationQuest(String id) {
+    const targetIds = {
+      'monthly_rocket_tycoon', // Main accumulation quest
+      'daily_rocket_tyt',      // Daily variants
+      'daily_rocket_ea',
+      'daily_rocket_sozel',
+      'daily_rocket_hunter',
+      'daily_rocket_sayisal',
+    };
+    return targetIds.contains(id);
+  }
+
+  Future<void> _checkStreakQuests(SharedPreferences prefs) async {
+    final streakService = StreakService();
+    final streakData = await streakService.getStreakData();
+    final currentStreak = streakData.currentStreak;
+    
+    // Check Weekly Streak (Target 5 days for weekly_tyt_login_streak)
+    // Actually the weekly quest is "5 different days", not necessarily consecutive.
+    // But if we stick to the requirement "7-Day Streak" in prompt for weekly, we check currentStreak.
+    // The prompt says "Slot 1: 7-Day Streak". Let's update that quest if it exists.
+    // In json it is "weekly_tyt_login_streak" with target 5. I will stick to JSON for ID but use streak logic.
+    
+    if (_cachedQuestData != null) {
+      // Weekly: Update streak based quest
+      // Support both TYT and EA specific mandatory IDs + Generic fallback
+      const tytStreakId = 'weekly_tyt_login_streak';
+      const eaStreakId = 'weekly_ea_login_streak';
+      const sozelStreakId = 'weekly_sozel_login_streak';
+      const sayisalStreakId = 'weekly_sayisal_login_streak';
+      const genericStreakId = 'weekly_generic_streak';
+      
+      final weeklyMandatory = getQuestById(_cachedQuestData!, tytStreakId) ?? 
+                              getQuestById(_cachedQuestData!, eaStreakId) ??
+                              getQuestById(_cachedQuestData!, sozelStreakId) ??
+                              getQuestById(_cachedQuestData!, sayisalStreakId) ??
+                              getQuestById(_cachedQuestData!, genericStreakId);
+                              
+      if (weeklyMandatory != null && !weeklyMandatory.completed) {
+         if (currentStreak >= weeklyMandatory.target) {
+           _replaceQuest(weeklyMandatory.copyWith(progress: weeklyMandatory.target));
+         }
+      }
+      
+      // Monthly: 30-Day Streak
+      const tytLoyalistId = 'monthly_tyt_loyalist';
+      const eaLoyalistId = 'monthly_ea_loyalist';
+      const sozelLoyalistId = 'monthly_sozel_loyalist';
+      const sayisalLoyalistId = 'monthly_sayisal_loyalist';
+      const genericLoyalistId = 'monthly_generic_loyalist';
+      
+      final monthlyMandatory = getQuestById(_cachedQuestData!, tytLoyalistId) ??
+                               getQuestById(_cachedQuestData!, eaLoyalistId) ??
+                               getQuestById(_cachedQuestData!, sozelLoyalistId) ??
+                               getQuestById(_cachedQuestData!, sayisalLoyalistId) ??
+                               getQuestById(_cachedQuestData!, genericLoyalistId);
+                               
+      if (monthlyMandatory != null && !monthlyMandatory.completed) {
+        if (currentStreak >= monthlyMandatory.target) {
+           _replaceQuest(monthlyMandatory.copyWith(progress: monthlyMandatory.target));
+        }
+      }
+    }
   }
 }

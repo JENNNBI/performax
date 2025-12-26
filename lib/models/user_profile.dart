@@ -20,7 +20,8 @@ class UserProfile {
   final String? avatarId; // Avatar identifier
   final String? phoneNumber; // User's phone number (E.164 format)
   final bool isPhoneVerified; // Whether phone number has been verified via OTP
-  final int rocketCurrency; // In-game Rocket currency balance
+  final int rocketCurrency; // In-game Rocket currency balance (Spendable)
+  final int leaderboardScore; // Total accumulated rockets (Ranking)
   final bool isGuest;
   final String? studyField; // 'Sayısal', 'Eşit Ağırlık', 'Sözel'
   
@@ -41,6 +42,7 @@ class UserProfile {
     this.phoneNumber,
     this.isPhoneVerified = false,
     this.rocketCurrency = 0, // Default initial balance
+    this.leaderboardScore = 100, // Default initial ranking score
     this.isGuest = false,
     this.studyField,
   });
@@ -86,6 +88,7 @@ class UserProfile {
       phoneNumber: data['phoneNumber'] as String?,
       isPhoneVerified: data['isPhoneVerified'] as bool? ?? false,
       rocketCurrency: data['rocketCurrency'] ?? 100, // Default to 100 if not set
+      leaderboardScore: data['leaderboardScore'] ?? 100, // Default 100
       isGuest: false,
       studyField: data['studyField'] as String?,
     );
@@ -183,6 +186,7 @@ class UserProfile {
       'phoneNumber': phoneNumber,
       'isPhoneVerified': isPhoneVerified,
       'rocketCurrency': rocketCurrency,
+      'leaderboardScore': leaderboardScore,
       'isGuest': isGuest,
       'studyField': studyField,
     };
@@ -190,5 +194,49 @@ class UserProfile {
 
   @override
   String toString() => 'UserProfile(${buildAIContext()})';
+
+  UserProfile copyWith({
+    String? userId,
+    String? fullName,
+    String? firstName,
+    String? lastName,
+    String? email,
+    String? school,
+    String? gradeLevel,
+    String? studentClass,
+    String? studentNumber,
+    String? city,
+    String? district,
+    String? gender,
+    String? avatarId,
+    String? phoneNumber,
+    bool? isPhoneVerified,
+    int? rocketCurrency,
+    int? leaderboardScore,
+    bool? isGuest,
+    String? studyField,
+  }) {
+    return UserProfile(
+      userId: userId ?? this.userId,
+      fullName: fullName ?? this.fullName,
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
+      email: email ?? this.email,
+      school: school ?? this.school,
+      gradeLevel: gradeLevel ?? this.gradeLevel,
+      studentClass: studentClass ?? this.studentClass,
+      studentNumber: studentNumber ?? this.studentNumber,
+      city: city ?? this.city,
+      district: district ?? this.district,
+      gender: gender ?? this.gender,
+      avatarId: avatarId ?? this.avatarId,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      isPhoneVerified: isPhoneVerified ?? this.isPhoneVerified,
+      rocketCurrency: rocketCurrency ?? this.rocketCurrency,
+      leaderboardScore: leaderboardScore ?? this.leaderboardScore,
+      isGuest: isGuest ?? this.isGuest,
+      studyField: studyField ?? this.studyField,
+    );
+  }
 }
 

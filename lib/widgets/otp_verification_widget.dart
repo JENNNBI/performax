@@ -1,8 +1,9 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 /// OTP Verification Widget
-/// Displays a pin code input field for SMS OTP verification
+/// Redesigned with Glassmorphism and Gamer Aesthetic
 class OtpVerificationWidget extends StatefulWidget {
   final String phoneNumber;
   final Function(String otp) onVerificationComplete;
@@ -30,7 +31,6 @@ class _OtpVerificationWidgetState extends State<OtpVerificationWidget> {
   @override
   void initState() {
     super.initState();
-    // Auto-focus first field when widget is displayed to trigger keyboard
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && _focusNodes[0].canRequestFocus) {
         _focusNodes[0].requestFocus();
@@ -40,26 +40,19 @@ class _OtpVerificationWidgetState extends State<OtpVerificationWidget> {
 
   @override
   void dispose() {
-    for (var controller in _controllers) {
-      controller.dispose();
-    }
-    for (var node in _focusNodes) {
-      node.dispose();
-    }
+    for (var controller in _controllers) controller.dispose();
+    for (var node in _focusNodes) node.dispose();
     super.dispose();
   }
 
   void _onOtpChanged(int index, String value) {
     if (value.length == 1) {
-      // Move to next field
       if (index < 5) {
         _focusNodes[index + 1].requestFocus();
       } else {
-        // Last field - verify OTP
         _verifyOtp();
       }
     } else if (value.isEmpty && index > 0) {
-      // Move to previous field on backspace
       _focusNodes[index - 1].requestFocus();
     }
   }
@@ -68,9 +61,7 @@ class _OtpVerificationWidgetState extends State<OtpVerificationWidget> {
     final otp = _controllers.map((c) => c.text).join();
     
     if (otp.length != 6) {
-      setState(() {
-        _errorMessage = 'Lütfen 6 haneli kodu girin';
-      });
+      setState(() => _errorMessage = 'Please enter full code');
       return;
     }
 
@@ -83,139 +74,176 @@ class _OtpVerificationWidgetState extends State<OtpVerificationWidget> {
       await widget.onVerificationComplete(otp);
     } catch (e) {
       setState(() {
-        _errorMessage = 'yanlış kod';
+        _errorMessage = 'Invalid Code';
         _isVerifying = false;
       });
-      
-      // Clear OTP fields
-      for (var controller in _controllers) {
-        controller.clear();
-      }
+      for (var controller in _controllers) controller.clear();
       _focusNodes[0].requestFocus();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    // FIX: RenderFlex Overflow & Layout Crash
+    // We wrap the entire content in SingleChildScrollView to handle small screens/keyboard.
+    // We also use Flexible/Expanded carefully inside Row.
     
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Telefon Doğrulama',
-          style: theme.textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
+    return SingleChildScrollView(
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: const Color(0xFF0F172A), // Opaque Deep Blue to cover any white dialog bg
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: Colors.white.withOpacity(0.1)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.5),
+              blurRadius: 20,
+              spreadRadius: 5,
+            ),
+          ],
         ),
-        const SizedBox(height: 8),
-        Text(
-          '${widget.phoneNumber} numarasına gönderilen 6 haneli kodu girin',
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: Colors.grey[600],
-          ),
-        ),
-        const SizedBox(height: 24),
-        
-        // OTP Input Fields
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: List.generate(6, (index) {
-            return SizedBox(
-              width: 45,
-              height: 55,
-              child: TextField(
-                controller: _controllers[index],
-                focusNode: _focusNodes[index],
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center, 
+          children: [
+            // Icon
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.cyanAccent.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.lock_person_rounded, color: Colors.cyanAccent, size: 32),
+            ),
+            const SizedBox(height: 16),
+            
+            // Title
+            const Text(
+              'Verification Code',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                letterSpacing: 0.5,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            
+            // Subtitle
+            Text(
+              'Enter the code sent to',
+              style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 14),
+              textAlign: TextAlign.center,
+            ),
+            Text(
+              widget.phoneNumber,
+              style: const TextStyle(color: Colors.cyanAccent, fontWeight: FontWeight.bold, fontSize: 14),
+              textAlign: TextAlign.center,
+            ),
+            
+            const SizedBox(height: 32),
+            
+            // 6 Separate Square Input Boxes
+            // FIX: Use Wrap or flexible sizing to prevent overflow on small screens
+            LayoutBuilder(
+              builder: (context, constraints) {
+                // Calculate max width for boxes to fit
+                final availableWidth = constraints.maxWidth;
+                final boxWidth = (availableWidth - (5 * 8)) / 6; // 5 gaps of 8px
+                final clampedSize = boxWidth.clamp(30.0, 44.0);
+                
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: List.generate(6, (index) => _buildDigitBox(index, clampedSize)),
+                );
+              },
+            ),
+            
+            if (_errorMessage.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              Text(
+                _errorMessage,
+                style: const TextStyle(color: Colors.redAccent, fontSize: 14, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
-                keyboardType: TextInputType.number,
-                maxLength: 1,
-                enabled: !_isVerifying, // CRITICAL: Only disable during actual verification, not during loading
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-                decoration: InputDecoration(
-                  counterText: '',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: _errorMessage.isNotEmpty 
-                          ? Colors.red 
-                          : theme.primaryColor.withValues(alpha: 0.3),
-                      width: 2,
-                    ),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: theme.primaryColor.withValues(alpha: 0.3),
-                      width: 2,
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: theme.primaryColor,
-                      width: 2,
-                    ),
-                  ),
-                  errorBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                      color: Colors.red,
-                      width: 2,
-                    ),
-                  ),
-                ),
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                ],
-                onChanged: (value) => _onOtpChanged(index, value),
               ),
-            );
-          }),
+            ],
+            
+            const SizedBox(height: 32),
+            
+            // Actions
+            if (_isVerifying)
+              const CircularProgressIndicator(color: Colors.cyanAccent)
+            else
+              TextButton(
+                onPressed: widget.onResendOtp,
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.refresh_rounded, size: 16, color: Colors.white.withOpacity(0.7)),
+                    const SizedBox(width: 8),
+                    const Text(
+                      "I didn't receive code",
+                      style: TextStyle(decoration: TextDecoration.underline),
+                    ),
+                  ],
+                ),
+              ),
+          ],
         ),
-        
-        if (_errorMessage.isNotEmpty) ...[
-          const SizedBox(height: 12),
-          Text(
-            _errorMessage,
-            style: const TextStyle(
-              color: Colors.red,
-              fontSize: 14,
-            ),
-          ),
-        ],
-        
-        const SizedBox(height: 24),
-        
-        // Resend OTP Button
-        if (!_isVerifying && !widget.isLoading)
-          Center(
-            child: TextButton(
-              onPressed: widget.onResendOtp,
-              child: Text(
-                'Kodu Tekrar Gönder',
-                style: TextStyle(
-                  color: theme.primaryColor,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ),
-        
-        // Only show loading indicator during actual verification, not when modal is displayed
-        // CRITICAL: This prevents blocking input fields unnecessarily
-        if (_isVerifying)
-          const Center(
-            child: Padding(
-              padding: EdgeInsets.all(16.0),
-              child: CircularProgressIndicator(),
-            ),
-          ),
-      ],
+      ),
+    );
+  }
+
+  Widget _buildDigitBox(int index, double size) {
+    // Check if this box is active (focused) or filled
+    final isFocused = _focusNodes[index].hasFocus;
+    final isFilled = _controllers[index].text.isNotEmpty;
+    
+    return Container(
+      width: size,
+      height: size * 1.2, // Slightly taller than wide
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isFocused || isFilled 
+              ? Colors.cyanAccent 
+              : Colors.white.withOpacity(0.1),
+          width: isFocused ? 2 : 1,
+        ),
+        boxShadow: isFocused 
+            ? [BoxShadow(color: Colors.cyanAccent.withOpacity(0.3), blurRadius: 8, spreadRadius: 1)] 
+            : [],
+      ),
+      child: TextField(
+        controller: _controllers[index],
+        focusNode: _focusNodes[index],
+        textAlign: TextAlign.center,
+        keyboardType: TextInputType.number,
+        maxLength: 1,
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: size * 0.5, // Responsive font size
+          fontWeight: FontWeight.bold,
+        ),
+        decoration: const InputDecoration(
+          counterText: '',
+          border: InputBorder.none,
+          focusedBorder: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          errorBorder: InputBorder.none,
+          contentPadding: EdgeInsets.zero, // Crucial for centering text
+        ),
+        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        onChanged: (value) => _onOtpChanged(index, value),
+        showCursor: false, // Hide cursor for cleaner "Pin Pad" look
+      ),
     );
   }
 }

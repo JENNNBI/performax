@@ -10,10 +10,11 @@ import '../services/user_service.dart';
 import '../services/auth_service.dart';
 import 'change_password_screen.dart';
 import 'login_screen.dart';
+import 'profile_edit_screen.dart'; // Import New Screen
 import '../theme/neumorphic_colors.dart';
 import '../widgets/neumorphic/neumorphic_container.dart';
 import '../widgets/neumorphic/neumorphic_button.dart';
-import '../widgets/neumorphic/neumorphic_text_field.dart';
+// Removed NeumorphicTextField import
 
 class SettingsScreen extends StatefulWidget {
   static const String id = 'settings_screen';
@@ -40,12 +41,7 @@ class _SettingsScreenState extends State<SettingsScreen>
   bool _pushNotifications = true;
   bool _soundEnabled = true;
   
-  // Profile data
-  final TextEditingController _fullNameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _classController = TextEditingController();
-  final TextEditingController _institutionController = TextEditingController();
-  Map<String, dynamic>? _profileData;
+  // Profile data removed - moved to ProfileEditScreen
 
   final List<Map<String, String>> _languages = [
     {'code': 'tr', 'name': 'Türkçe'},
@@ -84,19 +80,12 @@ class _SettingsScreenState extends State<SettingsScreen>
   @override
   void dispose() {
     _animationController.dispose();
-    _fullNameController.dispose();
-    _emailController.dispose();
-    _classController.dispose();
-    _institutionController.dispose();
     super.dispose();
   }
 
   Future<void> _initializeData() async {
     await LocalizationService.initialize();
     await _loadSettings();
-    if (!widget.isGuest) {
-      await _loadProfileData();
-    }
   }
 
   Future<void> _loadSettings() async {
@@ -119,69 +108,7 @@ class _SettingsScreenState extends State<SettingsScreen>
     await prefs.setBool('sound_enabled', _soundEnabled);
   }
 
-  Future<void> _loadProfileData() async {
-    try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) return;
-
-      final doc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .get();
-
-      if (doc.exists) {
-        _profileData = doc.data();
-        setState(() {
-          _fullNameController.text = _profileData?['fullName'] ?? '';
-          _emailController.text = _profileData?['email'] ?? '';
-          _classController.text = _profileData?['class'] ?? '';
-          _institutionController.text = _profileData?['institution']?['name'] ?? '';
-        });
-      }
-    } catch (e) {
-      debugPrint('Error loading profile data: $e');
-    }
-  }
-
-  Future<void> _saveProfileData() async {
-    try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) return;
-
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .update({
-        'fullName': _fullNameController.text.trim(),
-        'class': _classController.text.trim(),
-        'institution': {
-          'name': _institutionController.text.trim(),
-          'type': 'manual',
-          'isManual': true,
-        },
-      });
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.read<LanguageBloc>().translate('profile_updated')),
-            backgroundColor: Colors.green,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Hata: ${e.toString()}'),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-    }
-  }
+  // Profile methods removed - moved to ProfileEditScreen
 
   @override
   Widget build(BuildContext context) {
@@ -402,8 +329,13 @@ class _SettingsScreenState extends State<SettingsScreen>
           icon: AppIcons.person,
           title: languageBloc.translate('profile_info'),
           subtitle: languageBloc.translate('edit_personal_info'),
-          trailing: Icon(AppIcons.arrowForward, color: NeumorphicColors.getText(context).withValues(alpha: 0.5)),
-          onTap: () => _showProfileEditDialog(),
+          trailing: Icon(AppIcons.arrowForward, color: NeumorphicColors.getText(context).withOpacity(0.5)),
+          onTap: () {
+            Navigator.push(
+              context, 
+              MaterialPageRoute(builder: (_) => const ProfileEditScreen()),
+            );
+          },
         ),
         const SizedBox(height: 16),
         _buildNeumorphicSettingCard(
@@ -599,80 +531,7 @@ class _SettingsScreenState extends State<SettingsScreen>
     );
   }
 
-  void _showProfileEditDialog() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        final textColor = NeumorphicColors.getText(context);
-        return Dialog(
-          backgroundColor: NeumorphicColors.getBackground(context),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  LocalizationService.translate('profile_info'),
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: textColor,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                NeumorphicTextField(
-                  controller: _fullNameController,
-                  hintText: LocalizationService.translate('full_name'),
-                  prefixIcon: Icon(AppIcons.person, color: textColor.withValues(alpha: 0.5)),
-                ),
-                const SizedBox(height: 16),
-                NeumorphicTextField(
-                  controller: _emailController,
-                  hintText: LocalizationService.translate('email'),
-                  prefixIcon: Icon(AppIcons.email, color: textColor.withValues(alpha: 0.5)),
-                ),
-                const SizedBox(height: 16),
-                NeumorphicTextField(
-                  controller: _classController,
-                  hintText: LocalizationService.translate('class'),
-                  prefixIcon: Icon(AppIcons.school, color: textColor.withValues(alpha: 0.5)),
-                ),
-                const SizedBox(height: 16),
-                NeumorphicTextField(
-                  controller: _institutionController,
-                  hintText: LocalizationService.translate('institution'),
-                  prefixIcon: Icon(Icons.school_rounded, color: textColor.withValues(alpha: 0.5)),
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: Text(LocalizationService.translate('cancel')),
-                    ),
-                    const SizedBox(width: 16),
-                    NeumorphicButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        _saveProfileData();
-                      },
-                      color: NeumorphicColors.accentBlue,
-                      child: Text(
-                        LocalizationService.translate('save'),
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
+  // Profile Edit Dialog removed - moved to ProfileEditScreen
 
   void _showDeleteAccountDialog() {
     showDialog(

@@ -244,25 +244,23 @@ class _SearchableInstitutionDropdownState extends State<SearchableInstitutionDro
     return CompositedTransformTarget(
       link: _layerLink,
       child: Container(
+        // Modern Dark Theme Container
+        // Matches _ModernTextField style
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
-              spreadRadius: 0,
-            ),
-          ],
+          color: Colors.white.withOpacity(0.05), // Dark fill
+          borderRadius: BorderRadius.circular(30), // Rounded corners
         ),
         child: TextFormField(
           controller: _searchController,
           focusNode: _focusNode,
           enabled: widget.enabled,
+          style: const TextStyle(color: Colors.white), // White Input Text
           decoration: InputDecoration(
             labelText: widget.labelText,
-            hintText: widget.hintText ?? 'Okul veya dershane arayın...',
-                                  prefixIcon: const Icon(Icons.school_outlined),
+            hintText: widget.hintText ?? 'Search school...',
+            labelStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+            hintStyle: TextStyle(color: Colors.white.withOpacity(0.3)),
+            prefixIcon: Icon(Icons.school_rounded, color: Colors.white.withOpacity(0.7)),
             suffixIcon: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -275,28 +273,32 @@ class _SearchableInstitutionDropdownState extends State<SearchableInstitutionDro
                       });
                       widget.onChanged(null);
                     },
-                                            icon: const Icon(Icons.clear_outlined, size: 20),
+                    icon: Icon(Icons.clear_rounded, size: 20, color: Colors.white.withOpacity(0.7)),
                   ),
                 Icon(
-                                      _isDropdownOpen ? Icons.keyboard_arrow_up_outlined : Icons.keyboard_arrow_down_outlined,
-                  color: Colors.grey[600],
+                  _isDropdownOpen ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+                  color: Colors.white.withOpacity(0.7),
                 ),
                 const SizedBox(width: 8),
               ],
             ),
-            border: const OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(12)),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(30),
               borderSide: BorderSide.none,
             ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(30),
+              borderSide: const BorderSide(color: Colors.cyanAccent),
+            ),
             filled: true,
-            fillColor: Colors.transparent,
+            fillColor: Colors.transparent, // Handled by container
+            contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
           ),
           onChanged: (value) {
             setState(() {
               _updateFilteredInstitutions();
             });
             
-            // If the current text doesn't match any institution exactly, clear selection
             final exactMatch = _filteredInstitutions.any((inst) => inst.name == value);
             if (!exactMatch) {
               widget.onChanged(null);
@@ -308,7 +310,6 @@ class _SearchableInstitutionDropdownState extends State<SearchableInstitutionDro
           },
           validator: widget.validator != null 
               ? (value) {
-                  // Find the institution that matches the current text
                   Institution? matchedInstitution;
                   if (value != null && value.isNotEmpty) {
                     try {

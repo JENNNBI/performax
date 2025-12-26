@@ -43,12 +43,35 @@ class _ExamTypeSelectionScreenState extends State<ExamTypeSelectionScreen> with 
       vsync: this,
     );
     
-    Future.delayed(const Duration(milliseconds: 300), () {
-      if (mounted) {
-        setState(() => _isLoading = false);
-        _animController.forward();
-      }
+    // Auto-navigate logic
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAndAutoNavigate();
     });
+  }
+
+  void _checkAndAutoNavigate() {
+    // UI Logic: Hide Exam Type Toggle (Global Rule)
+    // If selectedGrade is 9 or 10, Hide the TYT/AYT selector immediately (implied TYT).
+    // We achieve this by auto-navigating to TYT content.
+    
+    if (widget.gradeLevel == '9_sinif' || widget.gradeLevel == '10_sinif') {
+      _navigateToContent('TYT', replace: true);
+      return;
+    }
+    
+    // Existing logic for subject-based auto-nav (if grade is 11/12)
+    final tytOnly = ['Türkçe', 'Temel Matematik'];
+    final aytOnly = ['Türk Dili ve Edebiyatı', 'İleri Matematik', 'Felsefe Grubu'];
+
+    if (tytOnly.contains(widget.subjectName)) {
+      _navigateToContent('TYT', replace: true);
+    } else if (aytOnly.contains(widget.subjectName)) {
+      _navigateToContent('AYT', replace: true);
+    } else {
+      // Show selection UI
+      setState(() => _isLoading = false);
+      _animController.forward();
+    }
   }
 
   @override
@@ -57,30 +80,31 @@ class _ExamTypeSelectionScreenState extends State<ExamTypeSelectionScreen> with 
     super.dispose();
   }
 
-  void _navigateToContent(String examType) {
+  void _navigateToContent(String examType, {bool replace = false}) {
     // examType: 'TYT' or 'AYT'
     // For Math Video Lessons TYT, we might have a subcategory screen.
     // For others, we go to the grid.
     
+    Route route;
+    
     if (widget.subjectKey == 'Matematik' && examType == 'TYT' && 
        (widget.sectionType.contains('Video') || widget.sectionType.contains('Konu'))) {
-       Navigator.push(
-        context,
-        MaterialPageRoute(
+       route = MaterialPageRoute(
           builder: (context) => MatematikSubcategoryScreen(
             sectionType: widget.sectionType,
             gradientStart: widget.gradientStart,
             gradientEnd: widget.gradientEnd,
             subjectIcon: widget.subjectIcon,
           ),
-        ),
-      );
+        );
     } else {
       // Use VideoGridScreen as a generic content grid
       // It uses sectionType to query Firestore
-      Navigator.push(
-        context,
-        MaterialPageRoute(
+      // Pass '9' or '10' if strictly selected, but this screen usually comes BEFORE grade filtering in grids?
+      // Actually, VideoGridScreen has its own filters.
+      // We just pass the Subject Key.
+      
+      route = MaterialPageRoute(
           builder: (context) => VideoGridScreen(
             subjectKey: '${examType}_${widget.subjectKey}', // e.g. TYT_Fizik
             subjectName: '${widget.subjectName} $examType',
@@ -89,8 +113,13 @@ class _ExamTypeSelectionScreenState extends State<ExamTypeSelectionScreen> with 
             gradientEnd: widget.gradientEnd,
             subjectIcon: widget.subjectIcon,
           ),
-        ),
-      );
+        );
+    }
+
+    if (replace) {
+      Navigator.pushReplacement(context, route);
+    } else {
+      Navigator.push(context, route);
     }
   }
 
@@ -167,9 +196,9 @@ class _ExamTypeSelectionScreenState extends State<ExamTypeSelectionScreen> with 
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              _buildExamCard('TYT', 'Temel Yeterlilik Testi', const Color(0xFFA8E063), 0),
+                              _buildExamCard('TYT', 'Temel Yeterlilik Testi', const Color(0xFFA8E063), 0, widget.subjectName),
                               const SizedBox(height: 24),
-                              _buildExamCard('AYT', 'Alan Yeterlilik Testi', const Color(0xFFF5CBCB), 1),
+                              _buildExamCard('AYT', 'Alan Yeterlilik Testi', const Color(0xFFF5CBCB), 1, widget.subjectName),
                               const SizedBox(height: 100),
                             ],
                           ),
@@ -183,7 +212,16 @@ class _ExamTypeSelectionScreenState extends State<ExamTypeSelectionScreen> with 
     );
   }
 
-  Widget _buildExamCard(String title, String subtitle, Color accentColor, int index) {
+  Widget _buildExamCard(String title, String subtitle, Color accentColor, int index, String subjectName) {
+    // Determine visibility based on subject
+    final isTytOnly = ['Türkçe', 'Temel Matematik'].contains(subjectName);
+    final isAytOnly = ['Türk Dili ve Edebiyatı', 'İleri Matematik', 'Felsefe Grubu'].contains(subjectName);
+    
+    // Hide TYT card if AYT only
+    if (title == 'TYT' && isAytOnly) return const SizedBox.shrink();
+    // Hide AYT card if TYT only
+    if (title == 'AYT' && isTytOnly) return const SizedBox.shrink();
+
     return TweenAnimationBuilder<double>(
       duration: Duration(milliseconds: 600 + (index * 200)),
       tween: Tween<double>(begin: 0.0, end: 1.0),

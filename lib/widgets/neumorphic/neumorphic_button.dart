@@ -27,28 +27,25 @@ class NeumorphicButton extends StatefulWidget {
 class _NeumorphicButtonState extends State<NeumorphicButton> {
   bool _isPressed = false;
 
-  void _onPointerDown(PointerEvent event) {
-    if (widget.onPressed != null) {
-      setState(() {
-        _isPressed = true;
-      });
-    }
-  }
-
-  void _onPointerUp(PointerEvent event) {
-    if (widget.onPressed != null) {
-      setState(() {
-        _isPressed = false;
-      });
-      widget.onPressed!();
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Listener(
-      onPointerDown: _onPointerDown,
-      onPointerUp: _onPointerUp,
+    return GestureDetector(
+      onTapDown: (_) {
+        if (widget.onPressed != null) {
+          setState(() => _isPressed = true);
+        }
+      },
+      onTapUp: (_) {
+        if (widget.onPressed != null) {
+          setState(() => _isPressed = false);
+        }
+      },
+      onTapCancel: () {
+        if (widget.onPressed != null) {
+          setState(() => _isPressed = false);
+        }
+      },
+      onTap: widget.onPressed,
       child: NeumorphicContainer(
         margin: widget.margin,
         padding: widget.padding ?? const EdgeInsets.symmetric(horizontal: 24, vertical: 16),

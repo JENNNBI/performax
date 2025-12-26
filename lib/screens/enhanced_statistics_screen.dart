@@ -69,7 +69,7 @@ class _EnhancedStatisticsScreenState extends State<EnhancedStatisticsScreen> wit
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildHeader(context, languageBloc),
+                // _buildHeader(context, languageBloc), // Removed header
                 const SizedBox(height: 20),
                 Expanded(
                   child: SingleChildScrollView(

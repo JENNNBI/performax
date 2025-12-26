@@ -1,4 +1,8 @@
+import 'package:flutter/foundation.dart'; // For kDebugMode
+import 'package:flutter/services.dart'; // For RawKeyboardListener
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart'; // Import Provider
+import 'package:phosphor_flutter/phosphor_flutter.dart'; // Modern icon library
 import '../widgets/ai_assistant_widget.dart';
 import '../blocs/bloc_exports.dart';
 import '../models/user_profile.dart';
@@ -21,6 +25,8 @@ import '../widgets/neumorphic/neumorphic_button.dart';
 
 /// NEW Home Screen Structure
 /// Refactored to Neumorphic Design System
+import '../widgets/user_avatar_circle.dart';
+
 class HomeScreen extends StatefulWidget {
   final int? initialTabIndex;
   
@@ -39,6 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isLoading = true;
   bool _isGuest = false;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final GlobalKey<LeaderboardScreenState> _leaderboardKey = GlobalKey<LeaderboardScreenState>();
   
   // SharedPreferences key to track last popup shown date (per calendar day)
   static const String _keyLastStreakPopupDate = 'last_streak_popup_date';
@@ -46,6 +53,10 @@ class _HomeScreenState extends State<HomeScreen> {
   // Debug Tap Logic
   int _debugTapCount = 0;
   Timer? _debugTapTimer;
+
+  // Dev-Only Keyboard Shortcut Logic
+  final FocusNode _focusNode = FocusNode();
+  final List<String> _keystrokes = [];
 
   @override
   void initState() {
@@ -72,6 +83,13 @@ class _HomeScreenState extends State<HomeScreen> {
     
     // Also load directly for backward compatibility
     _loadUserData();
+  }
+
+  @override
+  void dispose() {
+    _debugTapTimer?.cancel();
+    _focusNode.dispose();
+    super.dispose();
   }
 
   /// Refresh user data from UserProfileBloc when it changes
@@ -169,6 +187,14 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _selectedIndex = index;
     });
+    
+    // If switching to Leaderboard (index 2), trigger scroll to user
+    if (index == 2) {
+      // Small delay to ensure the view is visible/built if switching from another tab
+      Future.delayed(const Duration(milliseconds: 100), () {
+        _leaderboardKey.currentState?.scrollToUser();
+      });
+    }
   }
 
   void _openQRScanner() {
@@ -225,6 +251,40 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  void _handleKeyEvent(RawKeyEvent event) {
+    if (!kDebugMode) return;
+    
+    if (event is RawKeyDownEvent) {
+       final keyLabel = event.logicalKey.keyLabel.toLowerCase();
+       // Only accept letters
+       if (RegExp(r'^[a-z]$').hasMatch(keyLabel)) {
+         _keystrokes.add(keyLabel);
+         
+         // Keep buffer small
+         if (_keystrokes.length > 10) {
+           _keystrokes.removeRange(0, _keystrokes.length - 10);
+         }
+         
+         // Check for "streak" pattern
+         if (_keystrokes.join().contains('streak')) {
+           _showTestStreak();
+           _keystrokes.clear();
+         }
+       }
+    }
+  }
+
+  void _showTestStreak() {
+    debugPrint('🔥 Developer Mode: Triggering Streak Pop-up');
+    StreakModal.show(context, StreakData(
+      currentStreak: 12, // Dummy Value
+      lastLoginDate: DateTime.now(),
+      isNewStreak: false,
+      isStreakIncremented: true,
+      isStreakReset: false,
+    ));
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<UserProfileBloc, UserProfileState>(
@@ -237,15 +297,19 @@ class _HomeScreenState extends State<HomeScreen> {
           
           return BlocBuilder<BottomNavVisibilityBloc, BottomNavVisibilityState>(
             builder: (context, bottomNavState) {
-              return Scaffold(
-                key: _scaffoldKey,
-                backgroundColor: NeumorphicColors.getBackground(context),
-                drawer: MyDrawer(
-                  onTabChange: _onItemTapped,
-                ),
-                body: SafeArea(
-                  bottom: false,
-                  child: Column(
+              return RawKeyboardListener(
+                focusNode: _focusNode,
+                autofocus: true, // Auto-focus to capture keys immediately
+                onKey: _handleKeyEvent,
+                child: Scaffold(
+                  key: _scaffoldKey,
+                  backgroundColor: NeumorphicColors.getBackground(context),
+                  drawer: MyDrawer(
+                    onTabChange: _onItemTapped,
+                  ),
+                  body: SafeArea(
+                    bottom: false,
+                    child: Column(
                     children: [
                       // Custom Neumorphic Header
                       _buildNeumorphicHeader(context, languageBloc),
@@ -263,7 +327,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ? ProfileHomeScreen(userProfile: _userProfile!)
                                       : const Center(child: Text('Profile data not available')),
                                     const ContentHubScreen(),
-                                    const LeaderboardScreen(),
+                                    LeaderboardScreen(key: _leaderboardKey),
                                     EnhancedStatisticsScreen(isGuest: _isGuest),
                                   ],
                                 ),
@@ -294,17 +358,17 @@ class _HomeScreenState extends State<HomeScreen> {
                   ? _buildNeumorphicDock(context, languageBloc) 
                   : null,
                 extendBody: true, // Allows content to go behind nav bar
-              );
-            },
-          );
-        },
-      ),
-    );
-  }
+              ),
+            );
+          },
+        );
+      },
+    ),
+  );
+}
 
   Widget _buildNeumorphicHeader(BuildContext context, LanguageBloc languageBloc) {
     final title = _getAppBarTitle(languageBloc);
-    final userInitials = (_userData?['fullName']?.split(' ')[0]?[0] ?? _userData?['firstName']?[0] ?? 'U').toUpperCase();
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -316,9 +380,10 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () => _scaffoldKey.currentState?.openDrawer(),
             padding: const EdgeInsets.all(12),
             borderRadius: 14,
-            child: Icon(
-              Icons.menu_rounded,
+            child: PhosphorIcon(
+              PhosphorIcons.list(PhosphorIconsStyle.bold),
               color: NeumorphicColors.getText(context),
+              size: 24,
             ),
           ),
           
@@ -335,20 +400,9 @@ class _HomeScreenState extends State<HomeScreen> {
           // Profile/Debug Button
           GestureDetector(
             onTap: _handleDebugTap,
-            child: NeumorphicContainer(
-              padding: const EdgeInsets.all(4),
-              borderRadius: 30,
-              child: CircleAvatar(
-                radius: 18,
-                backgroundColor: NeumorphicColors.accentBlue,
-                child: Text(
-                  userInitials,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
+            child: const UserAvatarCircle(
+              radius: 22,
+              showBorder: true,
             ),
           ),
         ],
@@ -374,13 +428,17 @@ class _HomeScreenState extends State<HomeScreen> {
               _buildDockItem(
                 context: context,
                 index: 0,
-                icon: Icons.person_rounded,
+                icon: _selectedIndex == 0 
+                  ? PhosphorIcons.user(PhosphorIconsStyle.fill)
+                  : PhosphorIcons.user(PhosphorIconsStyle.regular),
                 label: isEnglish ? 'Profile' : 'Profil',
               ),
               _buildDockItem(
                 context: context,
                 index: 1,
-                icon: Icons.play_circle_filled_rounded,
+                icon: _selectedIndex == 1
+                  ? PhosphorIcons.playCircle(PhosphorIconsStyle.fill)
+                  : PhosphorIcons.playCircle(PhosphorIconsStyle.regular),
                 label: isEnglish ? 'Courses' : 'Dersler',
               ),
               
@@ -394,8 +452,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     padding: const EdgeInsets.all(16),
                     color: NeumorphicColors.accentBlue,
                     depth: 6,
-                    child: const Icon(
-                      Icons.qr_code_scanner_rounded,
+                    child: PhosphorIcon(
+                      PhosphorIcons.qrCode(PhosphorIconsStyle.bold),
                       color: Colors.white,
                       size: 28,
                     ),
@@ -406,13 +464,17 @@ class _HomeScreenState extends State<HomeScreen> {
               _buildDockItem(
                 context: context,
                 index: 2,
-                icon: Icons.leaderboard_rounded,
+                icon: _selectedIndex == 2
+                  ? PhosphorIcons.trophy(PhosphorIconsStyle.fill)
+                  : PhosphorIcons.trophy(PhosphorIconsStyle.regular),
                 label: isEnglish ? 'Rank' : 'Sıralama',
               ),
               _buildDockItem(
                 context: context,
                 index: 3,
-                icon: Icons.bar_chart_rounded,
+                icon: _selectedIndex == 3
+                  ? PhosphorIcons.chartBar(PhosphorIconsStyle.fill)
+                  : PhosphorIcons.chartBar(PhosphorIconsStyle.regular),
                 label: isEnglish ? 'Stats' : 'İstatistik',
               ),
             ],
@@ -425,7 +487,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildDockItem({
     required BuildContext context,
     required int index,
-    required IconData icon,
+    required PhosphorIconData icon,
     required String label,
   }) {
     final isSelected = _selectedIndex == index;
@@ -442,7 +504,7 @@ class _HomeScreenState extends State<HomeScreen> {
             borderRadius: 12,
             depth: isSelected ? -3 : 3, // Invert depth for concave effect
             color: isSelected ? NeumorphicColors.getBackground(context) : null,
-            child: Icon(
+            child: PhosphorIcon(
               icon,
               color: color,
               size: 24,

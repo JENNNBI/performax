@@ -1,5 +1,549 @@
 [
   {
+    "id": "quest_monthly_legend",
+    "title": "Efsanevi Öğrenci",
+    "description": "Bu ay toplam 20 gün uygulamaya giriş yap.",
+    "reward_xp": 2000,
+    "reward_currency": 500,
+    "target": 20,
+    "unit": "days",
+    "type": "monthly"
+  },
+  {
+    "id": "quest_monthly_question_master",
+    "title": "Soru Fabrikası",
+    "description": "Bu ay tüm derslerden toplam 1000 soru çöz.",
+    "reward_xp": 2500,
+    "reward_currency": 600,
+    "target": 1000,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_monthly_math_pro",
+    "title": "Matematik Dehası",
+    "description": "Bu ay sadece Matematik dersinden 300 soru devir.",
+    "reward_xp": 1500,
+    "reward_currency": 350,
+    "target": 300,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_monthly_turk_pro",
+    "title": "Edebiyat ve Dil Ustası",
+    "description": "Bu ay Türkçe dersinden 400 soru (Paragraf/Dil Bilgisi) çöz.",
+    "reward_xp": 1500,
+    "reward_currency": 350,
+    "target": 400,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_monthly_trial_expert",
+    "title": "Deneme Canavarı",
+    "description": "Bu ay 4 adet TYT Genel Denemesi bitir.",
+    "reward_xp": 3000,
+    "reward_currency": 800,
+    "target": 4,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_monthly_science_lab",
+    "title": "Bilim İnsanı",
+    "description": "Bu ay Fizik, Kimya ve Biyoloji derslerinden toplam 400 soru çöz.",
+    "reward_xp": 1800,
+    "reward_currency": 400,
+    "target": 400,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_monthly_social_guru",
+    "title": "Kültür Elçisi",
+    "description": "Bu ay Tarih, Coğrafya ve Felsefe derslerinden toplam 300 soru çöz.",
+    "reward_xp": 1400,
+    "reward_currency": 300,
+    "target": 300,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_monthly_video_library",
+    "title": "Video Kütüphanesi",
+    "description": "Bu ay toplam 20 farklı konu anlatım videosunu tamamla.",
+    "reward_xp": 1200,
+    "reward_currency": 250,
+    "target": 20,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_monthly_alfred_bestie",
+    "title": "Alfred'in Kankası",
+    "description": "Bu ay Alfred ile 15 farklı günde etkileşime gir (Soru sor, sohbet et).",
+    "reward_xp": 1000,
+    "reward_currency": 200,
+    "target": 15,
+    "unit": "days",
+    "type": "monthly"
+  },
+  {
+    "id": "quest_monthly_xp_overlord",
+    "title": "XP Lordu",
+    "description": "Bu ay görevlerden ve soru çözümlerinden toplam 5000 XP topla.",
+    "reward_xp": 3000,
+    "reward_currency": 750,
+    "target": 5000,
+    "unit": "xp",
+    "type": "monthly"
+  },
+  {
+    "id": "quest_monthly_geometry_architect",
+    "title": "Mimar Sinan",
+    "description": "Bu ay Geometri dersinden 150 soru çöz.",
+    "reward_xp": 1200,
+    "reward_currency": 300,
+    "target": 150,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_monthly_pdf_archive",
+    "title": "Arşivci",
+    "description": "Bu ay 15 farklı PDF notunu indir veya detaylı incele.",
+    "reward_xp": 800,
+    "reward_currency": 150,
+    "target": 15,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_monthly_night_shift",
+    "title": "Gece Vardiyası",
+    "description": "Bu ay 10 farklı gece saat 23:00'ten sonra çalışma oturumu yap.",
+    "reward_xp": 1000,
+    "reward_currency": 250,
+    "target": 10,
+    "unit": "nights",
+    "type": "monthly"
+  },
+  {
+    "id": "quest_monthly_early_riser",
+    "title": "Güneşten Önce",
+    "description": "Bu ay 10 farklı sabah saat 08:00'den önce uygulamayı aç.",
+    "reward_xp": 1000,
+    "reward_currency": 250,
+    "target": 10,
+    "unit": "mornings",
+    "type": "monthly"
+  },
+  {
+    "id": "quest_monthly_branch_tour",
+    "title": "Branş Turu",
+    "description": "Bu ay uygulamadaki tüm branşlardan (Mat, Fen, Sosyal vb.) en az bir test çöz.",
+    "reward_xp": 1500,
+    "reward_currency": 350,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_monthly_no_mistake",
+    "title": "Odaklanma Ayı",
+    "description": "Bu ay toplam 50 soruyu hiç yanlış yapmadan (arka arkaya streak ile) çöz.",
+    "reward_xp": 2000,
+    "reward_currency": 500,
+    "target": 50,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_monthly_history_traveler",
+    "title": "Zaman Yolcusu",
+    "description": "Bu ay Tarih dersinden 150 soru çöz.",
+    "reward_xp": 1100,
+    "reward_currency": 250,
+    "target": 150,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_monthly_bio_explorer",
+    "title": "Doğa Keşfi",
+    "description": "Bu ay Biyoloji dersinden 150 soru çöz.",
+    "reward_xp": 1100,
+    "reward_currency": 250,
+    "target": 150,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_monthly_physics_engineer",
+    "title": "Mühendis Adayı",
+    "description": "Bu ay Fizik dersinden 150 soru çöz.",
+    "reward_xp": 1100,
+    "reward_currency": 250,
+    "target": 150,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_monthly_chemistry_lab",
+    "title": "Laboratuvar Şefi",
+    "description": "Bu ay Kimya dersinden 150 soru çöz.",
+    "reward_xp": 1100,
+    "reward_currency": 250,
+    "target": 150,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_weekly_math_marathon",
+    "title": "Matematik Maratonu",
+    "description": "Bu hafta Matematik dersinden toplam 50 soru çöz.",
+    "reward_xp": 500,
+    "reward_currency": 100,
+    "target": 50,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_weekly_turk_paragraph",
+    "title": "Paragraf Ustası",
+    "description": "Bu hafta Türkçe dersinden toplam 75 paragraf sorusu çöz.",
+    "reward_xp": 600,
+    "reward_currency": 120,
+    "target": 75,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_weekly_login_5",
+    "title": "Sadık Öğrenci",
+    "description": "Bu hafta en az 5 farklı günde uygulamaya giriş yap.",
+    "reward_xp": 400,
+    "reward_currency": 80,
+    "target": 5,
+    "unit": "days",
+    "type": "weekly"
+  },
+  {
+    "id": "quest_weekly_science_mix",
+    "title": "Fen Bilimleri Haftası",
+    "description": "Fizik, Kimya veya Biyoloji derslerinden toplam 60 soru çöz.",
+    "reward_xp": 550,
+    "reward_currency": 110,
+    "target": 60,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_weekly_social_explorer",
+    "title": "Sosyal Bilimler Kaşifi",
+    "description": "Tarih, Coğrafya veya Felsefe derslerinden toplam 40 soru çöz.",
+    "reward_xp": 400,
+    "reward_currency": 80,
+    "target": 40,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_weekly_video_binger",
+    "title": "Video Kampı",
+    "description": "Bu hafta toplam 5 farklı konu anlatım videosu tamamla.",
+    "reward_xp": 350,
+    "reward_currency": 70,
+    "target": 5,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_weekly_alfred_buddy",
+    "title": "Alfred ile Çalışma Haftası",
+    "description": "Bu hafta Alfred'e derslerle ilgili 5 farklı soru sor.",
+    "reward_xp": 300,
+    "reward_currency": 60,
+    "target": 5,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_weekly_tyt_trial",
+    "title": "Haftalık Deneme",
+    "description": "Bu hafta 1 adet TYT Genel Denemesi bitir.",
+    "reward_xp": 1000,
+    "reward_currency": 200,
+    "target": 1,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_weekly_geometry",
+    "title": "Şekillerin Efendisi",
+    "description": "Bu hafta Geometri dersinden 30 soru çöz.",
+    "reward_xp": 450,
+    "reward_currency": 90,
+    "target": 30,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_weekly_night_owl",
+    "title": "Gece Mesaisi",
+    "description": "Bu hafta 3 farklı gece saat 23:00'ten sonra ders çalış.",
+    "reward_xp": 350,
+    "reward_currency": 70,
+    "target": 3,
+    "unit": "nights",
+    "type": "weekly"
+  },
+  {
+    "id": "quest_weekly_pdf_researcher",
+    "title": "Not Araştırmacısı",
+    "description": "Bu hafta 5 farklı PDF ders notunu incele.",
+    "reward_xp": 250,
+    "reward_currency": 50,
+    "target": 5,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_weekly_grammar_focus",
+    "title": "Dil Bilgisi Dedektifi",
+    "description": "Bu hafta Türkçe Dil Bilgisi konularından 40 soru çöz.",
+    "reward_xp": 400,
+    "reward_currency": 80,
+    "target": 40,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_weekly_physics_lab",
+    "title": "Fizik Laboratuvarı",
+    "description": "Bu hafta sadece Fizik dersinden 30 soru tamamla.",
+    "reward_xp": 400,
+    "reward_currency": 80,
+    "target": 30,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_weekly_chemistry_mix",
+    "title": "Kimyager",
+    "description": "Bu hafta sadece Kimya dersinden 30 soru tamamla.",
+    "reward_xp": 400,
+    "reward_currency": 80,
+    "target": 30,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_weekly_bio_life",
+    "title": "Biyolog",
+    "description": "Bu hafta sadece Biyoloji dersinden 30 soru tamamla.",
+    "reward_xp": 400,
+    "reward_currency": 80,
+    "target": 30,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_weekly_history_buff",
+    "title": "Tarih Kurdu",
+    "description": "Bu hafta Tarih dersinden 30 soru çöz.",
+    "reward_xp": 350,
+    "reward_currency": 70,
+    "target": 30,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_weekly_geo_world",
+    "title": "Dünya Turu",
+    "description": "Bu hafta Coğrafya dersinden 25 soru çöz.",
+    "reward_xp": 300,
+    "reward_currency": 60,
+    "target": 25,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_weekly_variety",
+    "title": "Çok Yönlü Zeka",
+    "description": "Bu hafta en az 4 farklı branştan soru çözümü yap.",
+    "reward_xp": 500,
+    "reward_currency": 100,
+    "target": 4,
+    "unit": "branches",
+    "type": "weekly"
+  },
+  {
+    "id": "quest_weekly_total_time",
+    "title": "Zaman Yönetimi",
+    "description": "Bu hafta uygulamada toplam 300 dakika (5 saat) aktif ol.",
+    "reward_xp": 600,
+    "reward_currency": 120,
+    "target": 300,
+    "unit": "minutes",
+    "type": "weekly"
+  },
+  {
+    "id": "quest_weekly_xp_hunter",
+    "title": "XP Avcısı",
+    "description": "Bu hafta diğer görevlerden toplam 1000 XP kazan.",
+    "reward_xp": 1000,
+    "reward_currency": 250,
+    "target": 1000,
+    "unit": "xp",
+    "type": "weekly"
+  },
+  {
+    "id": "quest_alfred_intro_1",
+    "title": "Alfred ile Tanış",
+    "description": "Alfred'e 'Merhaba' de ve bugünkü çalışma planını sor.",
+    "reward_xp": 50,
+    "reward_currency": 10,
+    "target": 1,
+    "type": "daily"
+  },
+  {
+    "id": "quest_math_video_1",
+    "title": "Fonksiyonlara Giriş",
+    "description": "Matematik dersinden toplam 15 dakika konu anlatımı izle.",
+    "reward_xp": 100,
+    "reward_currency": 20,
+    "target": 15,
+    "unit": "minutes",
+    "type": "daily"
+  },
+  {
+    "id": "quest_bio_solve_1",
+    "title": "Yaşam Bilimi Biyoloji",
+    "description": "Biyoloji dersinden 10 adet soru çöz.",
+    "reward_xp": 80,
+    "reward_currency": 15,
+    "target": 10,
+    "type": "daily"
+  },
+  {
+    "id": "quest_pdf_history_1",
+    "title": "Tarih Notlarına Göz At",
+    "description": "Tarih dersinden herhangi bir PDF notunu aç ve incele.",
+    "reward_xp": 40,
+    "reward_currency": 5,
+    "target": 1,
+    "type": "daily"
+  },
+  {
+    "id": "quest_alfred_hard_q",
+    "title": "Zor Soruları Alfred Sever",
+    "description": "Çözemediğin bir sorunun fotoğrafını Alfred'e sor.",
+    "reward_xp": 150,
+    "reward_currency": 30,
+    "target": 1,
+    "type": "daily"
+  },
+  {
+    "id": "quest_streak_3",
+    "title": "İstikrar Abidesi",
+    "description": "3 gün üst üste uygulamaya giriş yap.",
+    "reward_xp": 200,
+    "reward_currency": 50,
+    "target": 3,
+    "unit": "days",
+    "type": "weekly"
+  },
+  {
+    "id": "quest_phy_video_1",
+    "title": "Fizik Kuralları",
+    "description": "Fizik dersinden bir konu anlatım videosunu sonuna kadar izle.",
+    "reward_xp": 90,
+    "reward_currency": 20,
+    "target": 1,
+    "type": "daily"
+  },
+  {
+    "id": "quest_geo_solve_1",
+    "title": "Üçgenler Ustası",
+    "description": "Geometri dersinden 15 soru çöz.",
+    "reward_xp": 120,
+    "reward_currency": 25,
+    "target": 15,
+    "type": "daily"
+  },
+  {
+    "id": "quest_chem_pdf_1",
+    "title": "Periyodik Cetvel",
+    "description": "Kimya PDF notlarından birini indir veya görüntüle.",
+    "reward_xp": 40,
+    "reward_currency": 10,
+    "type": "daily"
+  },
+  {
+    "id": "quest_night_owl",
+    "title": "Gece Kuşu",
+    "description": "Saat 22:00'dan sonra 10 soru çöz.",
+    "reward_xp": 100,
+    "reward_currency": 25,
+    "type": "daily"
+  },
+  {
+    "id": "quest_early_bird",
+    "title": "Erken Kalkan Yol Alır",
+    "description": "Sabah 09:00'dan önce uygulamaya giriş yap.",
+    "reward_xp": 100,
+    "reward_currency": 25,
+    "type": "daily"
+  },
+  {
+    "id": "quest_alfred_chat_topic",
+    "title": "Akademik Sohbet",
+    "description": "Alfred ile 'Verimli Ders Çalışma Yöntemleri' hakkında konuş.",
+    "reward_xp": 60,
+    "reward_currency": 15,
+    "type": "one_time"
+  },
+  {
+    "id": "quest_turk_paragraph",
+    "title": "Paragraf Avcısı",
+    "description": "Türkçe dersinden 20 adet paragraf sorusu çöz.",
+    "reward_xp": 150,
+    "reward_currency": 30,
+    "target": 20,
+    "type": "daily"
+  },
+  {
+    "id": "quest_perfect_score",
+    "title": "Hatasız Kul Olmaz Ama...",
+    "description": "Bir testte 5 soruyu arka arkaya yanlışsız çöz.",
+    "reward_xp": 200,
+    "reward_currency": 50,
+    "target": 5,
+    "type": "daily"
+  },
+  {
+    "id": "quest_geo_video_1",
+    "title": "Haritalarla Coğrafya",
+    "description": "Coğrafya dersinden 10 dakika video izle.",
+    "reward_xp": 80,
+    "reward_currency": 15,
+    "target": 10,
+    "unit": "minutes",
+    "type": "daily"
+  },
+  {
+    "id": "quest_profile_update",
+    "title": "Kimliğini Yansıt",
+    "description": "Profil avatarını veya kullanıcı adını güncelle.",
+    "reward_xp": 50,
+    "reward_currency": 10,
+    "type": "one_time"
+  },
+  {
+    "id": "quest_weekend_warrior",
+    "title": "Hafta Sonu Savaşçısı",
+    "description": "Cumartesi veya Pazar günü en az 30 soru çöz.",
+    "reward_xp": 250,
+    "reward_currency": 60,
+    "target": 30,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_alfred_joke",
+    "title": "Biraz da Gülelim",
+    "description": "Alfred'den sana bir espri yapmasını veya ilginç bir bilgi vermesini iste.",
+    "reward_xp": 30,
+    "reward_currency": 5,
+    "type": "daily"
+  },
+  {
+    "id": "quest_full_subject",
+    "title": "Konu Canavarı",
+    "description": "Bir konuya ait hem videoyu izle hem de testini çöz.",
+    "reward_xp": 300,
+    "reward_currency": 100,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_share_progress",
+    "title": "Başarını Paylaş",
+    "description": "Haftalık gelişim raporunu incele.",
+    "reward_xp": 50,
+    "reward_currency": 10,
+    "type": "weekly"
+  },
+  {
     "id": "daily_tyt_login",
     "title": "Güne Başla",
     "description": "Uygulamaya giriş yap ve yoklamanı al",

@@ -66,9 +66,9 @@ class _GradeSelectionScreenState extends State<GradeSelectionScreen>
     }
   }
 
-  /// Get grade level options - Fixed: Indices removed, only 9-12
+  /// Get grade level options
   List<Map<String, dynamic>> _getGradeLevels(LanguageBloc languageBloc) {
-    return [
+    var grades = [
       {
         'name': '9. SINIF',
         'key': '9_sinif',
@@ -99,9 +99,43 @@ class _GradeSelectionScreenState extends State<GradeSelectionScreen>
         'description': languageBloc.currentLanguage == 'tr'
           ? '12. Sınıf ${widget.subjectName}'
           : '12th Grade ${widget.subjectName}',
-        'accentColor': const Color(0xFF43E97B), // Changed color for 12
+        'accentColor': const Color(0xFF43E97B),
       },
     ];
+
+    // Strict Data Constraint: Subject vs. Grade Mapping
+    // Matrix:
+    // * Türkçe: 9, 10
+    // * Türk Dili ve Edebiyatı: 9, 10, 11, 12
+    // * Matematik: 9, 10, 11, 12
+    // * Geometri: 9, 10, 11, 12
+    // * Fizik: 9, 10, 11, 12
+    // * Kimya: 9, 10, 11, 12
+    // * Biyoloji: 9, 10, 11, 12
+    // * Tarih: 9, 10, 11, 12
+    // * Coğrafya: 9, 10, 11, 12
+    // * Felsefe: 10, 11 (No 9 or 12)
+    // * Din Kültürü: 9, 10, 11, 12
+
+    final subjectName = widget.subjectName;
+    final subjectKey = widget.subjectKey; // e.g. 'Felsefe', 'Turkce'
+
+    // Determine allowed grades based on Subject Name (or Key)
+    List<String> allowedGrades;
+
+    if (subjectName == 'Türkçe' || subjectName == 'Turkish') {
+      allowedGrades = ['9_sinif', '10_sinif'];
+    } else if (subjectName == 'Felsefe' || subjectName == 'Philosophy') {
+      allowedGrades = ['10_sinif', '11_sinif'];
+    } else {
+      // All others (Matematik, Edebiyat, Fizik, etc.) -> 9, 10, 11, 12
+      allowedGrades = ['9_sinif', '10_sinif', '11_sinif', '12_sinif'];
+    }
+
+    // Filter the grades list
+    grades = grades.where((g) => allowedGrades.contains(g['key'])).toList();
+
+    return grades;
   }
 
   void _onGradeSelected(Map<String, dynamic> gradeLevel) {

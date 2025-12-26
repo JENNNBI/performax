@@ -1,5 +1,555 @@
 [
   {
+    "id": "quest_ea_monthly_legend",
+    "title": "EA Efsanesi",
+    "description": "Bu ay toplam 20 farklı günde uygulamaya giriş yap.",
+    "reward_xp": 2000,
+    "reward_currency": 500,
+    "target": 20,
+    "unit": "days",
+    "type": "monthly"
+  },
+  {
+    "id": "quest_ea_monthly_question_machine",
+    "title": "Soru Makinesi",
+    "description": "Bu ay tüm derslerden toplam 1200 soru çöz.",
+    "reward_xp": 3000,
+    "reward_currency": 750,
+    "target": 1200,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_ea_monthly_lit_archive",
+    "title": "Edebiyat Arşivi",
+    "description": "Bu ay Edebiyat dersinden 500 soru devir.",
+    "reward_xp": 1800,
+    "reward_currency": 400,
+    "target": 500,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_ea_monthly_math_grind",
+    "title": "Matematik Kampı",
+    "description": "Bu ay Matematik dersinden 350 soru çöz.",
+    "reward_xp": 1600,
+    "reward_currency": 350,
+    "target": 350,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_ea_monthly_trial_master",
+    "title": "Deneme Üstadı",
+    "description": "Bu ay 4 adet EA Genel Denemesi bitir.",
+    "reward_xp": 3000,
+    "reward_currency": 800,
+    "target": 4,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_ea_monthly_history_traveler",
+    "title": "Tarih Yolculuğu",
+    "description": "Bu ay Tarih dersinden 300 soru çöz.",
+    "reward_xp": 1400,
+    "reward_currency": 300,
+    "target": 300,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_ea_monthly_geo_explorer",
+    "title": "Coğrafya Kaşifi",
+    "description": "Bu ay Coğrafya dersinden 250 soru çöz.",
+    "reward_xp": 1200,
+    "reward_currency": 250,
+    "target": 250,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_ea_monthly_paragraph_monster",
+    "title": "Paragraf Canavarı",
+    "description": "Bu ay Türkçe dersinden 400 paragraf sorusu çöz.",
+    "reward_xp": 1500,
+    "reward_currency": 350,
+    "target": 400,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_ea_monthly_video_marathon",
+    "title": "Video Maratonu",
+    "description": "Bu ay toplam 20 farklı ders videosunu tamamla.",
+    "reward_xp": 1200,
+    "reward_currency": 250,
+    "target": 20,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_ea_monthly_alfred_companion",
+    "title": "Alfred İle Bir Ay",
+    "description": "Bu ay Alfred ile 15 farklı günde ders çalış.",
+    "reward_xp": 1000,
+    "reward_currency": 200,
+    "target": 15,
+    "unit": "days",
+    "type": "monthly"
+  },
+  {
+    "id": "quest_ea_monthly_xp_hoarder",
+    "title": "XP Deposu",
+    "description": "Bu ay görevlerden ve sorulardan 5000 XP kazan.",
+    "reward_xp": 3000,
+    "reward_currency": 750,
+    "target": 5000,
+    "unit": "xp",
+    "type": "monthly"
+  },
+  {
+    "id": "quest_ea_monthly_pdf_worm",
+    "title": "Not Kurdu",
+    "description": "Bu ay 15 farklı PDF ders notunu indir veya incele.",
+    "reward_xp": 800,
+    "reward_currency": 150,
+    "target": 15,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_ea_monthly_night_shift",
+    "title": "Gece Vardiyası",
+    "description": "Bu ay 10 gece saat 23:00'ten sonra aktif ol.",
+    "reward_xp": 1000,
+    "reward_currency": 250,
+    "target": 10,
+    "unit": "nights",
+    "type": "monthly"
+  },
+  {
+    "id": "quest_ea_monthly_early_riser",
+    "title": "Sabah İnsanı",
+    "description": "Bu ay 10 sabah saat 08:00'den önce uygulamayı aç.",
+    "reward_xp": 1000,
+    "reward_currency": 250,
+    "target": 10,
+    "unit": "mornings",
+    "type": "monthly"
+  },
+  {
+    "id": "quest_ea_monthly_full_focus",
+    "title": "Kusursuz Odak",
+    "description": "Bu ay toplam 50 soruyu hiç yanlış yapmadan (streak ile) çöz.",
+    "reward_xp": 2000,
+    "reward_currency": 500,
+    "target": 50,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_ea_monthly_branch_tour",
+    "title": "Branş Turu",
+    "description": "Bu ay EA müfredatındaki tüm derslerden (Mat, Ed, Tar, Coğ) test çöz.",
+    "reward_xp": 1500,
+    "reward_currency": 350,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_ea_monthly_author_expert",
+    "title": "Yazar Uzmanı",
+    "description": "Bu ay Alfred yardımıyla veya testlerle 20 farklı yazar hakkında soru çöz.",
+    "reward_xp": 1000,
+    "reward_currency": 200,
+    "target": 20,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_ea_monthly_weekend_warrior",
+    "title": "Hafta Sonu Savaşçısı",
+    "description": "Bu ay hafta sonları toplam 300 soru çöz.",
+    "reward_xp": 1200,
+    "reward_currency": 300,
+    "target": 300,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_ea_monthly_topic_finisher",
+    "title": "Konu Bitirici",
+    "description": "Bu ay 5 farklı konuyu (Video + Test) tamamen bitir.",
+    "reward_xp": 2500,
+    "reward_currency": 600,
+    "target": 5,
+    "type": "monthly"
+  },
+  {
+    "id": "quest_ea_monthly_time_master",
+    "title": "Zamanın Efendisi",
+    "description": "Bu ay uygulamada toplam 10 saat (600 dakika) ders çalış.",
+    "reward_xp": 2000,
+    "reward_currency": 500,
+    "target": 600,
+    "unit": "minutes",
+    "type": "monthly"
+  },
+  {
+    "id": "quest_ea_weekly_math_marathon",
+    "title": "Matematik Maratonu",
+    "description": "Bu hafta Matematik dersinden toplam 60 soru çöz.",
+    "reward_xp": 600,
+    "reward_currency": 120,
+    "target": 60,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_ea_weekly_lit_master",
+    "title": "Edebiyat Üstadı",
+    "description": "Bu hafta Edebiyat dersinden toplam 80 soru çöz.",
+    "reward_xp": 700,
+    "reward_currency": 140,
+    "target": 80,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_ea_weekly_hist_geo_mix",
+    "title": "Sosyal Bilimler Haftası",
+    "description": "Tarih ve Coğrafya derslerinden toplam 50 soru çöz.",
+    "reward_xp": 500,
+    "reward_currency": 100,
+    "target": 50,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_ea_weekly_paragraph_king",
+    "title": "Paragraf Kralı",
+    "description": "Bu hafta Türkçe/Edebiyat dersinden 100 adet paragraf sorusu devir.",
+    "reward_xp": 800,
+    "reward_currency": 160,
+    "target": 100,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_ea_weekly_trial",
+    "title": "Haftalık Deneme",
+    "description": "Bu hafta 1 adet EA (Eşit Ağırlık) Genel Denemesi bitir.",
+    "reward_xp": 1000,
+    "reward_currency": 200,
+    "target": 1,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_ea_weekly_video_series",
+    "title": "Konu Tamamlama",
+    "description": "Bu hafta Matematik veya Edebiyat dersinden 5 farklı video izle.",
+    "reward_xp": 400,
+    "reward_currency": 80,
+    "target": 5,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_ea_weekly_alfred_mentor",
+    "title": "Mentor Alfred",
+    "description": "Bu hafta Alfred ile 4 farklı günde derslerin hakkında konuş.",
+    "reward_xp": 300,
+    "reward_currency": 60,
+    "target": 4,
+    "unit": "days",
+    "type": "weekly"
+  },
+  {
+    "id": "quest_ea_weekly_login_streak",
+    "title": "İstikrar Haftası",
+    "description": "Bu hafta en az 5 farklı günde uygulamaya giriş yap.",
+    "reward_xp": 450,
+    "reward_currency": 90,
+    "target": 5,
+    "unit": "days",
+    "type": "weekly"
+  },
+  {
+    "id": "quest_ea_weekly_geo_shapes",
+    "title": "Geometri Zamanı",
+    "description": "Bu hafta Geometri dersinden 30 soru çöz.",
+    "reward_xp": 450,
+    "reward_currency": 90,
+    "target": 30,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_ea_weekly_period_study",
+    "title": "Dönem Araştırması",
+    "description": "Bu hafta Divan, Halk veya Tanzimat edebiyatından 40 soru çöz.",
+    "reward_xp": 500,
+    "reward_currency": 100,
+    "target": 40,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_ea_weekly_pdf_library",
+    "title": "Dijital Kütüphane",
+    "description": "Bu hafta 5 farklı PDF notunu aç ve incele.",
+    "reward_xp": 250,
+    "reward_currency": 50,
+    "target": 5,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_ea_weekly_night_owl",
+    "title": "Gece Çalışması",
+    "description": "Bu hafta 3 gece saat 22:00'den sonra soru çözümü yap.",
+    "reward_xp": 350,
+    "reward_currency": 70,
+    "target": 3,
+    "unit": "nights",
+    "type": "weekly"
+  },
+  {
+    "id": "quest_ea_weekly_early_bird",
+    "title": "Sabah Şekerleri",
+    "description": "Bu hafta 3 sabah saat 09:00'dan önce uygulamayı aç.",
+    "reward_xp": 350,
+    "reward_currency": 70,
+    "target": 3,
+    "unit": "mornings",
+    "type": "weekly"
+  },
+  {
+    "id": "quest_ea_weekly_xp_collector",
+    "title": "XP Koleksiyoncusu",
+    "description": "Bu hafta görevlerden toplam 1200 XP topla.",
+    "reward_xp": 1200,
+    "reward_currency": 240,
+    "target": 1200,
+    "unit": "xp",
+    "type": "weekly"
+  },
+  {
+    "id": "quest_ea_weekly_variety_pack",
+    "title": "Çeşni Tabağı",
+    "description": "Bu hafta Mat, Ed, Tar ve Coğ derslerinin hepsinden en az bir test çöz.",
+    "reward_xp": 550,
+    "reward_currency": 110,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_ea_weekly_hard_focus",
+    "title": "Derin Odaklanma",
+    "description": "Bu hafta uygulamada toplam 300 dakika (5 saat) aktif kal.",
+    "reward_xp": 600,
+    "reward_currency": 120,
+    "target": 300,
+    "unit": "minutes",
+    "type": "weekly"
+  },
+  {
+    "id": "quest_ea_weekly_author_works",
+    "title": "Yazar Eser Haftası",
+    "description": "Alfred'e bu hafta 5 farklı yazarın eserlerini sor ve öğren.",
+    "reward_xp": 200,
+    "reward_currency": 40,
+    "target": 5,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_ea_weekly_no_wrong",
+    "title": "Hatasız Seri",
+    "description": "Bu hafta bir testte arka arkaya 10 doğru cevap ver.",
+    "reward_xp": 500,
+    "reward_currency": 100,
+    "target": 10,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_ea_weekly_weekend_study",
+    "title": "Hafta Sonu Kampı",
+    "description": "Cumartesi ve Pazar günleri toplam 50 soru çöz.",
+    "reward_xp": 450,
+    "reward_currency": 90,
+    "target": 50,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_ea_weekly_history_expert",
+    "title": "Tarih Uzmanı",
+    "description": "Bu hafta sadece Tarih dersinden 40 soru çöz.",
+    "reward_xp": 400,
+    "reward_currency": 80,
+    "target": 40,
+    "type": "weekly"
+  },
+  {
+    "id": "quest_ea_lit_divan",
+    "title": "Divan Edebiyatı",
+    "description": "Bugün Divan Edebiyatı konusundan 15 soru çöz.",
+    "reward_xp": 120,
+    "reward_currency": 25,
+    "target": 15,
+    "type": "daily"
+  },
+  {
+    "id": "quest_ea_math_func",
+    "title": "Fonksiyonlar Pratiği",
+    "description": "Matematik dersinden Fonksiyonlar ile ilgili 10 soru çöz.",
+    "reward_xp": 100,
+    "reward_currency": 20,
+    "target": 10,
+    "type": "daily"
+  },
+  {
+    "id": "quest_ea_hist_inkilap",
+    "title": "Cumhuriyet Tarihi",
+    "description": "Tarih dersinden İnkılap Tarihi konusuyla ilgili bir video izle.",
+    "reward_xp": 90,
+    "reward_currency": 15,
+    "target": 1,
+    "type": "daily"
+  },
+  {
+    "id": "quest_ea_alfred_author",
+    "title": "Yazar-Eser Dedektifi",
+    "description": "Alfred'e bir yazarın ismini söyle ve en önemli eserlerini sor.",
+    "reward_xp": 50,
+    "reward_currency": 10,
+    "target": 1,
+    "type": "daily"
+  },
+  {
+    "id": "quest_ea_geo_maps",
+    "title": "Harita Bilgisi",
+    "description": "Coğrafya dersinden Harita Bilgisi veya İklim ile ilgili 10 soru çöz.",
+    "reward_xp": 80,
+    "reward_currency": 15,
+    "target": 10,
+    "type": "daily"
+  },
+  {
+    "id": "quest_ea_lit_tanzimat",
+    "title": "Tanzimat Dönemi",
+    "description": "Edebiyat dersinden Tanzimat Dönemi ile ilgili PDF notlarına göz at.",
+    "reward_xp": 60,
+    "reward_currency": 10,
+    "target": 1,
+    "type": "daily"
+  },
+  {
+    "id": "quest_ea_math_problem",
+    "title": "Problem Çözme Saati",
+    "description": "Bugün 10 adet Matematik Problemi (Sayı/Kesir/Yaş) çöz.",
+    "reward_xp": 110,
+    "reward_currency": 20,
+    "target": 10,
+    "type": "daily"
+  },
+  {
+    "id": "quest_ea_turk_dilbilgisi",
+    "title": "Dil Bilgisi Tekrarı",
+    "description": "Türkçe dersinden Ses Bilgisi veya Yazım Kuralları testi çöz (10 Soru).",
+    "reward_xp": 90,
+    "reward_currency": 15,
+    "target": 10,
+    "type": "daily"
+  },
+  {
+    "id": "quest_ea_lit_video",
+    "title": "Şiir İncelemesi",
+    "description": "Edebiyat dersinden bir konu anlatım videosunu tamamla.",
+    "reward_xp": 100,
+    "reward_currency": 20,
+    "target": 1,
+    "type": "daily"
+  },
+  {
+    "id": "quest_ea_geo_population",
+    "title": "Nüfus ve Yerleşme",
+    "description": "Coğrafya dersinden 10 soru çöz.",
+    "reward_xp": 80,
+    "reward_currency": 15,
+    "target": 10,
+    "type": "daily"
+  },
+  {
+    "id": "quest_ea_alfred_history",
+    "title": "Tarih Sohbeti",
+    "description": "Alfred'e tarihi bir olay hakkında (örneğin: İstanbul'un Fethi) soru sor.",
+    "reward_xp": 50,
+    "reward_currency": 10,
+    "target": 1,
+    "type": "daily"
+  },
+  {
+    "id": "quest_ea_math_geo_mix",
+    "title": "Mat-Geo Karışık",
+    "description": "Hem Matematik hem Geometri dersinden toplam 20 soru çöz.",
+    "reward_xp": 150,
+    "reward_currency": 30,
+    "target": 20,
+    "type": "daily"
+  },
+  {
+    "id": "quest_ea_lit_cumhuriyet",
+    "title": "Cumhuriyet Edebiyatı",
+    "description": "Cumhuriyet Dönemi Türk Edebiyatı konusundan 15 soru çöz.",
+    "reward_xp": 120,
+    "reward_currency": 25,
+    "target": 15,
+    "type": "daily"
+  },
+  {
+    "id": "quest_ea_pdf_review",
+    "title": "Sözel Notlar",
+    "description": "Tarih veya Coğrafya PDF notlarından birini açıp incele.",
+    "reward_xp": 40,
+    "reward_currency": 5,
+    "target": 1,
+    "type": "daily"
+  },
+  {
+    "id": "quest_ea_streak_saver",
+    "title": "Günü Kurtar",
+    "description": "Bugün uygulamaya giriş yaparak serini (streak) koru.",
+    "reward_xp": 50,
+    "reward_currency": 10,
+    "target": 1,
+    "type": "daily"
+  },
+  {
+    "id": "quest_ea_night_study",
+    "title": "Gece Edebiyatı",
+    "description": "Saat 21:00'den sonra Edebiyat dersinden 5 soru çöz.",
+    "reward_xp": 70,
+    "reward_currency": 15,
+    "target": 5,
+    "type": "daily"
+  },
+  {
+    "id": "quest_ea_lit_memorize",
+    "title": "Ezber Boz",
+    "description": "Alfred'e 'Bana Edebiyat ezber taktiği ver' diye sor.",
+    "reward_xp": 40,
+    "reward_currency": 5,
+    "target": 1,
+    "type": "daily"
+  },
+  {
+    "id": "quest_ea_hist_test",
+    "title": "Osmanlı Tarihi",
+    "description": "Tarih dersinden Osmanlı Devleti ile ilgili 10 soru çöz.",
+    "reward_xp": 90,
+    "reward_currency": 15,
+    "target": 10,
+    "type": "daily"
+  },
+  {
+    "id": "quest_ea_book_reading",
+    "title": "Paragraf Hızı",
+    "description": "Türkçe dersinden süre tutarak 10 paragraf sorusu çöz.",
+    "reward_xp": 100,
+    "reward_currency": 20,
+    "target": 10,
+    "type": "daily"
+  },
+  {
+    "id": "quest_ea_general_video",
+    "title": "Görsel Öğrenme",
+    "description": "Herhangi bir dersten (Mat/Ed/Tar/Coğ) 1 video izle.",
+    "reward_xp": 80,
+    "reward_currency": 15,
+    "target": 1,
+    "type": "daily"
+  },
+  {
     "id": "daily_ea_login",
     "title": "Güne Başla",
     "description": "Uygulamaya giriş yap ve yoklamanı al",

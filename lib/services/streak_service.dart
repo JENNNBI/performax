@@ -208,6 +208,53 @@ class StreakService {
     }
   }
   
+  /// Get current streak data (without updating)
+  Future<StreakData> getStreakData() async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) {
+        return StreakData(
+          currentStreak: 0,
+          lastLoginDate: DateTime.now(),
+          isNewStreak: false,
+          isStreakIncremented: false,
+          isStreakReset: false,
+        );
+      }
+      
+      final userId = user.uid;
+      final prefs = await SharedPreferences.getInstance();
+      
+      final userSpecificLastLoginKey = _getLastLoginKey(userId);
+      final userSpecificStreakKey = _getCurrentStreakKey(userId);
+      
+      final lastLoginString = prefs.getString(userSpecificLastLoginKey);
+      int currentStreak = prefs.getInt(userSpecificStreakKey) ?? 0;
+      
+      DateTime lastLoginDate = DateTime.now();
+      if (lastLoginString != null) {
+        lastLoginDate = DateTime.parse(lastLoginString);
+      }
+      
+      return StreakData(
+        currentStreak: currentStreak,
+        lastLoginDate: lastLoginDate,
+        isNewStreak: false,
+        isStreakIncremented: false,
+        isStreakReset: false,
+      );
+    } catch (e) {
+      debugPrint('❌ Error getting streak data: $e');
+      return StreakData(
+        currentStreak: 0,
+        lastLoginDate: DateTime.now(),
+        isNewStreak: false,
+        isStreakIncremented: false,
+        isStreakReset: false,
+      );
+    }
+  }
+
   /// Get current streak (from user-specific local storage)
   /// Returns 0 if user is not authenticated
   Future<int> getCurrentStreak() async {
