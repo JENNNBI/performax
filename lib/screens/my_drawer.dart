@@ -1,7 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:provider/provider.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart'; // Modern icon library
 import 'package:performax/screens/login_screen.dart';
@@ -32,17 +30,13 @@ class MyDrawer extends StatefulWidget {
 }
 
 class _MyDrawerState extends State<MyDrawer> with TickerProviderStateMixin {
-  late final FirebaseAuth _auth;
+  // Removed unused _auth field
   bool _isLoggingOut = false;
 
   @override
   void initState() {
     super.initState();
-    try {
-      _auth = FirebaseAuth.instance;
-    } catch (e) {
-      debugPrint('Error initializing drawer: $e');
-    }
+    // Removed _auth initialization - use FirebaseAuth.instance directly
   }
 
   String _safeTranslate(LanguageBloc languageBloc, String key, [String fallback = '']) {
@@ -123,24 +117,6 @@ class _MyDrawerState extends State<MyDrawer> with TickerProviderStateMixin {
     }
   }
 
-  String _getInitials(Map<String, dynamic>? userData) {
-    final fullName = userData?['fullName'];
-    if (fullName != null && fullName.isNotEmpty) {
-      final nameParts = fullName.split(' ');
-      if (nameParts.length >= 2) {
-        return '${nameParts[0][0]}${nameParts[1][0]}'.toUpperCase();
-      } else {
-        return fullName[0].toUpperCase();
-      }
-    }
-    
-    final firstName = userData?['firstName'];
-    if (firstName != null && firstName.isNotEmpty) {
-      return firstName[0].toUpperCase();
-    }
-    
-    return 'U';
-  }
 
   Widget _buildNeumorphicMenuItem({
     required PhosphorIconData icon,

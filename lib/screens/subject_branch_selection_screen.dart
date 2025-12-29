@@ -99,13 +99,6 @@ class _SubjectBranchSelectionScreenState extends State<SubjectBranchSelectionScr
         'accentColor': const Color(0xFFff9a9e),
         'videoCount': 35,
       },
-      {
-        'name': languageBloc.currentLanguage == 'tr' ? 'Din Kültürü' : 'Religious Culture',
-        'key': 'Din',
-        'icon': Icons.mosque_rounded, // Using standard icon
-        'accentColor': const Color(0xFF84fab0),
-        'videoCount': 15,
-      },
     ];
   }
 

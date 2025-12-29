@@ -5,7 +5,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/localization_service.dart';
 import '../widgets/user_avatar_circle.dart';
 import '../theme/neumorphic_colors.dart';
-import '../widgets/neumorphic/neumorphic_button.dart';
 import '../services/user_provider.dart';
 
 class ProfileEditScreen extends StatefulWidget {
@@ -135,7 +134,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.cyanAccent.withOpacity(0.2),
+                          color: Colors.cyanAccent.withValues(alpha: 0.2),
                           blurRadius: 20,
                           spreadRadius: 5,
                         ),
@@ -205,7 +204,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF2979FF).withOpacity(0.4),
+                    color: const Color(0xFF2979FF).withValues(alpha: 0.4),
                     blurRadius: 20,
                     offset: const Offset(0, 8),
                   ),
@@ -248,7 +247,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withOpacity(0.7),
+            color: Colors.white.withValues(alpha: 0.7),
             fontSize: 14,
             fontWeight: FontWeight.w500,
           ),
@@ -256,10 +255,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
             ),
           ),
           child: TextField(
@@ -267,7 +266,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
             readOnly: readOnly,
             style: const TextStyle(color: Colors.white),
             decoration: InputDecoration(
-              prefixIcon: Icon(icon, color: Colors.white.withOpacity(0.5)),
+              prefixIcon: Icon(icon, color: Colors.white.withValues(alpha: 0.5)),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             ),

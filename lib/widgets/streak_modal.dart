@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
-import 'dart:ui' as ui;
-import 'package:provider/provider.dart';
 import '../services/streak_service.dart';
-import '../services/user_provider.dart';
 
 /// High-Fidelity Holographic Streak Pop-up
 /// Implements a futuristic, neon/cyber aesthetic with dynamic animations.
@@ -20,7 +17,7 @@ class StreakModal extends StatefulWidget {
     return await showDialog(
       context: context,
       barrierDismissible: true,
-      barrierColor: Colors.black.withOpacity(0.8), // Darker barrier for neon contrast
+      barrierColor: Colors.black.withValues(alpha: 0.8), // Darker barrier for neon contrast
       useSafeArea: true,
       builder: (context) {
         return StreakModal(streakData: streakData);
@@ -219,7 +216,7 @@ class _StreakModalState extends State<StreakModal> with TickerProviderStateMixin
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 16,
-                                  color: Colors.white.withOpacity(0.8),
+                                  color: Colors.white.withValues(alpha: 0.8),
                                   letterSpacing: 0.5,
                                 ),
                               ),
@@ -253,8 +250,8 @@ class _StreakModalState extends State<StreakModal> with TickerProviderStateMixin
     final now = DateTime.now();
     final currentWeekday = now.weekday; 
     
-    // Get actual user login history from Provider
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    // Get actual user login history from Provider (unused but available for future)
+    // final userProvider = Provider.of<UserProvider>(context, listen: false);
     
     // Logic:
     // "User registers on Friday -> Mon-Thu empty, Fri checked".
@@ -283,10 +280,10 @@ class _StreakModalState extends State<StreakModal> with TickerProviderStateMixin
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.3),
+        color: Colors.black.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
           width: 1,
         ),
       ),
@@ -296,7 +293,7 @@ class _StreakModalState extends State<StreakModal> with TickerProviderStateMixin
           // Calculate the date for this specific column (Mon..Sun)
           final columnDate = currentMonday.add(Duration(days: index));
           
-          final isFuture = columnDate.isAfter(todayMidnight);
+          // isFuture removed - unused
           final isToday = columnDate.isAtSameMomentAs(todayMidnight);
           final isPast = columnDate.isBefore(todayMidnight);
           
@@ -337,7 +334,7 @@ class _StreakModalState extends State<StreakModal> with TickerProviderStateMixin
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withOpacity(0.9),
+            color: Colors.white.withValues(alpha: 0.9),
             fontSize: 12,
             fontWeight: FontWeight.bold,
           ),
@@ -354,7 +351,7 @@ class _StreakModalState extends State<StreakModal> with TickerProviderStateMixin
               color: orangeColor,
               boxShadow: [
                 BoxShadow(
-                  color: orangeColor.withOpacity(0.4),
+                  color: orangeColor.withValues(alpha: 0.4),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -374,7 +371,7 @@ class _StreakModalState extends State<StreakModal> with TickerProviderStateMixin
               // Interpolate between Outline Blue -> Filled Orange
               final progress = _dayFillAnimation.value;
               final currentColor = Color.lerp(
-                activeColor.withOpacity(0.3), 
+                activeColor.withValues(alpha: 0.3), 
                 orangeColor, 
                 progress
               )!;
@@ -395,7 +392,7 @@ class _StreakModalState extends State<StreakModal> with TickerProviderStateMixin
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: currentColor.withOpacity(0.4 * progress),
+                        color: currentColor.withValues(alpha: 0.4 * progress),
                         blurRadius: 8 + (4 * progress),
                         offset: const Offset(0, 2),
                       ),
@@ -423,15 +420,15 @@ class _StreakModalState extends State<StreakModal> with TickerProviderStateMixin
             height: 32,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.white.withOpacity(0.05), // Faint fill
+              color: Colors.white.withValues(alpha: 0.05), // Faint fill
               border: Border.all(
-                color: Colors.white.withOpacity(0.1), // Faint outline
+                color: Colors.white.withValues(alpha: 0.1), // Faint outline
                 width: 1,
               ),
             ),
              child: Icon(
               Icons.close_rounded, // Optional: Show X or just empty
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               size: 16,
             ),
           )
@@ -443,12 +440,12 @@ class _StreakModalState extends State<StreakModal> with TickerProviderStateMixin
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: activeColor.withOpacity(0.5), // Blue Glow Outline
+                color: activeColor.withValues(alpha: 0.5), // Blue Glow Outline
                 width: 2,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: activeColor.withOpacity(0.1),
+                  color: activeColor.withValues(alpha: 0.1),
                   blurRadius: 4,
                 ),
               ],
@@ -505,11 +502,11 @@ class _StreakModalState extends State<StreakModal> with TickerProviderStateMixin
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: primary.withOpacity(0.6),
+                      color: primary.withValues(alpha: 0.6),
                       width: 2,
                     ),
                     boxShadow: [
-                      BoxShadow(color: primary.withOpacity(0.4), blurRadius: 10, spreadRadius: 1),
+                      BoxShadow(color: primary.withValues(alpha: 0.4), blurRadius: 10, spreadRadius: 1),
                     ],
                   ),
                 ),
@@ -532,11 +529,11 @@ class _StreakModalState extends State<StreakModal> with TickerProviderStateMixin
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: secondary.withOpacity(0.6),
+                      color: secondary.withValues(alpha: 0.6),
                       width: 2,
                     ),
                     boxShadow: [
-                      BoxShadow(color: secondary.withOpacity(0.4), blurRadius: 10, spreadRadius: 1),
+                      BoxShadow(color: secondary.withValues(alpha: 0.4), blurRadius: 10, spreadRadius: 1),
                     ],
                   ),
                 ),
@@ -556,7 +553,7 @@ class _StreakModalState extends State<StreakModal> with TickerProviderStateMixin
                     shape: BoxShape.circle,
                     gradient: RadialGradient(
                       colors: [
-                        primary.withOpacity(0.2),
+                        primary.withValues(alpha: 0.2),
                         Colors.transparent,
                       ],
                     ),
@@ -623,21 +620,21 @@ class _StreakModalState extends State<StreakModal> with TickerProviderStateMixin
                 gradient: LinearGradient(
                   colors: [
                     // Dynamic glow on press could be added here
-                    primary.withOpacity(0.8),
-                    secondary.withOpacity(0.8),
+                    primary.withValues(alpha: 0.8),
+                    secondary.withValues(alpha: 0.8),
                   ],
                   begin: Alignment.centerLeft,
                   end: Alignment.centerRight,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: primary.withOpacity(0.5 + (_buttonController.value * 0.3)), // Glow up on press
+                    color: primary.withValues(alpha: 0.5 + (_buttonController.value * 0.3)), // Glow up on press
                     blurRadius: 20,
                     offset: const Offset(0, 4),
                   ),
                 ],
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.3),
+                  color: Colors.white.withValues(alpha: 0.3),
                   width: 1,
                 ),
               ),
@@ -683,8 +680,8 @@ class _HolographicCardPainter extends CustomPainter {
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
       colors: [
-        const Color(0xFF0F172A).withOpacity(0.9), // Dark slate
-        const Color(0xFF1E293B).withOpacity(0.95),
+        const Color(0xFF0F172A).withValues(alpha: 0.9), // Dark slate
+        const Color(0xFF1E293B).withValues(alpha: 0.95),
       ],
     ).createShader(rect);
 
@@ -704,26 +701,12 @@ class _HolographicCardPainter extends CustomPainter {
 
     // 2. Circuit Shimmer Effect
     // Create a gradient that moves horizontally
-    final shimmerPaint = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.centerLeft,
-        end: Alignment.centerRight,
-        colors: [
-          Colors.transparent,
-          primaryColor.withOpacity(0.1),
-          Colors.transparent,
-        ],
-        stops: const [0.0, 0.5, 1.0],
-        transform: GradientRotation(shimmerValue * math.pi * 2), // Rotate or Translate?
-        // Actually, we want translation. Let's use matrix logic if GradientRotation isn't enough.
-        // Simplified: just pulse opacity for now or use alignment
-      ).createShader(rect);
     
     // Better Shimmer: Draw lines
     canvas.save();
     canvas.clipPath(path);
     final linePaint = Paint()
-      ..color = primaryColor.withOpacity(0.05)
+      ..color = primaryColor.withValues(alpha: 0.05)
       ..strokeWidth = 1
       ..style = PaintingStyle.stroke;
     
@@ -740,7 +723,7 @@ class _HolographicCardPainter extends CustomPainter {
     final highlightX = size.width * ((shimmerValue * 2) % 2 - 0.5); // Moves -0.5 to 1.5
     final highlightPaint = Paint()
       ..shader = LinearGradient(
-        colors: [Colors.transparent, primaryColor.withOpacity(0.2), Colors.transparent],
+        colors: [Colors.transparent, primaryColor.withValues(alpha: 0.2), Colors.transparent],
         stops: const [0.0, 0.5, 1.0],
       ).createShader(Rect.fromLTWH(highlightX - 50, 0, 100, size.height));
     
@@ -762,7 +745,7 @@ class _HolographicCardPainter extends CustomPainter {
     final shadowPaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 4 + (pulseValue * 4) // Breathing width
-      ..color = primaryColor.withOpacity(0.3 + (pulseValue * 0.3)) // Breathing opacity
+      ..color = primaryColor.withValues(alpha: 0.3 + (pulseValue * 0.3)) // Breathing opacity
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
 
     canvas.drawPath(path, shadowPaint);
@@ -770,7 +753,7 @@ class _HolographicCardPainter extends CustomPainter {
     
     // 4. Tech Accents (Corner brackets)
     final accentPaint = Paint()
-      ..color = Colors.white.withOpacity(0.8)
+      ..color = Colors.white.withValues(alpha: 0.8)
       ..strokeWidth = 2
       ..style = PaintingStyle.stroke;
       

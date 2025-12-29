@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:ui';
 import '../theme/neumorphic_colors.dart';
 import '../widgets/neumorphic/neumorphic_container.dart';
 import '../widgets/neumorphic/neumorphic_button.dart';
@@ -142,7 +141,7 @@ class LeaderboardScreenState extends State<LeaderboardScreen> {
                 height: 48,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: color.withOpacity(0.2),
+                  color: color.withValues(alpha: 0.2),
                   image: entry.avatar != null 
                       ? DecorationImage(
                           image: AssetImage(entry.avatar!),
@@ -177,7 +176,7 @@ class LeaderboardScreenState extends State<LeaderboardScreen> {
           width: 80,
           height: height,
           borderRadius: 16,
-          color: color.withOpacity(0.2),
+          color: color.withValues(alpha: 0.2),
           depth: 4,
           child: Column(
             children: [
@@ -206,7 +205,7 @@ class LeaderboardScreenState extends State<LeaderboardScreen> {
         onPressed: () {}, // Could show user profile
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         borderRadius: 16,
-        color: entry.isCurrentUser ? NeumorphicColors.accentBlue.withOpacity(0.1) : null,
+        color: entry.isCurrentUser ? NeumorphicColors.accentBlue.withValues(alpha: 0.1) : null,
         child: Row(
           children: [
             // Rank - Fixed width to prevent wrapping
@@ -218,7 +217,7 @@ class LeaderboardScreenState extends State<LeaderboardScreen> {
                 child: Text(
                   "${entry.rank}",
                   style: TextStyle(
-                    color: textColor.withOpacity(0.5),
+                    color: textColor.withValues(alpha: 0.5),
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
@@ -245,7 +244,7 @@ class LeaderboardScreenState extends State<LeaderboardScreen> {
                       : null,
                 ),
                 child: entry.avatar == null 
-                    ? Icon(Icons.person, color: textColor.withOpacity(0.5), size: 20)
+                    ? Icon(Icons.person, color: textColor.withValues(alpha: 0.5), size: 20)
                     : null,
               ),
             ),
@@ -268,7 +267,7 @@ class LeaderboardScreenState extends State<LeaderboardScreen> {
                   Text(
                     entry.grade,
                     style: TextStyle(
-                      color: textColor.withOpacity(0.6),
+                      color: textColor.withValues(alpha: 0.6),
                       fontSize: 12,
                     ),
                   ),
@@ -279,7 +278,7 @@ class LeaderboardScreenState extends State<LeaderboardScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: Colors.amber.withOpacity(0.2),
+                color: Colors.amber.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(

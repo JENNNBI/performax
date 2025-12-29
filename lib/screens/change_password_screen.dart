@@ -172,8 +172,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                         colors: [
-                          theme.primaryColor.withOpacity(0.1),
-                          theme.primaryColor.withOpacity(0.05),
+                          theme.primaryColor.withValues(alpha: 0.1),
+                          theme.primaryColor.withValues(alpha: 0.05),
                         ],
                       ),
                     ),
@@ -307,10 +307,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.amber.withOpacity(0.1),
+                      color: Colors.amber.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: Colors.amber.withOpacity(0.3),
+                        color: Colors.amber.withValues(alpha: 0.3),
                         width: 1,
                       ),
                     ),
@@ -358,12 +358,12 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
                       gradient: LinearGradient(
                         colors: [
                           theme.primaryColor,
-                          theme.primaryColor.withOpacity(0.8),
+                          theme.primaryColor.withValues(alpha: 0.8),
                         ],
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: theme.primaryColor.withOpacity(0.3),
+                          color: theme.primaryColor.withValues(alpha: 0.3),
                           blurRadius: 20,
                           offset: const Offset(0, 8),
                         ),

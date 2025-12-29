@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:ui';
 import '../widgets/user_avatar_circle.dart';
 
@@ -101,12 +100,12 @@ class _ProfileOverlayState extends State<ProfileOverlay> with TickerProviderStat
         color: const Color(0xFF1E293B), // Dark Card Background
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 10,
             spreadRadius: 0,
             offset: const Offset(0, 4),
@@ -118,7 +117,7 @@ class _ProfileOverlayState extends State<ProfileOverlay> with TickerProviderStat
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.15),
+              color: color.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
@@ -136,7 +135,7 @@ class _ProfileOverlayState extends State<ProfileOverlay> with TickerProviderStat
                   label,
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.white.withOpacity(0.5), // Light Grey Label
+                    color: Colors.white.withValues(alpha: 0.5), // Light Grey Label
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -155,7 +154,7 @@ class _ProfileOverlayState extends State<ProfileOverlay> with TickerProviderStat
                     subtitle,
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.white.withOpacity(0.4),
+                      color: Colors.white.withValues(alpha: 0.4),
                     ),
                   ),
                 ],
@@ -182,7 +181,7 @@ class _ProfileOverlayState extends State<ProfileOverlay> with TickerProviderStat
               return GestureDetector(
                 onTap: _close,
                 child: Container(
-                  color: Colors.black.withOpacity(0.7 * _backgroundAnimation.value),
+                  color: Colors.black.withValues(alpha: 0.7 * _backgroundAnimation.value),
                 ),
               );
             },
@@ -226,7 +225,7 @@ class _ProfileOverlayState extends State<ProfileOverlay> with TickerProviderStat
                             width: 40,
                             height: 4,
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.1),
+                              color: Colors.white.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(2),
                             ),
                           ),
@@ -242,7 +241,7 @@ class _ProfileOverlayState extends State<ProfileOverlay> with TickerProviderStat
                                     shape: BoxShape.circle,
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.cyanAccent.withOpacity(0.2),
+                                        color: Colors.cyanAccent.withValues(alpha: 0.2),
                                         blurRadius: 20,
                                         spreadRadius: 5,
                                       ),
@@ -275,9 +274,9 @@ class _ProfileOverlayState extends State<ProfileOverlay> with TickerProviderStat
                                     vertical: 8,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.05),
+                                    color: Colors.white.withValues(alpha: 0.05),
                                     borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(color: Colors.white.withOpacity(0.1)),
+                                    border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                                   ),
                                   child: const Text(
                                     'Performax Öğrencisi',

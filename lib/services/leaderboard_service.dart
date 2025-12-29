@@ -1,6 +1,5 @@
 import 'dart:math';
 import '../models/user_profile.dart';
-import 'package:flutter/foundation.dart';
 
 class LeaderboardService {
   static final LeaderboardService instance = LeaderboardService._internal();

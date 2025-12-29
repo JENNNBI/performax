@@ -1,18 +1,17 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 /// OTP Verification Widget
 /// Redesigned with Glassmorphism and Gamer Aesthetic
 class OtpVerificationWidget extends StatefulWidget {
-  final String phoneNumber;
+  final String? phoneNumber;
   final Function(String otp) onVerificationComplete;
   final Function() onResendOtp;
   final bool isLoading;
   
   const OtpVerificationWidget({
     super.key,
-    required this.phoneNumber,
+    this.phoneNumber,
     required this.onVerificationComplete,
     required this.onResendOtp,
     this.isLoading = false,
@@ -94,10 +93,10 @@ class _OtpVerificationWidgetState extends State<OtpVerificationWidget> {
         decoration: BoxDecoration(
           color: const Color(0xFF0F172A), // Opaque Deep Blue to cover any white dialog bg
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.5),
+              color: Colors.black.withValues(alpha: 0.5),
               blurRadius: 20,
               spreadRadius: 5,
             ),
@@ -111,7 +110,7 @@ class _OtpVerificationWidgetState extends State<OtpVerificationWidget> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.cyanAccent.withOpacity(0.1),
+                color: Colors.cyanAccent.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.lock_person_rounded, color: Colors.cyanAccent, size: 32),
@@ -134,14 +133,21 @@ class _OtpVerificationWidgetState extends State<OtpVerificationWidget> {
             // Subtitle
             Text(
               'Enter the code sent to',
-              style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 14),
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 14),
               textAlign: TextAlign.center,
             ),
-            Text(
-              widget.phoneNumber,
-              style: const TextStyle(color: Colors.cyanAccent, fontWeight: FontWeight.bold, fontSize: 14),
-              textAlign: TextAlign.center,
-            ),
+            if (widget.phoneNumber != null && widget.phoneNumber!.isNotEmpty)
+              Text(
+                widget.phoneNumber!,
+                style: const TextStyle(color: Colors.cyanAccent, fontWeight: FontWeight.bold, fontSize: 14),
+                textAlign: TextAlign.center,
+              )
+            else
+              Text(
+                'your phone',
+                style: TextStyle(color: Colors.cyanAccent.withValues(alpha: 0.6), fontWeight: FontWeight.bold, fontSize: 14, fontStyle: FontStyle.italic),
+                textAlign: TextAlign.center,
+              ),
             
             const SizedBox(height: 32),
             
@@ -185,7 +191,7 @@ class _OtpVerificationWidgetState extends State<OtpVerificationWidget> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.refresh_rounded, size: 16, color: Colors.white.withOpacity(0.7)),
+                    Icon(Icons.refresh_rounded, size: 16, color: Colors.white.withValues(alpha: 0.7)),
                     const SizedBox(width: 8),
                     const Text(
                       "I didn't receive code",
@@ -209,16 +215,16 @@ class _OtpVerificationWidgetState extends State<OtpVerificationWidget> {
       width: size,
       height: size * 1.2, // Slightly taller than wide
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isFocused || isFilled 
               ? Colors.cyanAccent 
-              : Colors.white.withOpacity(0.1),
+              : Colors.white.withValues(alpha: 0.1),
           width: isFocused ? 2 : 1,
         ),
         boxShadow: isFocused 
-            ? [BoxShadow(color: Colors.cyanAccent.withOpacity(0.3), blurRadius: 8, spreadRadius: 1)] 
+            ? [BoxShadow(color: Colors.cyanAccent.withValues(alpha: 0.3), blurRadius: 8, spreadRadius: 1)] 
             : [],
       ),
       child: TextField(

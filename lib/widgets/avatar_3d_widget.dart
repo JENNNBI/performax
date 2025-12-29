@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:model_viewer_plus/model_viewer_plus.dart';
+import 'model_viewer_stub.dart';
 
 /// 3D Avatar Widget with iOS Simulator Compatibility
 /// 
@@ -42,42 +41,6 @@ class Avatar3DWidget extends StatelessWidget {
   }
   
   /// Fallback widget for platforms that don't support 3D models
-  Widget _buildAvatarFallback(ThemeData theme) {
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        color: theme.primaryColor.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: theme.primaryColor.withValues(alpha: 0.3),
-            blurRadius: 20,
-            spreadRadius: 2,
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.view_in_ar_rounded,
-            size: 80,
-            color: theme.primaryColor.withValues(alpha: 0.7),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            '3D Avatar',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: theme.primaryColor.withValues(alpha: 0.7),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 /// Safe wrapper for ModelViewer with error handling

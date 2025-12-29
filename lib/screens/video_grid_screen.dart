@@ -7,7 +7,6 @@ import '../services/youtube_playlist_service.dart';
 import '../services/favorites_service.dart';
 import 'enhanced_video_player_screen.dart';
 import '../theme/neumorphic_colors.dart';
-import '../widgets/neumorphic/neumorphic_container.dart';
 import '../widgets/neumorphic/neumorphic_button.dart';
 
 /// Strict 2-Column Grid Video Feed Screen - Neumorphic Refactor
@@ -309,7 +308,7 @@ class _VideoGridScreenState extends State<VideoGridScreen> with TickerProviderSt
 
     return BlocBuilder<LanguageBloc, LanguageState>(
       builder: (context, languageState) {
-        final languageBloc = context.read<LanguageBloc>();
+        // Removed unused languageBloc variable
         
         return Scaffold(
           backgroundColor: bgColor,

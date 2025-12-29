@@ -19,11 +19,11 @@ class _PDFResourcesScreenState extends State<PDFResourcesScreen> {
   final List<String> _subjects = [
     'All', 'Biology', 'Mathematics', 'Physics', 'Chemistry',
     'Turkish', 'History', 'Geography', 'Philosophy',
-    'Literature', 'Religious Culture'
+    'Literature'
   ];
   
   final List<String> _grades = [
-    'All', '9', '10', '11', '12'
+    'All', '9', '10', '11'
   ];
 
   // Sample PDF resources - in a real app, this would come from a service
@@ -74,7 +74,7 @@ class _PDFResourcesScreenState extends State<PDFResourcesScreen> {
     // Matrix:
     // * Türkçe: 9, 10
     // * Felsefe: 10, 11 (No 9 or 12)
-    // * Others: 9, 10, 11, 12
+    // * Others: 9, 10, 11 (Grade 12 removed - students use TYT/AYT)
     
     // Convert subject to English if needed for mapping, or check key
     // List _subjects uses English keys: 'Turkish', 'Philosophy', etc.
@@ -85,11 +85,11 @@ class _PDFResourcesScreenState extends State<PDFResourcesScreen> {
        return ['10', '11'];
     }
     
-    // Others: All grades allowed (9, 10, 11, 12)
-    // Note: _grades list contains 'All', '9', '10', '11', '12'.
+    // Others: All grades allowed (9, 10, 11)
+    // Note: _grades list contains 'All', '9', '10', '11' (Grade 12 removed).
     // If we want strict filtering, we should probably keep 'All' or remove it depending on logic.
     // The previous implementation used _grades.where, which kept 'All' implicitly? 
-    // No, _grades = ['All', '9', '10', '11', '12'].
+    // No, _grades = ['All', '9', '10', '11'].
     // Previous code: return _grades.where((g) => !['9', '10'].contains(g)).toList();
     // This kept 'All', '11', '12'.
     
@@ -306,7 +306,7 @@ class _PDFResourcesScreenState extends State<PDFResourcesScreen> {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: Theme.of(context).primaryColor.withOpacity(0.1),
+                            color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(

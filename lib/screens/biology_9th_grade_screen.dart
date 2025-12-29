@@ -70,7 +70,7 @@ class Biology9thGradeScreen extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
+                            color: Colors.white.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: const Icon(
@@ -123,19 +123,19 @@ class Biology9thGradeScreen extends StatelessWidget {
                         _buildInfoChip(
                           Icons.pages,
                           '${resource.totalPages} ${languageBloc.currentLanguage == 'tr' ? 'Sayfa' : 'Pages'}',
-                          Colors.white.withOpacity(0.2),
+                          Colors.white.withValues(alpha: 0.2),
                         ),
                         const SizedBox(width: 8),
                         _buildInfoChip(
                           Icons.touch_app,
                           languageBloc.currentLanguage == 'tr' ? 'İnteraktif' : 'Interactive',
-                          Colors.white.withOpacity(0.2),
+                          Colors.white.withValues(alpha: 0.2),
                         ),
                         const SizedBox(width: 8),
                         _buildInfoChip(
                           Icons.swipe,
                           languageBloc.currentLanguage == 'tr' ? 'Kaydırma' : 'Swipe',
-                          Colors.white.withOpacity(0.2),
+                          Colors.white.withValues(alpha: 0.2),
                         ),
                       ],
                     ),

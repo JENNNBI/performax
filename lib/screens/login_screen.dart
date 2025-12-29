@@ -9,7 +9,6 @@ import '../services/user_service.dart';
 import '../theme/neumorphic_colors.dart';
 import '../widgets/neumorphic/neumorphic_container.dart';
 import '../widgets/neumorphic/neumorphic_button.dart';
-import '../widgets/neumorphic/neumorphic_text_field.dart';
 
 import 'package:provider/provider.dart';
 import '../services/user_provider.dart';
@@ -275,10 +274,10 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                     style: const TextStyle(color: Colors.white),
                                     decoration: InputDecoration(
                                       hintText: languageBloc.translate('email'),
-                                      hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
-                                      prefixIcon: Icon(AppIcons.email, color: Colors.white.withOpacity(0.5)),
+                                      hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
+                                      prefixIcon: Icon(AppIcons.email, color: Colors.white.withValues(alpha: 0.5)),
                                       filled: true,
-                                      fillColor: Colors.black.withOpacity(0.2),
+                                      fillColor: Colors.black.withValues(alpha: 0.2),
                                       border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(16),
                                         borderSide: BorderSide.none,
@@ -294,10 +293,10 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                     style: const TextStyle(color: Colors.white),
                                     decoration: InputDecoration(
                                       hintText: languageBloc.translate('password'),
-                                      hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
-                                      prefixIcon: Icon(AppIcons.lock, color: Colors.white.withOpacity(0.5)),
+                                      hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
+                                      prefixIcon: Icon(AppIcons.lock, color: Colors.white.withValues(alpha: 0.5)),
                                       filled: true,
-                                      fillColor: Colors.black.withOpacity(0.2),
+                                      fillColor: Colors.black.withValues(alpha: 0.2),
                                       border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(16),
                                         borderSide: BorderSide.none,
@@ -305,7 +304,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                       suffixIcon: IconButton(
                                         icon: Icon(
                                           _isPasswordVisible ? AppIcons.visibilityOff : AppIcons.visibility,
-                                          color: Colors.white.withOpacity(0.5),
+                                          color: Colors.white.withValues(alpha: 0.5),
                                         ),
                                         onPressed: () {
                                           setState(() {

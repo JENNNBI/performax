@@ -232,7 +232,7 @@ class _ProblemSolvingContentScreenState extends State<ProblemSolvingContentScree
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: widget.gradientStart.withOpacity(0.1),
+                  color: widget.gradientStart.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Text(
@@ -281,8 +281,8 @@ class _ProblemSolvingContentScreenState extends State<ProblemSolvingContentScree
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  const Color(0xFFB794F6).withOpacity(0.3), // Purple
-                  const Color(0xFF81E6D9).withOpacity(0.3), // Cyan
+                  const Color(0xFFB794F6).withValues(alpha: 0.3), // Purple
+                  const Color(0xFF81E6D9).withValues(alpha: 0.3), // Cyan
                   Colors.white,
                 ],
               ),
@@ -397,7 +397,7 @@ class _ProblemSolvingContentScreenState extends State<ProblemSolvingContentScree
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF9B59B6).withOpacity(0.3),
+                    color: const Color(0xFF9B59B6).withValues(alpha: 0.3),
                     blurRadius: 15,
                     spreadRadius: 0,
                     offset: const Offset(0, 6),
@@ -437,7 +437,7 @@ class _ProblemSolvingContentScreenState extends State<ProblemSolvingContentScree
                                 contentItem['subtitle'],
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: Colors.white.withOpacity(0.95),
+                                  color: Colors.white.withValues(alpha: 0.95),
                                   fontWeight: FontWeight.w500,
                                 ),
                                 maxLines: 2,
@@ -480,10 +480,10 @@ class _ProblemSolvingContentScreenState extends State<ProblemSolvingContentScree
   Widget _buildPlaceholderCover() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.3),
+        color: Colors.white.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: Colors.white.withOpacity(0.5),
+          color: Colors.white.withValues(alpha: 0.5),
           width: 2,
         ),
       ),
@@ -491,7 +491,7 @@ class _ProblemSolvingContentScreenState extends State<ProblemSolvingContentScree
         child: Icon(
           Icons.menu_book_rounded,
           size: 48,
-          color: Colors.white.withOpacity(0.7),
+          color: Colors.white.withValues(alpha: 0.7),
         ),
       ),
     );
@@ -565,13 +565,13 @@ class _MockupViewerScreen extends StatelessWidget {
                             Icon(
                               Icons.broken_image_rounded,
                               size: 64,
-                              color: Colors.white.withOpacity(0.5),
+                              color: Colors.white.withValues(alpha: 0.5),
                             ),
                             const SizedBox(height: 16),
                             Text(
                               'Görsel yüklenemedi',
                               style: TextStyle(
-                                color: Colors.white.withOpacity(0.7),
+                                color: Colors.white.withValues(alpha: 0.7),
                                 fontSize: 16,
                               ),
                             ),

@@ -211,7 +211,7 @@ class _PasswordResetConfirmationScreenState extends State<PasswordResetConfirmat
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             spreadRadius: 0,
           ),
@@ -268,7 +268,7 @@ class _PasswordResetConfirmationScreenState extends State<PasswordResetConfirmat
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              theme.primaryColor.withOpacity(0.1),
+              theme.primaryColor.withValues(alpha: 0.1),
               theme.scaffoldBackgroundColor,
             ],
           ),
@@ -309,10 +309,10 @@ class _PasswordResetConfirmationScreenState extends State<PasswordResetConfirmat
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: theme.primaryColor.withOpacity(0.1),
+                        color: theme.primaryColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: theme.primaryColor.withOpacity(0.3),
+                          color: theme.primaryColor.withValues(alpha: 0.3),
                         ),
                       ),
                       child: Row(
@@ -413,9 +413,9 @@ class _PasswordResetConfirmationScreenState extends State<PasswordResetConfirmat
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.green.withOpacity(0.1),
+                        color: Colors.green.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.green.withOpacity(0.3)),
+                        border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
                       ),
                       child: Column(
                         children: [

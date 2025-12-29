@@ -190,7 +190,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                           ? 'Tüm URL türleri desteklenir'
                           : 'Supports all URL types',
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.8),
+                          color: Colors.white.withValues(alpha: 0.8),
                           fontSize: 12,
                         ),
                         textAlign: TextAlign.center,
@@ -205,7 +205,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                               ? 'İşleniyor...'
                               : 'Processing...'),
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.7),
+                          color: Colors.white.withValues(alpha: 0.7),
                           fontSize: 14,
                         ),
                         textAlign: TextAlign.center,

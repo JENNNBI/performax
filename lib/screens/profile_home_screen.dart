@@ -7,12 +7,11 @@ import '../models/quest.dart';
 import '../blocs/bloc_exports.dart';
 import '../widgets/quest_speech_bubble.dart';
 import '../widgets/quest_list_widget.dart';
+import '../widgets/ai_assistant_widget.dart'; // Import AI Assistant
 import '../services/quest_service.dart';
 import '../services/quest_celebration_coordinator.dart';
 import '../services/currency_service.dart';
-import '../services/leaderboard_service.dart';
 import '../theme/neumorphic_colors.dart';
-import '../widgets/neumorphic/neumorphic_container.dart';
 
 /// Profile-Centric Home Screen
 /// Redesigned to match "Futuristic Blue" theme (image_5.png) with dynamic background support
@@ -33,8 +32,7 @@ class _ProfileHomeScreenState extends State<ProfileHomeScreen> with TickerProvid
   QuestData? _questData;
   bool _showQuestList = false;
   final GlobalKey _rocketIconKey = GlobalKey();
-  int _displayedRocketCurrency = 0;
-  int _lastAnimatedCurrency = 0;
+  // Removed unused _displayedRocketCurrency and _lastAnimatedCurrency fields
   
   late AnimationController _avatarBounceController;
   late AnimationController _slideController;
@@ -70,12 +68,10 @@ class _ProfileHomeScreenState extends State<ProfileHomeScreen> with TickerProvid
     _avatarBounceController.value = 0.0;
     
     _loadQuests();
+    // Load rocket currency balance (for display purposes)
     CurrencyService.instance.loadBalance(widget.userProfile).then((balance) {
       if (!mounted) return;
-      setState(() {
-        _displayedRocketCurrency = balance;
-        _lastAnimatedCurrency = balance;
-      });
+      // Balance loaded successfully - no need to store in removed fields
     });
     
     _rocketIconBounceController = AnimationController(
@@ -161,12 +157,14 @@ class _ProfileHomeScreenState extends State<ProfileHomeScreen> with TickerProvid
   }
   
   void _animateCurrencyIncrement(int delta) {
-    // Legacy animation logic removed in favor of UserProvider state management
-    // But we still trigger the UI bounce effect
+    // ✅ FIXED: Removed obsolete hardcoded reward logic
+    // The new system uses QuestService.claimById() which correctly applies
+    // the exact reward amount from quest.reward (e.g., 10, not 20)
+    // 
+    // This callback is now only used for UI bounce animation
+    // The actual currency addition happens in QuestService.claimById()
     
-    // Call Provider to update logic state
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    userProvider.claimLoginReward();
+    debugPrint('🎨 Currency animation triggered with delta: $delta');
   }
   
   void _bounceRocketIcon() {
@@ -463,10 +461,143 @@ class _ProfileHomeScreenState extends State<ProfileHomeScreen> with TickerProvid
                   ),
                 ],
               ),
+              
+              // 🤖 Alfred AI Assistant - Standing to the RIGHT of Stats Bar
+              Positioned(
+                bottom: 150, // ✅ Aligned with stats bar vertical position
+                right: 16, // ✅ Independent positioning on the right side of screen
+                child: _buildAlfredAssistant(context, isDark),
+              ),
             ],
           ),
         ),
       ),
     );
   }
+
+  /// 🤖 Build Alfred AI Assistant - With Yellow Glow Effect
+  /// Anchored to bottom-right corner with yellow highlight and mini speech bubble
+  Widget _buildAlfredAssistant(BuildContext context, bool isDark) {
+    return GestureDetector(
+      onTap: () {
+        // Open AI Assistant modal with glassmorphism theme
+        debugPrint('🤖 Alfred tapped - Opening AI Assistant');
+        showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (context) => AIAssistantWidget(
+            userName: widget.userProfile.displayName,
+            userProfile: widget.userProfile,
+            onClose: () => Navigator.pop(context),
+          ),
+        );
+      },
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.topCenter,
+        children: [
+          // 💬 Konuşma Balonu (Speech Bubble)
+          Positioned(
+            top: -40, // Alfred'in kafasının üzerine
+            child: Column(
+              children: [
+                // Balonun Kendisi
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 6,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: const Text(
+                    "Yardım?",
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ),
+                // Balonun Altındaki Küçük Üçgen
+                ClipPath(
+                  clipper: _TriangleClipper(),
+                  child: Container(
+                    height: 10,
+                    width: 12,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          // 🤖 Alfred Görseli ve Sarı Parlama Efekti
+          Container(
+            decoration: BoxDecoration(
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.yellowAccent.withValues(alpha: 0.25), // Subtle opacity
+                  blurRadius: 8.0, // ✅ TIGHTER: Reduced blur for contained glow (was 12.0)
+                  spreadRadius: -8.0, // ✅ TIGHTER: More negative for tight aura (was -2.0)
+                ),
+              ],
+            ),
+            child: Image.asset(
+              'assets/images/AI.png', // Alfred'in görsel yolu
+              height: 90, // Alfred'in boyutunu buradan ayarla
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) {
+                // Fallback gradient icon with yellow glow
+                return Container(
+                  height: 90,
+                  width: 90,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.yellowAccent.withValues(alpha: 0.25), // Subtle opacity
+                        blurRadius: 8.0, // ✅ TIGHTER: Reduced blur
+                        spreadRadius: -6.0, // ✅ TIGHTER: More negative for tight aura
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.psychology,
+                    color: Colors.white,
+                    size: 45,
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
+
+/// 🎨 Triangle Clipper for Speech Bubble Tail
+class _TriangleClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    final path = Path();
+    path.lineTo(size.width / 2, size.height);
+    path.lineTo(size.width, 0);
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(_TriangleClipper oldClipper) => false;
+}
+

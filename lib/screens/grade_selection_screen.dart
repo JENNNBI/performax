@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import '../blocs/bloc_exports.dart';
 import 'exam_type_selection_screen.dart';
+import 'video_grid_screen.dart';
+import 'playlist_selection_screen.dart';
 import '../theme/neumorphic_colors.dart';
 import '../widgets/neumorphic/neumorphic_container.dart';
 import '../widgets/neumorphic/neumorphic_button.dart';
 
 /// Generic Grade Selection Screen
-/// Shows grade level buttons (9.SINIF, 10.SINIF, 11.SINIF, 12.SINIF)
+/// Shows grade level buttons (9.SINIF, 10.SINIF, 11.SINIF) and exam types (TYT, AYT, Paragraf)
 /// Standardized for Video, PDF, and Question Solving
 class GradeSelectionScreen extends StatefulWidget {
   final String subjectName;
@@ -66,91 +68,440 @@ class _GradeSelectionScreenState extends State<GradeSelectionScreen>
     }
   }
 
-  /// Get grade level options
+  /// Subject-Level Configuration Map
+  /// Defines available levels for each subject
+  static final Map<String, List<String>> subjectLevelConfig = {
+    // Standard Sciences & Math (Grades 9-11 only, plus Exams)
+    'Matematik': ['9. Sınıf', '10. Sınıf', '11. Sınıf', 'TYT', 'AYT', 'Problemler'],
+    'Fizik':     ['9. Sınıf', '10. Sınıf', '11. Sınıf', 'TYT', 'AYT'],
+    'Kimya':     ['9. Sınıf', '10. Sınıf', '11. Sınıf', 'TYT', 'AYT'],
+    'Biyoloji':  ['9. Sınıf', '10. Sınıf', '11. Sınıf', 'TYT', 'AYT'],
+    'Tarih':     ['9. Sınıf', '10. Sınıf', '11. Sınıf', 'TYT', 'AYT'],
+    'Coğrafya':  ['9. Sınıf', '10. Sınıf', '11. Sınıf', 'TYT', 'AYT'],
+    
+    // Custom Subject Rules
+    'Türkçe':    ['TYT', 'Paragraf'], // Only TYT and Paragraf (9. Sınıf removed)
+    'Edebiyat':  ['9. Sınıf', '10. Sınıf', '11. Sınıf', 'AYT'], // No 12, No TYT
+    'Geometri':  ['TYT-AYT'], // Combined single option
+    'Felsefe':   ['TYT', 'AYT'], // Separate options
+  };
+
+  /// Get grade level options based on subject-level configuration
   List<Map<String, dynamic>> _getGradeLevels(LanguageBloc languageBloc) {
-    var grades = [
-      {
-        'name': '9. SINIF',
-        'key': '9_sinif',
-        'description': languageBloc.currentLanguage == 'tr'
-          ? '9. Sınıf ${widget.subjectName}'
-          : '9th Grade ${widget.subjectName}',
-        'accentColor': const Color(0xFF667EEA),
-      },
-      {
-        'name': '10. SINIF',
-        'key': '10_sinif',
-        'description': languageBloc.currentLanguage == 'tr'
-          ? '10. Sınıf ${widget.subjectName}'
-          : '10th Grade ${widget.subjectName}',
-        'accentColor': const Color(0xFFF37335),
-      },
-      {
-        'name': '11. SINIF',
-        'key': '11_sinif',
-        'description': languageBloc.currentLanguage == 'tr'
-          ? '11. Sınıf ${widget.subjectName}'
-          : '11th Grade ${widget.subjectName}',
-        'accentColor': const Color(0xFFF38181),
-      },
-      {
-        'name': '12. SINIF',
-        'key': '12_sinif',
-        'description': languageBloc.currentLanguage == 'tr'
-          ? '12. Sınıf ${widget.subjectName}'
-          : '12th Grade ${widget.subjectName}',
-        'accentColor': const Color(0xFF43E97B),
-      },
-    ];
-
-    // Strict Data Constraint: Subject vs. Grade Mapping
-    // Matrix:
-    // * Türkçe: 9, 10
-    // * Türk Dili ve Edebiyatı: 9, 10, 11, 12
-    // * Matematik: 9, 10, 11, 12
-    // * Geometri: 9, 10, 11, 12
-    // * Fizik: 9, 10, 11, 12
-    // * Kimya: 9, 10, 11, 12
-    // * Biyoloji: 9, 10, 11, 12
-    // * Tarih: 9, 10, 11, 12
-    // * Coğrafya: 9, 10, 11, 12
-    // * Felsefe: 10, 11 (No 9 or 12)
-    // * Din Kültürü: 9, 10, 11, 12
-
     final subjectName = widget.subjectName;
-    final subjectKey = widget.subjectKey; // e.g. 'Felsefe', 'Turkce'
-
-    // Determine allowed grades based on Subject Name (or Key)
-    List<String> allowedGrades;
-
-    if (subjectName == 'Türkçe' || subjectName == 'Turkish') {
-      allowedGrades = ['9_sinif', '10_sinif'];
-    } else if (subjectName == 'Felsefe' || subjectName == 'Philosophy') {
-      allowedGrades = ['10_sinif', '11_sinif'];
-    } else {
-      // All others (Matematik, Edebiyat, Fizik, etc.) -> 9, 10, 11, 12
-      allowedGrades = ['9_sinif', '10_sinif', '11_sinif', '12_sinif'];
+    final subjectKey = widget.subjectKey; // Use key for config lookup (e.g., 'Edebiyat' instead of 'Türk Dili ve Edebiyatı')
+    final isEnglish = languageBloc.currentLanguage == 'en';
+    
+    // Get allowed levels for this subject (use subjectKey for lookup)
+    final allowedLevels = subjectLevelConfig[subjectKey] ?? [];
+    
+    if (allowedLevels.isEmpty) {
+      // Fallback: return empty list if subject not found
+      return [];
     }
 
-    // Filter the grades list
-    grades = grades.where((g) => allowedGrades.contains(g['key'])).toList();
+    // Build level options based on configuration
+    List<Map<String, dynamic>> levels = [];
+    
+    for (final level in allowedLevels) {
+      Map<String, dynamic> levelData;
+      
+      // Handle special combined option for Geometri
+      if (level == 'TYT-AYT') {
+        levelData = {
+          'name': 'TYT-AYT',
+          'key': 'tyt_ayt',
+          'description': isEnglish
+            ? 'TYT-AYT ${subjectName}'
+            : 'TYT-AYT ${subjectName}',
+          'accentColor': const Color(0xFF764ba2),
+          'isCombined': true,
+        };
+      }
+      // Handle Paragraf for Türkçe
+      else if (level == 'Paragraf') {
+        levelData = {
+          'name': 'PARAGRAF',
+          'key': 'paragraf',
+          'description': isEnglish
+            ? 'Paragraph ${subjectName}'
+            : 'Paragraf ${subjectName}',
+          'accentColor': const Color(0xFFfa709a),
+        };
+      }
+      // Handle Problemler for Matematik
+      else if (level == 'Problemler') {
+        levelData = {
+          'name': 'PROBLEMLER',
+          'key': 'problemler',
+          'description': isEnglish
+            ? 'Problems ${subjectName}'
+            : 'Problemler ${subjectName}',
+          'accentColor': const Color(0xFF667eea),
+        };
+      }
+      // Handle TYT
+      else if (level == 'TYT') {
+        levelData = {
+          'name': 'TYT',
+          'key': 'tyt',
+          'description': isEnglish
+            ? 'TYT ${subjectName}'
+            : 'TYT ${subjectName}',
+          'accentColor': const Color(0xFFA8E063),
+        };
+      }
+      // Handle AYT
+      else if (level == 'AYT') {
+        levelData = {
+          'name': 'AYT',
+          'key': 'ayt',
+          'description': isEnglish
+            ? 'AYT ${subjectName}'
+            : 'AYT ${subjectName}',
+          'accentColor': const Color(0xFFF5CBCB),
+        };
+      }
+      // Handle grade levels (9, 10, 11)
+      else {
+        final gradeNum = level.split('.')[0];
+        final gradeKey = '${gradeNum}_sinif';
+        Color accentColor;
+        switch (gradeNum) {
+          case '9':
+            accentColor = const Color(0xFF667EEA);
+            break;
+          case '10':
+            accentColor = const Color(0xFFF37335);
+            break;
+          case '11':
+            accentColor = const Color(0xFFF38181);
+            break;
+          default:
+            accentColor = const Color(0xFF667EEA);
+        }
+        
+        levelData = {
+          'name': level.toUpperCase(),
+          'key': gradeKey,
+          'description': isEnglish
+            ? '${level} ${subjectName}'
+            : '${level} ${subjectName}',
+          'accentColor': accentColor,
+        };
+      }
+      
+      levels.add(levelData);
+    }
 
-    return grades;
+    return levels;
   }
 
   void _onGradeSelected(Map<String, dynamic> gradeLevel) {
-    // For Video Lessons, we go to Step 3: Exam Type Selection
-    // For consistency, let's apply this to others or handle appropriately
+    final levelKey = gradeLevel['key'] as String;
+    final levelName = gradeLevel['name'] as String;
+    final isGradeLevel = levelKey.contains('_sinif'); // 9_sinif, 10_sinif, 11_sinif
+    final isDirectExamType = ['tyt', 'ayt', 'paragraf', 'problemler', 'tyt_ayt'].contains(levelKey);
     
-    // For now, Video Lessons definitely goes to Exam Type
-    if (widget.sectionType.contains('Video') || widget.sectionType.contains('Konu')) {
+    // Special handling for Matematik levels - navigate directly to playlist selection
+    if (widget.subjectKey == 'Matematik' && (isGradeLevel || ['tyt', 'ayt'].contains(levelKey))) {
+      // Convert level key/name to standard format for playlist lookup
+      String playlistLevel;
+      if (isGradeLevel) {
+        // Convert "9_sinif" -> "9. Sınıf"
+        final gradeNum = levelKey.split('_')[0];
+        playlistLevel = '$gradeNum. Sınıf';
+      } else {
+        // TYT or AYT
+        playlistLevel = levelName.toUpperCase();
+      }
+      
+      // Navigate to Playlist Selection Screen
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PlaylistSelectionScreen(
+            subjectName: widget.subjectName,
+            subjectKey: widget.subjectKey,
+            category: playlistLevel,
+            gradientStart: widget.gradientStart,
+            gradientEnd: widget.gradientEnd,
+            subjectIcon: widget.subjectIcon,
+            level: playlistLevel, // Pass level for playlist lookup
+          ),
+        ),
+      );
+      return;
+    }
+    
+    // Special handling for Fizik levels (9, 10, 11, TYT, AYT) - navigate directly to playlist selection
+    if (widget.subjectKey == 'Fizik' && (isGradeLevel || ['tyt', 'ayt'].contains(levelKey))) {
+      // Convert level key/name to standard format for playlist lookup
+      String playlistLevel;
+      if (isGradeLevel) {
+        // Convert "9_sinif" -> "9. Sınıf"
+        final gradeNum = levelKey.split('_')[0];
+        playlistLevel = '$gradeNum. Sınıf';
+      } else {
+        // TYT or AYT
+        playlistLevel = levelName.toUpperCase();
+      }
+      
+      // Navigate to Playlist Selection Screen
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PlaylistSelectionScreen(
+            subjectName: widget.subjectName,
+            subjectKey: widget.subjectKey,
+            category: playlistLevel,
+            gradientStart: widget.gradientStart,
+            gradientEnd: widget.gradientEnd,
+            subjectIcon: widget.subjectIcon,
+            level: playlistLevel, // Pass level for playlist lookup
+          ),
+        ),
+      );
+      return;
+    }
+    
+    // Special handling for Kimya levels (9, 10, 11, TYT, AYT) - navigate directly to playlist selection
+    if (widget.subjectKey == 'Kimya' && (isGradeLevel || ['tyt', 'ayt'].contains(levelKey))) {
+      // Convert level key/name to standard format for playlist lookup
+      String playlistLevel;
+      if (isGradeLevel) {
+        // Convert "9_sinif" -> "9. Sınıf"
+        final gradeNum = levelKey.split('_')[0];
+        playlistLevel = '$gradeNum. Sınıf';
+      } else {
+        // TYT or AYT
+        playlistLevel = levelName.toUpperCase();
+      }
+      
+      // Navigate to Playlist Selection Screen
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PlaylistSelectionScreen(
+            subjectName: widget.subjectName,
+            subjectKey: widget.subjectKey,
+            category: playlistLevel,
+            gradientStart: widget.gradientStart,
+            gradientEnd: widget.gradientEnd,
+            subjectIcon: widget.subjectIcon,
+            level: playlistLevel, // Pass level for playlist lookup
+          ),
+        ),
+      );
+      return;
+    }
+    
+    // Special handling for Biyoloji levels (9, 10, 11, TYT, AYT) - navigate directly to playlist selection
+    if (widget.subjectKey == 'Biyoloji' && (isGradeLevel || ['tyt', 'ayt'].contains(levelKey))) {
+      // Convert level key/name to standard format for playlist lookup
+      String playlistLevel;
+      if (isGradeLevel) {
+        // Convert "9_sinif" -> "9. Sınıf"
+        final gradeNum = levelKey.split('_')[0];
+        playlistLevel = '$gradeNum. Sınıf';
+      } else {
+        // TYT or AYT
+        playlistLevel = levelName.toUpperCase();
+      }
+      
+      // Navigate to Playlist Selection Screen
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PlaylistSelectionScreen(
+            subjectName: widget.subjectName,
+            subjectKey: widget.subjectKey,
+            category: playlistLevel,
+            gradientStart: widget.gradientStart,
+            gradientEnd: widget.gradientEnd,
+            subjectIcon: widget.subjectIcon,
+            level: playlistLevel, // Pass level for playlist lookup
+          ),
+        ),
+      );
+      return;
+    }
+    
+    // Special handling for Felsefe levels (TYT, AYT) - navigate directly to playlist selection
+    if (widget.subjectKey == 'Felsefe' && ['tyt', 'ayt'].contains(levelKey)) {
+      // Convert level name to standard format for playlist lookup
+      final playlistLevel = levelName.toUpperCase(); // TYT or AYT
+      
+      // Navigate to Playlist Selection Screen
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PlaylistSelectionScreen(
+            subjectName: widget.subjectName,
+            subjectKey: widget.subjectKey,
+            category: playlistLevel,
+            gradientStart: widget.gradientStart,
+            gradientEnd: widget.gradientEnd,
+            subjectIcon: widget.subjectIcon,
+            level: playlistLevel, // Pass level for playlist lookup
+          ),
+        ),
+      );
+      return;
+    }
+    
+    // Special handling for Coğrafya levels (9, 10, 11, TYT, AYT) - navigate directly to playlist selection
+    if (widget.subjectKey == 'Coğrafya' && (isGradeLevel || ['tyt', 'ayt'].contains(levelKey))) {
+      // Convert level key/name to standard format for playlist lookup
+      String playlistLevel;
+      if (isGradeLevel) {
+        // Convert "9_sinif" -> "9. Sınıf"
+        final gradeNum = levelKey.split('_')[0];
+        playlistLevel = '$gradeNum. Sınıf';
+      } else {
+        // TYT or AYT
+        playlistLevel = levelName.toUpperCase();
+      }
+      
+      // Navigate to Playlist Selection Screen
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PlaylistSelectionScreen(
+            subjectName: widget.subjectName,
+            subjectKey: widget.subjectKey,
+            category: playlistLevel,
+            gradientStart: widget.gradientStart,
+            gradientEnd: widget.gradientEnd,
+            subjectIcon: widget.subjectIcon,
+            level: playlistLevel, // Pass level for playlist lookup
+          ),
+        ),
+      );
+      return;
+    }
+    
+    // Special handling for Tarih levels (9, 10, 11, TYT, AYT) - navigate directly to playlist selection
+    if (widget.subjectKey == 'Tarih' && (isGradeLevel || ['tyt', 'ayt'].contains(levelKey))) {
+      // Convert level key/name to standard format for playlist lookup
+      String playlistLevel;
+      if (isGradeLevel) {
+        // Convert "9_sinif" -> "9. Sınıf"
+        final gradeNum = levelKey.split('_')[0];
+        playlistLevel = '$gradeNum. Sınıf';
+      } else {
+        // TYT or AYT
+        playlistLevel = levelName.toUpperCase();
+      }
+      
+      // Navigate to Playlist Selection Screen
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PlaylistSelectionScreen(
+            subjectName: widget.subjectName,
+            subjectKey: widget.subjectKey,
+            category: playlistLevel,
+            gradientStart: widget.gradientStart,
+            gradientEnd: widget.gradientEnd,
+            subjectIcon: widget.subjectIcon,
+            level: playlistLevel, // Pass level for playlist lookup
+          ),
+        ),
+      );
+      return;
+    }
+    
+    // Special handling for Türkçe levels (TYT and Paragraf) - navigate directly to playlist selection
+    if (widget.subjectName == 'Türkçe' && ['tyt', 'paragraf'].contains(levelKey)) {
+      // Convert level key/name to standard format for playlist lookup
+      String playlistLevel;
+      if (levelKey == 'paragraf') {
+        playlistLevel = 'Paragraf'; // Capitalize first letter
+      } else {
+        playlistLevel = levelName.toUpperCase(); // TYT
+      }
+      
+      // Navigate to Playlist Selection Screen
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PlaylistSelectionScreen(
+            subjectName: widget.subjectName,
+            subjectKey: widget.subjectKey,
+            category: playlistLevel,
+            gradientStart: widget.gradientStart,
+            gradientEnd: widget.gradientEnd,
+            subjectIcon: widget.subjectIcon,
+            level: playlistLevel, // Pass level for playlist lookup
+          ),
+        ),
+      );
+      return;
+    }
+    
+    // Special handling for Edebiyat (TDE) levels (9, 10, 11, AYT) - navigate directly to playlist selection
+    if (widget.subjectKey == 'Edebiyat' && (isGradeLevel || levelKey == 'ayt')) {
+      // Convert level key/name to standard format for playlist lookup
+      String playlistLevel;
+      if (isGradeLevel) {
+        // Convert "9_sinif" -> "9. Sınıf" (with proper capitalization)
+        final gradeNum = levelKey.split('_')[0];
+        playlistLevel = '$gradeNum. Sınıf';
+      } else {
+        // AYT
+        playlistLevel = 'AYT';
+      }
+      
+      // Navigate to Playlist Selection Screen
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PlaylistSelectionScreen(
+            subjectName: widget.subjectName,
+            subjectKey: widget.subjectKey,
+            category: playlistLevel,
+            gradientStart: widget.gradientStart,
+            gradientEnd: widget.gradientEnd,
+            subjectIcon: widget.subjectIcon,
+            level: playlistLevel, // Pass level for playlist lookup
+          ),
+        ),
+      );
+      return;
+    }
+    
+    // Special handling for Geometri TYT-AYT - navigate directly to playlist selection
+    if (widget.subjectKey == 'Geometri' && levelKey == 'tyt_ayt') {
+      // Navigate to Playlist Selection Screen
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PlaylistSelectionScreen(
+            subjectName: widget.subjectName,
+            subjectKey: widget.subjectKey,
+            category: 'TYT-AYT',
+            gradientStart: widget.gradientStart,
+            gradientEnd: widget.gradientEnd,
+            subjectIcon: widget.subjectIcon,
+            level: 'TYT-AYT', // Pass level for playlist lookup
+          ),
+        ),
+      );
+      return;
+    }
+    
+    // If user selected a grade level (9, 10, 11), go to Exam Type Selection
+    // If user selected TYT/AYT/Paragraf directly, skip Exam Type and go to content
+    if (isGradeLevel) {
+      // Grade level selected -> navigate to Exam Type Selection
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => ExamTypeSelectionScreen(
             subjectName: widget.subjectName,
             subjectKey: widget.subjectKey,
-            gradeLevel: gradeLevel['key'],
+            gradeLevel: levelKey,
             gradientStart: widget.gradientStart,
             gradientEnd: widget.gradientEnd,
             subjectIcon: widget.subjectIcon,
@@ -158,30 +509,62 @@ class _GradeSelectionScreenState extends State<GradeSelectionScreen>
           ),
         ),
       );
-    } else {
-      // For PDF/Questions, show Coming Soon or navigate to content if ready
-      // The user didn't explicitly ask for Exam Type on PDF/Questions, but implied "Synchronize".
-      // If I don't show Exam Type, where do I go? Content list for that grade?
-      // I'll show Coming Soon for now as safe default or ExamType if appropriate.
-      // Let's route to ExamTypeSelectionScreen for ALL to ensure "Identical Flow" logic where possible,
-      // or just show coming soon if content missing.
-      
-      // Let's try to route to ExamType for all, assuming content structure is similar.
-       Navigator.push(
+    } else if (isDirectExamType) {
+      // Direct exam type selected -> navigate to content directly
+      // Import VideoGridScreen at the top if not already imported
+      _navigateToContentDirectly(levelKey, gradeLevel);
+    }
+  }
+  
+  void _navigateToContentDirectly(String levelKey, Map<String, dynamic> gradeLevel) {
+    // Special handling for "Problemler" - show playlist selection instead of direct videos
+    if (levelKey == 'problemler' && widget.subjectName == 'Matematik') {
+      Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => ExamTypeSelectionScreen(
+          builder: (context) => PlaylistSelectionScreen(
             subjectName: widget.subjectName,
             subjectKey: widget.subjectKey,
-            gradeLevel: gradeLevel['key'],
+            category: 'Problemler',
             gradientStart: widget.gradientStart,
             gradientEnd: widget.gradientEnd,
             subjectIcon: widget.subjectIcon,
-            sectionType: widget.sectionType,
           ),
         ),
       );
+      return;
     }
+    
+    // Build subject key for VideoGridScreen
+    // Format: "TYT_Matematik", "AYT_Fizik", "Paragraf_Türkçe", etc.
+    String subjectKey;
+    String displayName;
+    
+    if (levelKey == 'tyt_ayt') {
+      // Special handling for TYT-AYT combined (Geometri)
+      // For now, we'll show TYT content, but this could be customized
+      subjectKey = 'TYT_${widget.subjectKey}';
+      displayName = '${widget.subjectName} TYT-AYT';
+    } else {
+      final examType = levelKey.toUpperCase();
+      subjectKey = '${examType}_${widget.subjectKey}';
+      displayName = '${widget.subjectName} $examType';
+    }
+    
+    // Import VideoGridScreen
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => VideoGridScreen(
+          subjectKey: subjectKey,
+          subjectName: displayName,
+          sectionType: widget.sectionType,
+          gradientStart: widget.gradientStart,
+          gradientEnd: widget.gradientEnd,
+          subjectIcon: widget.subjectIcon,
+        ),
+      ),
+    );
   }
 
   @override
@@ -279,6 +662,28 @@ class _GradeSelectionScreenState extends State<GradeSelectionScreen>
   }
 
   Widget _buildGradeCard(Map<String, dynamic> gradeLevel, int index) {
+    final name = gradeLevel['name'] as String;
+    final isGradeLevel = name.contains('.');
+    final isCombined = gradeLevel['isCombined'] == true;
+    
+    // Determine display text
+    String mainText;
+    String? subtitleText;
+    
+    if (isCombined) {
+      // TYT-AYT combined option
+      mainText = 'TYT-AYT';
+      subtitleText = null;
+    } else if (isGradeLevel) {
+      // Grade level (9. SINIF, 10. SINIF, etc.)
+      mainText = name.split('.')[0]; // "9"
+      subtitleText = name.split(' ')[1]; // "SINIF"
+    } else {
+      // Exam type (TYT, AYT, PARAGRAF)
+      mainText = name;
+      subtitleText = null;
+    }
+    
     return TweenAnimationBuilder<double>(
       duration: Duration(milliseconds: 600 + (index * 100)),
       tween: Tween<double>(begin: 0.0, end: 1.0),
@@ -295,22 +700,26 @@ class _GradeSelectionScreenState extends State<GradeSelectionScreen>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                    gradeLevel['name'].split('.')[0], // "9"
-                    style: TextStyle(
-                      fontSize: 48,
-                      fontWeight: FontWeight.bold,
-                      color: gradeLevel['accentColor'],
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      mainText,
+                      style: TextStyle(
+                        fontSize: isCombined || !isGradeLevel ? 32 : 48,
+                        fontWeight: FontWeight.bold,
+                        color: gradeLevel['accentColor'],
+                      ),
                     ),
                   ),
-                  Text(
-                    gradeLevel['name'].split(' ')[1], // "SINIF"
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: NeumorphicColors.getText(context).withValues(alpha: 0.6),
+                  if (subtitleText != null)
+                    Text(
+                      subtitleText,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: NeumorphicColors.getText(context).withValues(alpha: 0.6),
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),

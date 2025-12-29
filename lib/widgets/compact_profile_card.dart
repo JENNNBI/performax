@@ -118,18 +118,18 @@ class _CompactProfileCardState extends State<CompactProfileCard>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            theme.primaryColor.withOpacity(0.1),
-            theme.primaryColor.withOpacity(0.05),
-            Colors.white.withOpacity(0.1),
+            theme.primaryColor.withValues(alpha: 0.1),
+            theme.primaryColor.withValues(alpha: 0.05),
+            Colors.white.withValues(alpha: 0.1),
           ],
         ),
         border: Border.all(
-          color: Colors.white.withOpacity(0.2),
+          color: Colors.white.withValues(alpha: 0.2),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 15,
             spreadRadius: 0,
             offset: const Offset(0, 5),
@@ -166,13 +166,13 @@ class _CompactProfileCardState extends State<CompactProfileCard>
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                   colors: [
-                                    theme.primaryColor.withOpacity(0.8),
-                                    theme.primaryColor.withOpacity(0.6),
+                                    theme.primaryColor.withValues(alpha: 0.8),
+                                    theme.primaryColor.withValues(alpha: 0.6),
                                   ],
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: theme.primaryColor.withOpacity(0.3),
+                                    color: theme.primaryColor.withValues(alpha: 0.3),
                                     blurRadius: 8,
                                     spreadRadius: 0,
                                     offset: const Offset(0, 3),
@@ -234,7 +234,7 @@ class _CompactProfileCardState extends State<CompactProfileCard>
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: theme.primaryColor.withOpacity(0.1),
+                            color: theme.primaryColor.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Icon(
@@ -309,10 +309,10 @@ class _CompactProfileCardState extends State<CompactProfileCard>
       width: isFullWidth ? double.infinity : null,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: color.withOpacity(0.2),
+          color: color.withValues(alpha: 0.2),
           width: 1,
         ),
       ),
@@ -335,7 +335,7 @@ class _CompactProfileCardState extends State<CompactProfileCard>
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w500,
-                    color: color.withOpacity(0.8),
+                    color: color.withValues(alpha: 0.8),
                   ),
                 ),
                 Text(

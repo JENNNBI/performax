@@ -29,20 +29,20 @@ class PersistentBottomNav extends StatelessWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                theme.primaryColor.withOpacity(0.95),
-                theme.primaryColor.withOpacity(0.85),
-                const Color(0xFF667eea).withOpacity(0.9),
+                theme.primaryColor.withValues(alpha: 0.95),
+                theme.primaryColor.withValues(alpha: 0.85),
+                const Color(0xFF667eea).withValues(alpha: 0.9),
               ],
             ),
             boxShadow: [
               BoxShadow(
-                color: theme.primaryColor.withOpacity(0.4),
+                color: theme.primaryColor.withValues(alpha: 0.4),
                 blurRadius: 20,
                 spreadRadius: 0,
                 offset: const Offset(0, -3),
               ),
               BoxShadow(
-                color: Colors.black.withOpacity(0.15),
+                color: Colors.black.withValues(alpha: 0.15),
                 blurRadius: 10,
                 spreadRadius: 0,
                 offset: const Offset(0, -2),
@@ -112,7 +112,7 @@ class PersistentBottomNav extends StatelessWidget {
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.3),
+                  color: Colors.white.withValues(alpha: 0.3),
                 ),
                 child: Image.asset(
                   iconAsset,
@@ -141,7 +141,7 @@ class PersistentBottomNav extends StatelessWidget {
                   letterSpacing: 0.3,
                   shadows: [
                     Shadow(
-                      color: Colors.black.withOpacity(0.3),
+                      color: Colors.black.withValues(alpha: 0.3),
                       offset: const Offset(0, 1),
                       blurRadius: 2,
                     ),

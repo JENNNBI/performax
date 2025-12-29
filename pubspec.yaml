@@ -10,6 +10,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  provider: ^6.1.2
 
   # Core Flutter packages
   cupertino_icons: ^1.0.8
@@ -106,6 +107,8 @@ flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
   image_path: "assets/images/app_icon.png"
+  min_sdk_android: 21 # Android minimum SDK version
+  remove_alpha_ios: true # Crucial for App Store validation
   adaptive_icon_background: "#FFFFFF"
   adaptive_icon_foreground: "assets/images/app_icon.png"
 

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:async';
+import 'package:flutter/foundation.dart'; // For debugPrint
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/quest.dart';
@@ -19,6 +20,210 @@ class QuestService {
   Stream<QuestData> get stream => _controller.stream;
   Stream<Quest> get completions => _completionController.stream;
   QuestData? get data => _cachedQuestData;
+
+  /// 🔴 NOTIFICATION BADGE LOGIC
+  /// Returns TRUE if user has completed quests waiting to be claimed
+  /// This is used to show a red dot badge on the avatar
+  bool get hasUnclaimedRewards {
+    if (_cachedQuestData == null) return false;
+    
+    // Check all quest types
+    final allQuests = [
+      ..._cachedQuestData!.dailyQuests,
+      ..._cachedQuestData!.weeklyQuests,
+      ..._cachedQuestData!.monthlyQuests,
+    ];
+    
+    // Return true if ANY quest is claimable (completed but not claimed)
+    return allQuests.any((quest) => quest.isClaimable);
+  }
+
+  /// 🔄 CHECK DAILY RESET - Main entry point for daily quest refresh
+  /// 
+  /// **When to call:** At app startup (after authentication)
+  /// **What it does:** Checks if it's a new day and generates fresh quests if needed
+  /// **Returns:** TRUE if quests were reset, FALSE if still same day
+  Future<bool> checkDailyReset() async {
+    try {
+      debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      debugPrint('🔄 QuestService: CHECKING DAILY RESET');
+      debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      
+      final prefs = await SharedPreferences.getInstance();
+      final now = DateTime.now();
+      final today = _dateString(now);
+      final lastDailyDate = prefs.getString('daily_last_date');
+      
+      debugPrint('   Last Quest Date: ${lastDailyDate ?? "Never"}');
+      debugPrint('   Today: $today');
+      
+      // Check if it's a new day
+      if (lastDailyDate == today) {
+        debugPrint('✅ SAME DAY - No reset needed');
+        debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        return false;
+      }
+      
+      debugPrint('🔥 NEW DAY DETECTED - Generating fresh quests!');
+      debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      
+      // Generate new daily quests
+      await generateNewDailyQuests();
+      
+      return true;
+    } catch (e) {
+      debugPrint('❌ Error in checkDailyReset: $e');
+      return false;
+    }
+  }
+
+  /// 🎲 GENERATE NEW DAILY QUESTS - Creates fresh set of 5 quests
+  /// 
+  /// **Composition Rule:**
+  /// - Slot 1: Mandatory "Daily Login" quest (fixed)
+  /// - Slots 2-5: 4 Random quests from available pool
+  /// 
+  /// **What it does:**
+  /// 1. Loads full quest pool from JSON
+  /// 2. Extracts mandatory login quest
+  /// 3. Randomly shuffles remaining quests
+  /// 4. Takes top 4 random quests
+  /// 5. Combines: [Login Quest] + [4 Random Quests]
+  /// 6. Resets all progress to 0
+  /// 7. Saves to local storage with today's date
+  Future<void> generateNewDailyQuests() async {
+    try {
+      debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      debugPrint('🎲 QuestService: GENERATING NEW DAILY QUESTS');
+      debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      
+      final prefs = await SharedPreferences.getInstance();
+      
+      // Get user's study field and grade from cached profile
+      String? studyField;
+      String? gradeLevel;
+      try {
+        final cachedProfileJson = prefs.getString('cached_user_profile');
+        if (cachedProfileJson != null) {
+          final Map<String, dynamic> profileMap = json.decode(cachedProfileJson);
+          studyField = profileMap['studyField'];
+          gradeLevel = profileMap['gradeLevel'] ?? profileMap['class'];
+        }
+      } catch (_) {}
+      
+      // Fallback to individual keys if profile cache fails
+      studyField ??= prefs.getString('study_field');
+      gradeLevel ??= prefs.getString('grade_level');
+      
+      debugPrint('   Study Field: ${studyField ?? "Not set"}');
+      debugPrint('   Grade Level: ${gradeLevel ?? "Not set"}');
+      
+      // Determine correct JSON file
+      String questFileName = 'quests_tyt.json'; // Default fallback
+      
+      if (gradeLevel != null) {
+        final grade = gradeLevel.replaceAll(RegExp(r'[^\d]'), '');
+        
+        if (grade == '9' || grade == '10') {
+          questFileName = 'quests_tyt.json';
+        } else {
+          switch (studyField) {
+            case 'Sayısal':
+              questFileName = 'quests_sayisal.json';
+              break;
+            case 'Eşit Ağırlık':
+              questFileName = 'quests_ea.json';
+              break;
+            case 'Sözel':
+              questFileName = 'quests_sozel.json';
+              break;
+            default:
+              questFileName = 'quests_tyt.json';
+          }
+        }
+      }
+      
+      debugPrint('   Quest File: $questFileName');
+      
+      // Load quest pool from JSON
+      final String jsonString = await rootBundle.loadString('assets/data/$questFileName');
+      final List<dynamic> jsonList = json.decode(jsonString);
+      final List<Quest> allQuests = jsonList.map((e) => Quest.fromJson(e)).toList();
+      final List<Quest> sourceDaily = allQuests.where((q) => q.id.startsWith('daily')).toList();
+      
+      debugPrint('   Total Daily Quests in Pool: ${sourceDaily.length}');
+      
+      // Generate the 5-quest set (1 Mandatory + 4 Random)
+      final newDailyQuests = _pickDailyWithMandatory(sourceDaily, studyField, gradeLevel);
+      
+      // 🎯 CRITICAL AUTO-COMPLETE LOGIC
+      // Since this function is triggered BY the user opening the app,
+      // the "Daily Login" quest (first quest) is inherently completed.
+      // Mark it as COMPLETED (but not claimed) immediately.
+      if (newDailyQuests.isNotEmpty) {
+        final loginQuest = newDailyQuests[0]; // First quest is always login
+        debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        debugPrint('🎯 AUTO-COMPLETING LOGIN QUEST');
+        debugPrint('   Quest: ${loginQuest.title}');
+        debugPrint('   Reason: User is logged in (app is open)');
+        debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        
+        // Mark as completed but not claimed
+        newDailyQuests[0] = loginQuest.copyWith(
+          progress: loginQuest.target,
+          completed: true,
+          claimed: false, // User must manually claim reward
+        );
+        
+        debugPrint('✅ Login quest auto-completed!');
+        debugPrint('   Status: COMPLETED (Ready to Claim)');
+        debugPrint('   Progress: ${newDailyQuests[0].progress}/${newDailyQuests[0].target}');
+        debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      }
+      
+      debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      debugPrint('✅ NEW DAILY QUESTS GENERATED!');
+      debugPrint('   Total Quests: ${newDailyQuests.length}');
+      for (int i = 0; i < newDailyQuests.length; i++) {
+        final q = newDailyQuests[i];
+        final isMandatory = i == 0; // First quest is always mandatory login
+        final status = q.completed ? '✅ COMPLETED' : '⏳ PENDING';
+        debugPrint('   ${i + 1}. ${q.title} ${isMandatory ? "⭐ (MANDATORY)" : "🎲 (RANDOM)"} - $status');
+        debugPrint('      ID: ${q.id}');
+        debugPrint('      Reward: ${q.reward} Rockets');
+        debugPrint('      Target: ${q.target}');
+        debugPrint('      Progress: ${q.progress}/${q.target}');
+      }
+      debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      
+      // Save to local storage
+      final today = _dateString(DateTime.now());
+      await prefs.setString('selected_daily_ids', json.encode(newDailyQuests.map((q) => q.id).toList()));
+      await prefs.setString('daily_last_date', today);
+      
+      // Reset and save quest status
+      for (final q in newDailyQuests) {
+        await _saveQuestStatus(prefs, q);
+      }
+      
+      // Update cached data if available
+      if (_cachedQuestData != null) {
+        _cachedQuestData = QuestData(
+          dailyQuests: newDailyQuests,
+          weeklyQuests: _cachedQuestData!.weeklyQuests,
+          monthlyQuests: _cachedQuestData!.monthlyQuests,
+        );
+        _emit();
+      }
+      
+      debugPrint('✅ DAILY QUESTS SAVED & CACHED');
+      debugPrint('   Date: $today');
+      debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    } catch (e) {
+      debugPrint('❌ Error in generateNewDailyQuests: $e');
+      rethrow;
+    }
+  }
 
   /// Clear all local quest data (for new user registration)
   Future<void> resetLocalData() async {
@@ -41,6 +246,9 @@ class QuestService {
   /// Load quest data from JSON asset
   Future<QuestData> loadQuests() async {
     try {
+      // 🔄 CRITICAL: Check if it's a new day and reset quests if needed
+      await checkDailyReset();
+      
       // Return cached data if available
       if (_cachedQuestData != null) {
         return _cachedQuestData!;
@@ -128,6 +336,31 @@ class QuestService {
         daily = _applySavedStatus(_mapIds(fullData.dailyQuests, selectedDailyIds), prefs);
       } else {
         daily = _pickDailyWithMandatory(fullData.dailyQuests, studyField, gradeLevel);
+        
+        // 🎯 AUTO-COMPLETE LOGIN QUEST
+        // Since the user has opened the app to trigger this generation,
+        // the "Daily Login" quest (first quest) is inherently completed.
+        if (daily.isNotEmpty) {
+          final loginQuest = daily[0]; // First quest is always login
+          debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+          debugPrint('🎯 AUTO-COMPLETING LOGIN QUEST (loadQuests)');
+          debugPrint('   Quest: ${loginQuest.title}');
+          debugPrint('   Reason: User is logged in (app is open)');
+          debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+          
+          // Mark as completed but not claimed
+          daily[0] = loginQuest.copyWith(
+            progress: loginQuest.target,
+            completed: true,
+            claimed: false, // User must manually claim reward
+          );
+          
+          debugPrint('✅ Login quest auto-completed!');
+          debugPrint('   Status: COMPLETED (Ready to Claim)');
+          debugPrint('   Progress: ${daily[0].progress}/${daily[0].target}');
+          debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        }
+        
         await prefs.setString('selected_daily_ids', json.encode(daily.map((q) => q.id).toList()));
         await prefs.setString('daily_last_date', today);
         for (final q in daily) {
@@ -251,12 +484,33 @@ class QuestService {
     if (_cachedQuestData == null) return;
     final d = _cachedQuestData!;
     
-    // Sort helper: Incomplete on top (false), Completed/Claimed on bottom (true)
+    // 🎯 REFINED SORT LOGIC - UX Fix for Registration Flow
+    // Priority Order:
+    // 1. TOP: Completed & Unclaimed (ready to collect reward) ⭐
+    // 2. MIDDLE: In Progress (active quests)
+    // 3. BOTTOM: Completed & Claimed (done and dusted)
     int sortQuests(Quest a, Quest b) {
-      final aDone = a.isCompleted;
-      final bDone = b.isCompleted;
-      if (aDone == bDone) return 0;
-      return aDone ? 1 : -1;
+      // Calculate priority scores (lower = higher priority = top of list)
+      int aPriority;
+      int bPriority;
+      
+      if (a.completed && !a.claimed) {
+        aPriority = 0; // 🎯 HIGHEST PRIORITY - Ready to claim!
+      } else if (!a.completed) {
+        aPriority = 1; // MEDIUM PRIORITY - In progress
+      } else {
+        aPriority = 2; // LOWEST PRIORITY - Claimed/done
+      }
+      
+      if (b.completed && !b.claimed) {
+        bPriority = 0; // 🎯 HIGHEST PRIORITY - Ready to claim!
+      } else if (!b.completed) {
+        bPriority = 1; // MEDIUM PRIORITY - In progress
+      } else {
+        bPriority = 2; // LOWEST PRIORITY - Claimed/done
+      }
+      
+      return aPriority.compareTo(bPriority);
     }
 
     List<Quest> replaceAndSort(List<Quest> list) {
@@ -523,15 +777,171 @@ class QuestService {
     incrementById('monthly_4', 1);
   }
 
-  /// Claim quest reward and mark as completed
+  /// 🎯 Mark Daily Login Quest as Completed (NOT Claimed)
+  /// 
+  /// **CRITICAL:** This is called ONLY on:
+  /// 1. New user registration (first-time login)
+  /// 2. Daily login (once per day)
+  /// 
+  /// **What it does:**
+  /// - Finds the mandatory daily login quest (any variant: TYT, EA, Sozel)
+  /// - Sets progress to target (completes the quest)
+  /// - Sets completed = true
+  /// - Sets claimed = false (user MUST manually claim reward)
+  /// - Does NOT add currency (that happens on claim only)
+  /// 
+  /// **Anti-Bug Logic:**
+  /// - If already claimed today, does nothing
+  /// - If already completed but not claimed, does nothing (waits for claim)
+  Future<void> markDailyLoginAsCompleted() async {
+    try {
+      debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      debugPrint('🎯 QuestService: MARKING DAILY LOGIN AS COMPLETED');
+      debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      
+      if (_cachedQuestData == null) {
+        debugPrint('⚠️ No quest data loaded yet, skipping login quest completion');
+        return;
+      }
+      
+      // Find the daily login quest (supports all variants)
+      Quest? loginQuest;
+      for (final q in _cachedQuestData!.dailyQuests) {
+        if (q.type == 'login' || 
+            q.id.contains('login') ||
+            q.id.contains('gune_basla')) {
+          loginQuest = q;
+          break;
+        }
+      }
+      
+      if (loginQuest == null) {
+        debugPrint('⚠️ Daily login quest not found in current quest set');
+        return;
+      }
+      
+      debugPrint('   Quest ID: ${loginQuest.id}');
+      debugPrint('   Quest Title: ${loginQuest.title}');
+      debugPrint('   Current Progress: ${loginQuest.progress}/${loginQuest.target}');
+      debugPrint('   Already Completed: ${loginQuest.completed}');
+      debugPrint('   Already Claimed: ${loginQuest.claimed}');
+      
+      // Safety Check: If already claimed, do nothing
+      if (loginQuest.claimed) {
+        debugPrint('✅ Login quest already claimed today - no action needed');
+        debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        return;
+      }
+      
+      // Safety Check: If already completed but not claimed, do nothing
+      if (loginQuest.completed && loginQuest.progress >= loginQuest.target) {
+        debugPrint('✅ Login quest already completed - waiting for user to claim');
+        debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        return;
+      }
+      
+      // Mark as completed (but NOT claimed)
+      final updated = loginQuest.copyWith(
+        progress: loginQuest.target,
+        completed: true,
+        claimed: false, // 🔒 CRITICAL: User must manually claim
+      );
+      
+      _replaceQuest(updated);
+      
+      debugPrint('✅ DAILY LOGIN QUEST MARKED AS COMPLETED!');
+      debugPrint('   Progress: ${updated.progress}/${updated.target}');
+      debugPrint('   Completed: ${updated.completed}');
+      debugPrint('   Claimed: ${updated.claimed}');
+      debugPrint('   Reward: ${updated.reward} Rockets');
+      debugPrint('   ⚠️ User must tap "Claim" button to receive reward');
+      debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      
+      // Emit completion event for UI to highlight the quest
+      _completionController.add(updated);
+    } catch (e) {
+      debugPrint('❌ Error marking daily login as completed: $e');
+    }
+  }
+
+  /// 🎁 Claim quest reward and mark as completed
+  /// 
+  /// **CRITICAL ANTI-DUPLICATION LOGIC:**
+  /// This method has THREE strict safety checks to prevent double rewards:
+  /// 
+  /// 1. Quest must exist
+  /// 2. Quest must be claimable (progress >= target)
+  /// 3. Quest must NOT be already claimed
+  /// 
+  /// **What it does:**
+  /// - Verifies quest is ready to claim
+  /// - Adds EXACT reward amount to user's balance (e.g., 10 rockets)
+  /// - Marks quest as claimed (locks it forever)
+  /// - Logs the currency gain for statistics
+  /// 
+  /// **Math Verification:**
+  /// - If quest reward = 10, user balance increases by EXACTLY 10
+  /// - NOT 20 (completion + claim)
+  /// - NOT doubled amount
   void claimById(String questId) {
-    if (_cachedQuestData == null) return;
+    if (_cachedQuestData == null) {
+      debugPrint('⚠️ Cannot claim quest: No quest data loaded');
+      return;
+    }
+    
     final q = getQuestById(_cachedQuestData!, questId);
-    if (q == null) return;
-    final updated = q.copyWith(claimed: true, completed: true, progress: q.target);
+    if (q == null) {
+      debugPrint('⚠️ Cannot claim quest: Quest not found (ID: $questId)');
+      return;
+    }
+    
+    debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    debugPrint('🎁 QuestService: CLAIM ATTEMPT');
+    debugPrint('   Quest ID: ${q.id}');
+    debugPrint('   Quest Title: ${q.title}');
+    debugPrint('   Progress: ${q.progress}/${q.target}');
+    debugPrint('   Reward: ${q.reward} Rockets');
+    debugPrint('   Already Claimed: ${q.claimed}');
+    debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    
+    // 🛡️ SAFETY CHECK 1: Quest must be claimable (reached target)
+    if (!q.isClaimable) {
+      debugPrint('❌ CLAIM REJECTED: Quest not yet completed');
+      debugPrint('   Current Progress: ${q.progress}/${q.target}');
+      debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      return;
+    }
+    
+    // 🛡️ SAFETY CHECK 2: Quest must NOT be already claimed (anti-duplication)
+    if (q.claimed) {
+      debugPrint('❌ CLAIM REJECTED: Quest already claimed!');
+      debugPrint('   This prevents double reward bug');
+      debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      return;
+    }
+    
+    // 🎯 ALL CHECKS PASSED - EXECUTE REWARD TRANSACTION
+    debugPrint('✅ All safety checks passed - processing reward');
+    
+    // Mark as claimed immediately (locks the quest)
+    final updated = q.copyWith(
+      claimed: true, 
+      completed: true, 
+      progress: q.target
+    );
     _replaceQuest(updated);
-    onCurrencyEarned(updated.reward);
-    StatisticsService.instance.logRocketEarned(updated.reward);
+    
+    // Add EXACT reward amount to user's balance
+    debugPrint('💰 Adding ${q.reward} Rockets to user balance...');
+    onCurrencyEarned(q.reward); // This will trigger currency service
+    StatisticsService.instance.logRocketEarned(q.reward);
+    
+    debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    debugPrint('✅ QUEST CLAIMED SUCCESSFULLY!');
+    debugPrint('   Quest: ${q.title}');
+    debugPrint('   Reward Added: ${q.reward} Rockets');
+    debugPrint('   Status: LOCKED (cannot claim again)');
+    debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   }
 
   // Helpers for persistence and selection

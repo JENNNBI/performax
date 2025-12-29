@@ -77,12 +77,12 @@ class AvatarPlaceholder extends StatelessWidget {
             : null,
         boxShadow: [
           BoxShadow(
-            color: primaryColor.withOpacity(0.4),
+            color: primaryColor.withValues(alpha: 0.4),
             blurRadius: size * 0.15,
             spreadRadius: size * 0.02,
           ),
           BoxShadow(
-            color: Colors.black.withOpacity(0.15),
+            color: Colors.black.withValues(alpha: 0.15),
             blurRadius: size * 0.1,
             spreadRadius: size * 0.01,
           ),
@@ -100,7 +100,7 @@ class AvatarPlaceholder extends StatelessWidget {
                 color: Colors.white,
                 shadows: [
                   Shadow(
-                    color: Colors.black.withOpacity(0.3),
+                    color: Colors.black.withValues(alpha: 0.3),
                     offset: Offset(size * 0.01, size * 0.01),
                     blurRadius: size * 0.02,
                   ),
@@ -115,11 +115,11 @@ class AvatarPlaceholder extends StatelessWidget {
             child: Container(
               padding: EdgeInsets.all(size * 0.06),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.white.withValues(alpha: 0.9),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: Colors.black.withValues(alpha: 0.2),
                     blurRadius: size * 0.04,
                   ),
                 ],

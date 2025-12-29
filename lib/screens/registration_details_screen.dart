@@ -3,14 +3,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
 import 'package:provider/provider.dart'; // Import Provider
-import 'package:shared_preferences/shared_preferences.dart'; // Import SharedPreferences
+import 'package:shared_preferences/shared_preferences.dart'; // For streak popup flag
 import '../models/institution.dart';
 import '../models/avatar.dart';
-import '../models/user_profile.dart'; // Import UserProfile
 import '../services/user_provider.dart'; // Import UserProvider
 import '../widgets/searchable_institution_dropdown.dart';
-import '../widgets/date_picker_field.dart';
-import '../widgets/avatar_placeholder.dart';
 import '../widgets/otp_verification_widget.dart';
 import '../services/user_service.dart';
 import '../services/sms_otp_service.dart';
@@ -91,7 +88,9 @@ class _RegistrationDetailsScreenState extends State<RegistrationDetailsScreen>
                 
                 // OTP Verification Widget
                 OtpVerificationWidget(
-                  phoneNumber: _formattedPhoneNumber ?? _phoneNumberController.text,
+                  phoneNumber: _formattedPhoneNumber?.isNotEmpty == true 
+                      ? _formattedPhoneNumber 
+                      : (_phoneNumberController.text.isNotEmpty ? _phoneNumberController.text : null),
                   onVerificationComplete: (otp) async {
                     await _verifyOtp(otp);
                     if (_isPhoneVerified && mounted && context.mounted) {
@@ -539,25 +538,6 @@ class _RegistrationDetailsScreenState extends State<RegistrationDetailsScreen>
         await userProvider.clearSession();
         
         // 2. Prepare Fresh User Profile
-        final userProfile = UserProfile(
-          userId: uid,
-          fullName: _fullNameController.text.trim(),
-          firstName: _fullNameController.text.trim().split(' ').first,
-          lastName: _fullNameController.text.trim().split(' ').length > 1 
-              ? _fullNameController.text.trim().split(' ').sublist(1).join(' ') 
-              : '',
-          email: widget.email,
-          phoneNumber: _formattedPhoneNumber ?? _phoneNumberController.text.trim(),
-          isPhoneVerified: true, // We verified it via OTP
-          studentClass: _selectedClass,
-          school: _useManualInstitution ? _manualInstitutionController.text.trim() : _selectedInstitution?.name,
-          gradeLevel: _selectedClass,
-          gender: _selectedGender,
-          avatarId: _selectedAvatarId,
-          // STRICT DEFAULTS FOR NEW USER
-          rocketCurrency: 100, 
-          leaderboardScore: 100,
-        );
 
         // 3. Save to Firestore
         // Note: _saveUserData uses 'set', effectively overwriting/creating new doc
@@ -631,8 +611,22 @@ class _RegistrationDetailsScreenState extends State<RegistrationDetailsScreen>
       // Reload quests based on the newly cached profile
       await QuestService.instance.loadQuests();
 
-      // Ensure "Login" quest is completed for new users immediately
-      QuestService.instance.updateProgress(type: 'login', amount: 1);
+      // 🎯 CRITICAL: Mark "Daily Login" quest as COMPLETED (but NOT claimed)
+      // This is for NEW USER REGISTRATION ONLY
+      // The quest will show as "Completed" with a green "Claim" button
+      // User MUST manually tap "Topla" to receive the reward
+      debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      debugPrint('🎁 NEW USER: Marking Daily Login Quest as Completed');
+      debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      await QuestService.instance.markDailyLoginAsCompleted();
+      debugPrint('✅ Daily Login quest ready to claim (user must tap button)');
+      debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+      // 🎯 CRITICAL: Mark this as a NEW REGISTRATION for Streak popup
+      // This flag will trigger the Streak Day 1 popup on HomeScreen
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('show_first_streak_popup', true);
+      debugPrint('🎊 NEW USER: Flagged for Streak Day 1 celebration popup');
 
       if (mounted) {
         Navigator.of(context).pushAndRemoveUntil(
@@ -717,12 +711,6 @@ class _RegistrationDetailsScreenState extends State<RegistrationDetailsScreen>
     return null;
   }
 
-  String? _validateClass(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Lütfen sınıfınızı seçin';
-    }
-    return null;
-  }
 
   String? _validateInstitution(Institution? institution) {
     if (!_useManualInstitution && institution == null) {
@@ -738,31 +726,7 @@ class _RegistrationDetailsScreenState extends State<RegistrationDetailsScreen>
     return null;
   }
 
-  String? _validateBirthDate(DateTime? date) {
-    if (date == null) {
-      return 'Lütfen doğum tarihinizi seçin';
-    }
-    
-    final now = DateTime.now();
-    final age = now.year - date.year;
-    
-    if (age < 10) {
-      return 'Yaşınız en az 10 olmalıdır';
-    }
-    
-    if (age > 100) {
-      return 'Lütfen geçerli bir doğum tarihi girin';
-    }
-    
-    return null;
-  }
 
-  String? _validateGender(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Lütfen cinsiyetinizi seçin';
-    }
-    return null;
-  }
   
   String? _validatePhoneNumber(String? value) {
     if (value == null || value.trim().isEmpty) {
@@ -776,12 +740,6 @@ class _RegistrationDetailsScreenState extends State<RegistrationDetailsScreen>
     return null;
   }
 
-  String? _validateStudyField(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Lütfen alanınızı seçin';
-    }
-    return null;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -806,9 +764,9 @@ class _RegistrationDetailsScreenState extends State<RegistrationDetailsScreen>
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.05),
+                      color: Colors.white.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.white.withOpacity(0.1)),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                     ),
                     child: const Text(
                       'Step 2/2',
@@ -838,7 +796,7 @@ class _RegistrationDetailsScreenState extends State<RegistrationDetailsScreen>
                 Text(
                   'Complete your gamer profile to start.',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontSize: 16,
                   ),
                 ),
@@ -906,7 +864,20 @@ class _RegistrationDetailsScreenState extends State<RegistrationDetailsScreen>
                         onChanged: _isLoading ? null : (val) {
                           setState(() {
                             _selectedGender = val;
-                            _selectedAvatarId ??= Avatar.getDefaultByGender(val!).id;
+                            // 🎯 INSTANT AVATAR UPDATE: Set default avatar for selected gender
+                            // This triggers immediate visual feedback in the avatar preview below
+                            final defaultAvatar = Avatar.getDefaultByGender(val!);
+                            _selectedAvatarId = defaultAvatar.id;
+                            
+                            // Also update UserProvider immediately for instant UI sync
+                            // This updates RAM only (no userId yet during registration)
+                            final userProvider = Provider.of<UserProvider>(context, listen: false);
+                            userProvider.saveAvatar(
+                              defaultAvatar.bust2DPath,
+                              defaultAvatar.id,
+                            );
+                            
+                            debugPrint('🎨 Gender Selected: $val → Avatar Updated: ${defaultAvatar.displayName}');
                           });
                         },
                       ),
@@ -931,29 +902,48 @@ class _RegistrationDetailsScreenState extends State<RegistrationDetailsScreen>
                               child: Container(
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.05),
+                                  color: Colors.white.withValues(alpha: 0.05),
                                   borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(color: Colors.cyanAccent.withOpacity(0.3)), // Glowing border
+                                  border: Border.all(color: Colors.cyanAccent.withValues(alpha: 0.3)), // Glowing border
                                 ),
                                 child: Row(
                                   children: [
-                                    // Headshot
-                                    Container(
-                                      width: 64, height: 64,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        border: Border.all(color: Colors.cyanAccent, width: 2),
-                                        boxShadow: [
-                                          BoxShadow(color: Colors.cyanAccent.withOpacity(0.2), blurRadius: 10),
-                                        ],
-                                        image: displayPath != null ? DecorationImage(
-                                          image: AssetImage(displayPath),
-                                          fit: BoxFit.cover,
-                                          alignment: Alignment.topCenter,
-                                        ) : null,
-                                        color: Colors.grey[800],
+                                    // 🎯 ANIMATED AVATAR PREVIEW: Smooth transition when gender changes
+                                    AnimatedSwitcher(
+                                      duration: const Duration(milliseconds: 400),
+                                      transitionBuilder: (Widget child, Animation<double> animation) {
+                                        // Combine fade + scale for premium feel
+                                        return FadeTransition(
+                                          opacity: animation,
+                                          child: ScaleTransition(
+                                            scale: Tween<double>(begin: 0.8, end: 1.0).animate(
+                                              CurvedAnimation(
+                                                parent: animation,
+                                                curve: Curves.easeOutBack,
+                                              ),
+                                            ),
+                                            child: child,
+                                          ),
+                                        );
+                                      },
+                                      child: Container(
+                                        key: ValueKey(displayPath ?? 'no_avatar'), // CRITICAL: Key for AnimatedSwitcher
+                                        width: 64, height: 64,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          border: Border.all(color: Colors.cyanAccent, width: 2),
+                                          boxShadow: [
+                                            BoxShadow(color: Colors.cyanAccent.withValues(alpha: 0.2), blurRadius: 10),
+                                          ],
+                                          image: displayPath != null ? DecorationImage(
+                                            image: AssetImage(displayPath),
+                                            fit: BoxFit.cover,
+                                            alignment: Alignment.topCenter,
+                                          ) : null,
+                                          color: Colors.grey[800],
+                                        ),
+                                        child: displayPath == null ? const Icon(Icons.add, color: Colors.white) : null,
                                       ),
-                                      child: displayPath == null ? const Icon(Icons.add, color: Colors.white) : null,
                                     ),
                                     const SizedBox(width: 16),
                                     Expanded(
@@ -967,7 +957,7 @@ class _RegistrationDetailsScreenState extends State<RegistrationDetailsScreen>
                                           const SizedBox(height: 4),
                                           Text(
                                             'Tap to change character',
-                                            style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12),
+                                            style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12),
                                           ),
                                         ],
                                       ),
@@ -1004,13 +994,13 @@ class _RegistrationDetailsScreenState extends State<RegistrationDetailsScreen>
                          child: Container(
                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
                            decoration: BoxDecoration(
-                             color: Colors.white.withOpacity(0.05),
+                             color: Colors.white.withValues(alpha: 0.05),
                              borderRadius: BorderRadius.circular(30),
-                             border: Border.all(color: Colors.white.withOpacity(0.1)),
+                             border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                            ),
                            child: Row(
                              children: [
-                               Icon(Icons.calendar_today_rounded, color: Colors.white.withOpacity(0.7)),
+                               Icon(Icons.calendar_today_rounded, color: Colors.white.withValues(alpha: 0.7)),
                                const SizedBox(width: 12),
                                Text(
                                  _selectedBirthDate == null 
@@ -1049,7 +1039,7 @@ class _RegistrationDetailsScreenState extends State<RegistrationDetailsScreen>
                               child: Text(
                                 "I can't find it, I will enter manually",
                                 style: TextStyle(
-                                  color: Colors.cyanAccent.withOpacity(0.7),
+                                  color: Colors.cyanAccent.withValues(alpha: 0.7),
                                   fontSize: 12,
                                   decoration: TextDecoration.underline,
                                 ),
@@ -1075,7 +1065,7 @@ class _RegistrationDetailsScreenState extends State<RegistrationDetailsScreen>
                               child: Text(
                                 "Back to List Search",
                                 style: TextStyle(
-                                  color: Colors.cyanAccent.withOpacity(0.7),
+                                  color: Colors.cyanAccent.withValues(alpha: 0.7),
                                   fontSize: 12,
                                   decoration: TextDecoration.underline,
                                 ),
@@ -1099,7 +1089,7 @@ class _RegistrationDetailsScreenState extends State<RegistrationDetailsScreen>
                             ),
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: [
-                              BoxShadow(color: const Color(0xFF2979FF).withOpacity(0.4), blurRadius: 20, offset: const Offset(0, 8)),
+                              BoxShadow(color: const Color(0xFF2979FF).withValues(alpha: 0.4), blurRadius: 20, offset: const Offset(0, 8)),
                             ],
                           ),
                           child: ElevatedButton(
@@ -1154,10 +1144,10 @@ class _ModernTextField extends StatelessWidget {
       validator: validator,
       decoration: InputDecoration(
         filled: true,
-        fillColor: Colors.white.withOpacity(0.05),
+        fillColor: Colors.white.withValues(alpha: 0.05),
         labelText: label,
-        labelStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
-        prefixIcon: Icon(icon, color: Colors.white.withOpacity(0.7)),
+        labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
+        prefixIcon: Icon(icon, color: Colors.white.withValues(alpha: 0.7)),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(30),
           borderSide: BorderSide.none,
@@ -1207,10 +1197,10 @@ class _ModernDropdown extends StatelessWidget {
       icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white54),
       decoration: InputDecoration(
         filled: true,
-        fillColor: Colors.white.withOpacity(0.05),
+        fillColor: Colors.white.withValues(alpha: 0.05),
         labelText: label,
-        labelStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
-        prefixIcon: Icon(icon, color: Colors.white.withOpacity(0.7)),
+        labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
+        prefixIcon: Icon(icon, color: Colors.white.withValues(alpha: 0.7)),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(30),
           borderSide: BorderSide.none,

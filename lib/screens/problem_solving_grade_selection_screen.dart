@@ -138,7 +138,7 @@ class _ProblemSolvingGradeSelectionScreenState extends State<ProblemSolvingGrade
             const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: widget.gradientStart.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+              decoration: BoxDecoration(color: widget.gradientStart.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
               child: const Text('Şu anda sadece Matematik TYT içeriği aktif.', style: TextStyle(fontSize: 12, color: Color(0xFF667eea), fontWeight: FontWeight.w500)),
             ),
           ],
@@ -187,7 +187,7 @@ class _ProblemSolvingGradeSelectionScreenState extends State<ProblemSolvingGrade
                                   children: [
                                     Container(
                                       padding: const EdgeInsets.all(10),
-                                      decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(12)),
+                                      decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(12)),
                                       child: Icon(widget.subjectIcon, color: Colors.white, size: 24),
                                     ),
                                     const SizedBox(width: 12),
@@ -196,7 +196,7 @@ class _ProblemSolvingGradeSelectionScreenState extends State<ProblemSolvingGrade
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           Text(widget.subjectName, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
-                                          Text('Soru Çözümü', style: TextStyle(fontSize: 14, color: Colors.white.withOpacity(0.9), fontWeight: FontWeight.w500)),
+                                          Text('Soru Çözümü', style: TextStyle(fontSize: 14, color: Colors.white.withValues(alpha: 0.9), fontWeight: FontWeight.w500)),
                                         ],
                                       ),
                                     ),
@@ -213,7 +213,7 @@ class _ProblemSolvingGradeSelectionScreenState extends State<ProblemSolvingGrade
                 leading: IconButton(
                   icon: Container(
                     padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(10)),
+                    decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(10)),
                     child: const Icon(Icons.arrow_back_rounded, color: Colors.white),
                   ),
                   onPressed: () => Navigator.pop(context),
@@ -224,9 +224,9 @@ class _ProblemSolvingGradeSelectionScreenState extends State<ProblemSolvingGrade
                   margin: const EdgeInsets.fromLTRB(20, 20, 20, 16),
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   decoration: BoxDecoration(
-                    color: widget.gradientStart.withOpacity(0.1),
+                    color: widget.gradientStart.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: widget.gradientStart.withOpacity(0.3), width: 1.5),
+                    border: Border.all(color: widget.gradientStart.withValues(alpha: 0.3), width: 1.5),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -279,7 +279,7 @@ class _ProblemSolvingGradeSelectionScreenState extends State<ProblemSolvingGrade
                   gradient: LinearGradient(colors: gradeLevel['gradientColors']),
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
-                    BoxShadow(color: gradeLevel['gradientColors'][0].withOpacity(0.4), blurRadius: 20, offset: const Offset(0, 8)),
+                    BoxShadow(color: gradeLevel['gradientColors'][0].withValues(alpha: 0.4), blurRadius: 20, offset: const Offset(0, 8)),
                   ],
                 ),
                 child: Stack(
@@ -296,7 +296,7 @@ class _ProblemSolvingGradeSelectionScreenState extends State<ProblemSolvingGrade
                         right: 12,
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(color: const Color(0xFF4CAF50).withOpacity(0.9), borderRadius: BorderRadius.circular(8)),
+                          decoration: BoxDecoration(color: const Color(0xFF4CAF50).withValues(alpha: 0.9), borderRadius: BorderRadius.circular(8)),
                           child: const Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -312,7 +312,7 @@ class _ProblemSolvingGradeSelectionScreenState extends State<ProblemSolvingGrade
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(24),
                           gradient: LinearGradient(
-                            colors: [Colors.white.withOpacity(0.3), Colors.transparent, Colors.black.withOpacity(0.05)],
+                            colors: [Colors.white.withValues(alpha: 0.3), Colors.transparent, Colors.black.withValues(alpha: 0.05)],
                           ),
                         ),
                       ),

@@ -114,7 +114,7 @@ class StreakService {
       final userSpecificStreakKey = _getCurrentStreakKey(userId);
       
       final lastLoginString = prefs.getString(userSpecificLastLoginKey);
-      int currentStreak = prefs.getInt(userSpecificStreakKey) ?? 0;
+      int currentStreak = prefs.getInt(userSpecificStreakKey) ?? 1; // ✅ FIX: Initialize to 1 instead of 0
       
       DateTime? lastLoginDate;
       if (lastLoginString != null) {
@@ -138,11 +138,11 @@ class StreakService {
         // CRITICAL: Handle edge case where lastLoginDate is in the future (timezone/clock issues)
         if (daysSinceLastLogin < 0) {
           // Last login appears to be in the future - treat as same day
-          newStreak = currentStreak > 0 ? currentStreak : 1;
+          newStreak = currentStreak; // ✅ FIX: Keep current streak (already minimum 1)
           debugPrint('⚠️ Last login date in future ($userId) - Treating as same day, streak: $newStreak');
         } else if (daysSinceLastLogin == 0) {
           // Same day login - maintain current streak (no change)
-          newStreak = currentStreak > 0 ? currentStreak : 1;
+          newStreak = currentStreak; // ✅ FIX: Keep current streak (already minimum 1)
           debugPrint('✅ Same day login ($userId) - Streak unchanged: $newStreak');
       } else if (daysSinceLastLogin == 1) {
         // Consecutive day - increment streak
@@ -229,7 +229,7 @@ class StreakService {
       final userSpecificStreakKey = _getCurrentStreakKey(userId);
       
       final lastLoginString = prefs.getString(userSpecificLastLoginKey);
-      int currentStreak = prefs.getInt(userSpecificStreakKey) ?? 0;
+      int currentStreak = prefs.getInt(userSpecificStreakKey) ?? 1; // ✅ FIX: Minimum streak is 1
       
       DateTime lastLoginDate = DateTime.now();
       if (lastLoginString != null) {

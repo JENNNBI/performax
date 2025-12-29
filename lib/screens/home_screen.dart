@@ -1,7 +1,5 @@
-import 'package:flutter/foundation.dart'; // For kDebugMode
-import 'package:flutter/services.dart'; // For RawKeyboardListener
+import 'package:flutter/services.dart'; // For KeyboardListener
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart'; // Import Provider
 import 'package:phosphor_flutter/phosphor_flutter.dart'; // Modern icon library
 import '../widgets/ai_assistant_widget.dart';
 import '../blocs/bloc_exports.dart';
@@ -122,6 +120,28 @@ class _HomeScreenState extends State<HomeScreen> {
       if (!mounted) return;
       
       final prefs = await SharedPreferences.getInstance();
+      
+      // 🎯 NEW USER REGISTRATION: Force show Streak Day 1 popup
+      final showFirstStreakPopup = prefs.getBool('show_first_streak_popup') ?? false;
+      if (showFirstStreakPopup) {
+        debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        debugPrint('🎊 NEW USER: Showing Streak Day 1 celebration popup!');
+        debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        
+        // Remove the flag so it doesn't show again
+        await prefs.remove('show_first_streak_popup');
+        
+        // Get streak data for Day 1
+        final streakData = await StreakService().getStreakData();
+        
+        // Force show the streak modal regardless of last shown date
+        if (mounted && context.mounted) {
+          await StreakModal.show(context, streakData);
+        }
+        return; // Exit early - we already showed the popup
+      }
+      
+      // REGULAR FLOW: Check if popup should be shown based on date
       final lastShownDateStr = prefs.getString(_keyLastStreakPopupDate);
       
       final now = DateTime.now();
@@ -206,6 +226,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // ignore: unused_element
   void _openAIAssistant() {
     final userName = _userProfile?.displayName ?? 
                      _userData?['fullName']?.split(' ')[0] ?? 
@@ -251,26 +272,24 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _handleKeyEvent(RawKeyEvent event) {
-    if (!kDebugMode) return;
+  void _handleKeyEvent(KeyEvent event) {
+    if (event is! KeyDownEvent) return;
     
-    if (event is RawKeyDownEvent) {
-       final keyLabel = event.logicalKey.keyLabel.toLowerCase();
-       // Only accept letters
-       if (RegExp(r'^[a-z]$').hasMatch(keyLabel)) {
-         _keystrokes.add(keyLabel);
+    final keyLabel = event.logicalKey.keyLabel.toLowerCase();
+    // Only accept letters
+    if (RegExp(r'^[a-z]$').hasMatch(keyLabel)) {
+      _keystrokes.add(keyLabel);
          
-         // Keep buffer small
-         if (_keystrokes.length > 10) {
-           _keystrokes.removeRange(0, _keystrokes.length - 10);
-         }
+      // Keep buffer small
+      if (_keystrokes.length > 10) {
+        _keystrokes.removeRange(0, _keystrokes.length - 10);
+      }
          
-         // Check for "streak" pattern
-         if (_keystrokes.join().contains('streak')) {
-           _showTestStreak();
-           _keystrokes.clear();
-         }
-       }
+      // Check for "streak" pattern
+      if (_keystrokes.join().contains('streak')) {
+        _showTestStreak();
+        _keystrokes.clear();
+      }
     }
   }
 
@@ -297,16 +316,21 @@ class _HomeScreenState extends State<HomeScreen> {
           
           return BlocBuilder<BottomNavVisibilityBloc, BottomNavVisibilityState>(
             builder: (context, bottomNavState) {
-              return RawKeyboardListener(
+              return KeyboardListener(
                 focusNode: _focusNode,
                 autofocus: true, // Auto-focus to capture keys immediately
-                onKey: _handleKeyEvent,
+                onKeyEvent: _handleKeyEvent,
                 child: Scaffold(
                   key: _scaffoldKey,
                   backgroundColor: NeumorphicColors.getBackground(context),
-                  drawer: MyDrawer(
-                    onTabChange: _onItemTapped,
-                  ),
+                  drawer: const MyDrawer(),
+                  onDrawerChanged: (isOpened) {
+                    if (isOpened) {
+                      context.read<BottomNavVisibilityBloc>().add(const HideBottomNav());
+                    } else {
+                      context.read<BottomNavVisibilityBloc>().add(const ShowBottomNav());
+                    }
+                  },
                   body: SafeArea(
                     bottom: false,
                     child: Column(
@@ -318,36 +342,15 @@ class _HomeScreenState extends State<HomeScreen> {
                       Expanded(
                         child: _isLoading
                           ? const Center(child: CircularProgressIndicator())
-                          : Stack(
+                          : IndexedStack(
+                              index: _selectedIndex,
                               children: [
-                                IndexedStack(
-                                  index: _selectedIndex,
-                                  children: [
-                                    _userProfile != null
-                                      ? ProfileHomeScreen(userProfile: _userProfile!)
-                                      : const Center(child: Text('Profile data not available')),
-                                    const ContentHubScreen(),
-                                    LeaderboardScreen(key: _leaderboardKey),
-                                    EnhancedStatisticsScreen(isGuest: _isGuest),
-                                  ],
-                                ),
-                                
-                                // AI Assistant Avatar
-                                Positioned(
-                                  bottom: 120, // Adjusted for floating dock
-                                  right: 16,
-                                  child: GestureDetector(
-                                    onTap: _openAIAssistant,
-                                    child: Image.asset(
-                                      'assets/images/AI.png',
-                                      width: 70,
-                                      fit: BoxFit.contain,
-                                      errorBuilder: (context, error, stackTrace) {
-                                        return const SizedBox();
-                                      },
-                                    ),
-                                  ),
-                                ),
+                                _userProfile != null
+                                  ? ProfileHomeScreen(userProfile: _userProfile!)
+                                  : const Center(child: Text('Profile data not available')),
+                                const ContentHubScreen(),
+                                LeaderboardScreen(key: _leaderboardKey),
+                                EnhancedStatisticsScreen(isGuest: _isGuest),
                               ],
                             ),
                       ),
@@ -364,8 +367,8 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       },
     ),
-  );
-}
+    );
+  }
 
   Widget _buildNeumorphicHeader(BuildContext context, LanguageBloc languageBloc) {
     final title = _getAppBarTitle(languageBloc);
@@ -530,3 +533,4 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 }
+

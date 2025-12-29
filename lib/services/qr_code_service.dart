@@ -184,7 +184,13 @@ class QRCodeService {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => VideoPlayerScreen(videoId: content.videoId!),
+        builder: (context) => VideoPlayerScreen(
+          videoId: content.videoId!,
+          videoTitle: content.title,
+          channelName: content.subjectName ?? 'Performax',
+          description: content.description,
+          subjectTag: content.subjectName, // Pass subject name as tag
+        ),
       ),
     );
   }

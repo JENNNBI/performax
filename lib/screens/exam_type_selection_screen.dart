@@ -10,7 +10,7 @@ import '../widgets/neumorphic/neumorphic_button.dart';
 class ExamTypeSelectionScreen extends StatefulWidget {
   final String subjectName;
   final String subjectKey;
-  final String gradeLevel; // e.g., '12_sinif'
+  final String gradeLevel; // e.g., '9_sinif', '10_sinif', '11_sinif' (Grade 12 removed)
   final Color gradientStart;
   final Color gradientEnd;
   final IconData subjectIcon;
@@ -59,7 +59,7 @@ class _ExamTypeSelectionScreenState extends State<ExamTypeSelectionScreen> with 
       return;
     }
     
-    // Existing logic for subject-based auto-nav (if grade is 11/12)
+    // Existing logic for subject-based auto-nav (if grade is 11)
     final tytOnly = ['Türkçe', 'Temel Matematik'];
     final aytOnly = ['Türk Dili ve Edebiyatı', 'İleri Matematik', 'Felsefe Grubu'];
 

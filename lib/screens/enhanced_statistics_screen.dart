@@ -97,57 +97,11 @@ class _EnhancedStatisticsScreenState extends State<EnhancedStatisticsScreen> wit
     );
   }
 
-  Widget _buildHeader(BuildContext context, LanguageBloc languageBloc) {
-    final textColor = NeumorphicColors.getText(context);
-    
-    return Padding(
-      padding: const EdgeInsets.all(20.0),
-      child: Row(
-        children: [
-          NeumorphicContainer(
-            padding: const EdgeInsets.all(12),
-            borderRadius: 12,
-            color: NeumorphicColors.accentBlue.withValues(alpha: 0.1),
-            child: const Icon(
-              Icons.analytics_rounded,
-              color: NeumorphicColors.accentBlue,
-              size: 28,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  languageBloc.currentLanguage == 'tr' ? 'İstatistiklerim' : 'My Statistics',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: textColor,
-                  ),
-                ),
-                Text(
-                  languageBloc.currentLanguage == 'tr' 
-                      ? 'Öğrenme ilerlemenizi takip edin'
-                      : 'Track your learning progress',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: textColor.withValues(alpha: 0.6),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildSubjectRadar(BuildContext context, LanguageBloc languageBloc) {
     final baseOrder = ['Matematik','Türkçe','Fizik','Kimya','Biyoloji','Tarih','Coğrafya','Felsefe'];
     final prof = _snap?.subjectProficiency ?? {};
-    final hasData = prof.values.any((v) => (v ?? 0) > 0);
+    final hasData = prof.values.any((v) => (v) > 0);
     final textColor = NeumorphicColors.getText(context);
 
     if (!hasData) {

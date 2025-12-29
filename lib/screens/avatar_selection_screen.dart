@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import '../models/avatar.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:math' as math;
 import 'package:provider/provider.dart'; // Import Provider
 import '../services/user_provider.dart'; // Import UserProvider
 
@@ -129,7 +127,7 @@ class _AvatarSelectionScreenState extends State<AvatarSelectionScreen> {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  theme.primaryColor.withOpacity(0.1),
+                  theme.primaryColor.withValues(alpha: 0.1),
                   Colors.white,
                 ],
               ),
@@ -170,7 +168,7 @@ class _AvatarSelectionScreenState extends State<AvatarSelectionScreen> {
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: theme.primaryColor.withOpacity(0.3),
+                                color: theme.primaryColor.withValues(alpha: 0.3),
                                 blurRadius: 15,
                                 spreadRadius: 2,
                               ),
@@ -269,7 +267,7 @@ class _AvatarSelectionScreenState extends State<AvatarSelectionScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4), // Reduced padding
                         decoration: BoxDecoration(
-                          color: theme.primaryColor.withOpacity(0.1),
+                          color: theme.primaryColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
@@ -301,7 +299,7 @@ class _AvatarSelectionScreenState extends State<AvatarSelectionScreen> {
                           borderRadius: BorderRadius.circular(16),
                         ),
                         elevation: 4,
-                        shadowColor: theme.primaryColor.withOpacity(0.4),
+                        shadowColor: theme.primaryColor.withValues(alpha: 0.4),
                       ),
                       child: const Text(
                         'Select Character',
@@ -331,7 +329,7 @@ class _AvatarSelectionScreenState extends State<AvatarSelectionScreen> {
         borderRadius: BorderRadius.circular(30),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),

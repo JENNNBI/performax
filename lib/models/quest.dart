@@ -32,10 +32,13 @@ class Quest extends Equatable {
     return (progress / target).clamp(0.0, 1.0);
   }
 
-  /// Check if quest is completed (claimed)
-  bool get isCompleted => completed || (claimed && progress >= target);
+  /// Check if quest is fully done (claimed) - for UI filtering
+  bool get isCompleted => claimed;
+  
   /// Ready to be claimed when target reached and not claimed yet
-  bool get isClaimable => progress >= target && !claimed && !completed;
+  /// 🎯 CRITICAL: This is for NEW USER FLOW where quest is marked completed
+  /// but user must manually claim the reward
+  bool get isClaimable => progress >= target && !claimed;
 
   /// Format progress as string (e.g., "5/10")
   String get progressText => '$progress/$target';

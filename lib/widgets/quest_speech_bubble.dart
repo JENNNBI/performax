@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'dart:ui';
+import '../services/quest_service.dart'; // For notification badge
 
-/// Futuristic Holographic Bubble
+/// Futuristic Holographic Bubble WITH Red Dot Notification
 /// Redesigned to match "Futuristic Blue" theme
 class QuestSpeechBubble extends StatelessWidget {
   final String message;
   final int pendingCount;
   final VoidCallback? onTap;
   final bool show;
+  final bool showNotificationBadge; // NEW: Show red dot if unclaimed rewards exist
 
   const QuestSpeechBubble({
     super.key,
@@ -16,11 +18,15 @@ class QuestSpeechBubble extends StatelessWidget {
     required this.pendingCount,
     this.onTap,
     this.show = true,
+    this.showNotificationBadge = true, // Default: enabled
   });
 
   @override
   Widget build(BuildContext context) {
     if (!show) return const SizedBox.shrink();
+
+    // 🔴 NOTIFICATION BADGE: Check if there are unclaimed rewards
+    final hasUnclaimedRewards = showNotificationBadge && QuestService.instance.hasUnclaimedRewards;
 
     return GestureDetector(
       onTap: onTap,
@@ -136,6 +142,39 @@ class QuestSpeechBubble extends StatelessWidget {
               ),
             ),
           ),
+          
+          // 🔴 RED DOT NOTIFICATION BADGE - Inside bubble (top-right corner)
+          if (hasUnclaimedRewards)
+            Positioned(
+              top: 6,
+              right: 6,
+              child: Container(
+                width: 12,
+                height: 12,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.redAccent,
+                  border: Border.all(
+                    color: Colors.white,
+                    width: 2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.redAccent.withValues(alpha: 0.6),
+                      blurRadius: 6,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                ),
+              )
+              .animate(onPlay: (controller) => controller.repeat())
+              .scale(
+                begin: const Offset(1.0, 1.0),
+                end: const Offset(1.2, 1.2),
+                duration: 800.ms,
+                curve: Curves.easeInOut,
+              ),
+            ),
           
           // Pointer (Triangle)
           Positioned(

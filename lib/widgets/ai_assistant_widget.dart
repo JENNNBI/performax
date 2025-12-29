@@ -194,57 +194,78 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget> with TickerProvid
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     
     return Container(
-      height: MediaQuery.of(context).size.height * 0.75,
+      height: MediaQuery.of(context).size.height * 0.85,
       decoration: BoxDecoration(
-        color: theme.scaffoldBackgroundColor,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        // Solid Blue Gradient Background (as per reference image)
+        gradient: const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFF1976D2), // Bright Blue (top)
+            Color(0xFF1565C0), // Medium Blue
+            Color(0xFF0D47A1), // Deep Blue (bottom)
+          ],
+        ),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
       ),
       child: Column(
         children: [
-          // Header
+          // Header - Clean & Simple (as per reference)
           Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  const Color(0xFF667eea),
-                  const Color(0xFF764ba2),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-            ),
+            padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
             child: Row(
               children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(
-                    Icons.psychology,
-                    color: Colors.white,
-                    size: 24,
-                  ),
+                // Alfred Full-Body Standing Image
+                Image.asset(
+                  'assets/images/AI.png',
+                  height: 120, // Large and prominent (as per reference)
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      width: 60,
+                      height: 120,
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Color(0xFF00e5ff),
+                            Color(0xFF00b8d4),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.all(Radius.circular(12)),
+                      ),
+                      child: const Icon(
+                        Icons.psychology,
+                        color: Colors.white,
+                        size: 40,
+                      ),
+                    );
+                  },
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 16),
+                // "Alfred" Text
                 const Text(
-                  'AI Asistan',
+                  'Alfred',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 20,
+                    fontSize: 28,
                     fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
                   ),
                 ),
                 const Spacer(),
-                IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white),
-                  onPressed: widget.onClose,
+                // Close Button (Clean white X)
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2), // Subtle background
+                    shape: BoxShape.circle,
+                  ),
+                  child: IconButton(
+                    icon: const Icon(Icons.close_rounded, color: Colors.white, size: 28),
+                    onPressed: widget.onClose,
+                  ),
                 ),
               ],
             ),
@@ -254,7 +275,7 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget> with TickerProvid
           Expanded(
             child: ListView.builder(
               controller: _scrollController,
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               itemCount: _chatHistory.length + (_isLoading ? 1 : 0),
               itemBuilder: (context, index) {
                 if (index == _chatHistory.length && _isLoading) {
@@ -262,63 +283,82 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget> with TickerProvid
                 }
                 
                 final message = _chatHistory[index];
-                return _buildChatBubble(message);
+                return _buildChatBubble(message, isDark);
               },
             ),
           ),
 
-          // Input Area
+          // Input Area - Capsule Shape (as per reference)
           Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: theme.cardColor,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, -2),
-                ),
-              ],
-            ),
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
             child: SafeArea(
+              top: false,
               child: Row(
                 children: [
+                  // Capsule-Shaped Text Input
                   Expanded(
-                    child: TextField(
-                      controller: _questionController,
-                      decoration: InputDecoration(
-                        hintText: 'Sorunuzu yazın...',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(24),
-                          borderSide: BorderSide.none,
-                        ),
-                        filled: true,
-                        fillColor: theme.brightness == Brightness.dark
-                            ? Colors.grey[800]
-                            : Colors.grey[200],
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 12,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1E3A5F).withValues(alpha: 0.6), // Translucent dark blue
+                        borderRadius: BorderRadius.circular(30), // Capsule shape
+                        border: Border.all(
+                          color: const Color(0xFF4A90E2).withValues(alpha: 0.4), // Subtle blue glow border
+                          width: 1.5,
                         ),
                       ),
-                      maxLines: null,
-                      textInputAction: TextInputAction.send,
-                      onSubmitted: (_) => _handleAskQuestion(),
+                      child: TextField(
+                        controller: _questionController,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 15,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'Sorunuzu yazın...',
+                          hintStyle: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.5),
+                            fontSize: 15,
+                          ),
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 16,
+                          ),
+                        ),
+                        maxLines: null,
+                        textInputAction: TextInputAction.send,
+                        onSubmitted: (_) => _handleAskQuestion(),
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 12),
+                  // Bright Cyan Circular Send Button
                   Container(
+                    width: 56,
+                    height: 56,
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
+                      gradient: const LinearGradient(
                         colors: [
-                          const Color(0xFF667eea),
-                          const Color(0xFF764ba2),
+                          Color(0xFF00E5FF), // Bright Neon Cyan
+                          Color(0xFF00B8D4), // Deep Cyan
                         ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
                       shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF00E5FF).withValues(alpha: 0.6),
+                          blurRadius: 20,
+                          spreadRadius: 2,
+                        ),
+                      ],
                     ),
                     child: IconButton(
-                      icon: const Icon(Icons.send, color: Colors.white),
+                      icon: const Icon(
+                        Icons.send_rounded,
+                        color: Colors.white,
+                        size: 24,
+                      ),
                       onPressed: _isLoading ? null : _handleAskQuestion,
                     ),
                   ),
@@ -331,7 +371,7 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget> with TickerProvid
     );
   }
 
-  Widget _buildChatBubble(Map<String, dynamic> message) {
+  Widget _buildChatBubble(Map<String, dynamic> message, bool isDark) {
     final type = message['type'] as String;
     final text = message['message'] as String;
     final sourceRef = message['sourceReference'] as String?;
@@ -339,7 +379,6 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget> with TickerProvid
     final useTypewriter = message['useTypewriter'] as bool? ?? false;
     
     final isUser = type == 'user';
-    final isError = type == 'error';
 
     final scaleAnimation = controller != null
         ? Tween<double>(begin: 0.8, end: 1.0).animate(
@@ -354,7 +393,7 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget> with TickerProvid
         : null;
 
     Widget bubble = Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 16),
       constraints: BoxConstraints(
         maxWidth: MediaQuery.of(context).size.width * 0.75,
       ),
@@ -362,61 +401,41 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget> with TickerProvid
         crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
             decoration: BoxDecoration(
-              gradient: isUser
-                  ? LinearGradient(
-                      colors: [
-                        const Color(0xFF667eea),
-                        const Color(0xFF764ba2),
-                      ],
-                    )
-                  : null,
+              // Simple solid colors (as per reference image)
               color: isUser
-                  ? null
-                  : isError
-                      ? Colors.red.withValues(alpha: 0.1)
-                      : Colors.grey.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.only(
-                topLeft: const Radius.circular(20),
-                topRight: const Radius.circular(20),
-                bottomLeft: isUser ? const Radius.circular(20) : const Radius.circular(4),
-                bottomRight: isUser ? const Radius.circular(4) : const Radius.circular(20),
-              ),
-              boxShadow: [
-                if (isUser)
-                  BoxShadow(
-                    color: const Color(0xFF667eea).withOpacity(0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-              ],
+                  ? const Color(0xFF1E88E5).withValues(alpha: 0.9) // Bright blue for user
+                  : const Color(0xFF2C3E50).withValues(alpha: 0.85), // Dark blue-grey for AI (as per reference)
+              borderRadius: BorderRadius.circular(20),
             ),
             child: !isUser && useTypewriter
                 ? TypewriterText(
                     text: text,
-                    style: TextStyle(
-                      color: isUser ? Colors.white : null,
+                    style: const TextStyle(
+                      color: Colors.white,
                       fontSize: 15,
+                      height: 1.5,
                     ),
                     duration: const Duration(milliseconds: 20),
                   )
                 : Text(
                     text,
-                    style: TextStyle(
-                      color: isUser ? Colors.white : null,
+                    style: const TextStyle(
+                      color: Colors.white,
                       fontSize: 15,
+                      height: 1.5,
                     ),
                   ),
           ),
           if (sourceRef != null && sourceRef.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.only(top: 4, left: 12, right: 12),
+              padding: const EdgeInsets.only(top: 6, left: 12, right: 12),
               child: Text(
                 '📚 Kaynak: $sourceRef',
                 style: TextStyle(
                   fontSize: 11,
-                  color: Colors.grey[600],
+                  color: Colors.white.withValues(alpha: 0.7),
                   fontStyle: FontStyle.italic,
                 ),
               ),
@@ -448,27 +467,33 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget> with TickerProvid
     return Align(
       alignment: Alignment.centerLeft,
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
         decoration: BoxDecoration(
-          color: Colors.grey.withValues(alpha: 0.1),
+          color: const Color(0xFF2C3E50).withValues(alpha: 0.85), // Match AI bubble color
           borderRadius: BorderRadius.circular(20),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             SizedBox(
-              width: 16,
-              height: 16,
+              width: 18,
+              height: 18,
               child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  const Color(0xFF667eea),
+                strokeWidth: 2.5,
+                valueColor: const AlwaysStoppedAnimation<Color>(
+                  Color(0xFF00E5FF), // Bright cyan
                 ),
               ),
             ),
             const SizedBox(width: 12),
-            const Text('Düşünüyorum...'),
+            const Text(
+              'Düşünüyorum...',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 15,
+              ),
+            ),
           ],
         ),
       ),

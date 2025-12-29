@@ -184,11 +184,17 @@ class _SubjectContentScreenState extends State<SubjectContentScreen>
     }
   }
 
-  void _openVideo(String videoId) {
+  void _openVideo(String videoId, {String? title, String? description}) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => VideoPlayerScreen(videoId: videoId),
+        builder: (context) => VideoPlayerScreen(
+          videoId: videoId,
+          videoTitle: title,
+          channelName: widget.subjectName,
+          description: description,
+          subjectTag: widget.subjectName, // Pass subject name as tag
+        ),
       ),
     );
   }
@@ -219,8 +225,8 @@ class _SubjectContentScreenState extends State<SubjectContentScreen>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              widget.gradientStart.withOpacity(0.3),
-              widget.gradientEnd.withOpacity(0.1),
+              widget.gradientStart.withValues(alpha: 0.3),
+              widget.gradientEnd.withValues(alpha: 0.1),
               Colors.white,
             ],
           ),
@@ -242,11 +248,11 @@ class _SubjectContentScreenState extends State<SubjectContentScreen>
                           child: Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.9),
+                              color: Colors.white.withValues(alpha: 0.9),
                               borderRadius: BorderRadius.circular(15),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
+                                  color: Colors.black.withValues(alpha: 0.1),
                                   blurRadius: 10,
                                   spreadRadius: 0,
                                   offset: const Offset(0, 2),
@@ -277,7 +283,7 @@ class _SubjectContentScreenState extends State<SubjectContentScreen>
                                 widget.sectionType,
                                 style: TextStyle(
                                   fontSize: 16,
-                                  color: Colors.black.withOpacity(0.7),
+                                  color: Colors.black.withValues(alpha: 0.7),
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -296,7 +302,7 @@ class _SubjectContentScreenState extends State<SubjectContentScreen>
                             borderRadius: BorderRadius.circular(18),
                             boxShadow: [
                               BoxShadow(
-                                color: widget.gradientEnd.withOpacity(0.4),
+                                color: widget.gradientEnd.withValues(alpha: 0.4),
                                 blurRadius: 15,
                                 spreadRadius: 0,
                                 offset: const Offset(0, 5),
@@ -318,10 +324,10 @@ class _SubjectContentScreenState extends State<SubjectContentScreen>
                     margin: const EdgeInsets.symmetric(horizontal: 20),
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
-                      color: widget.gradientStart.withOpacity(0.1),
+                      color: widget.gradientStart.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: widget.gradientStart.withOpacity(0.3),
+                        color: widget.gradientStart.withValues(alpha: 0.3),
                         width: 1,
                       ),
                     ),
@@ -367,16 +373,16 @@ class _SubjectContentScreenState extends State<SubjectContentScreen>
           end: Alignment.bottomRight,
           colors: [
             Colors.white,
-            Colors.white.withOpacity(0.9),
+            Colors.white.withValues(alpha: 0.9),
           ],
         ),
         border: Border.all(
-          color: widget.gradientStart.withOpacity(0.2),
+          color: widget.gradientStart.withValues(alpha: 0.2),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 15,
             spreadRadius: 0,
             offset: const Offset(0, 5),
@@ -393,7 +399,11 @@ class _SubjectContentScreenState extends State<SubjectContentScreen>
               borderRadius: BorderRadius.circular(20),
               onTap: () {
                 if (isVideo) {
-                  _openVideo(item['videoId']!);
+                  _openVideo(
+                    item['videoId']!,
+                    title: item['title'],
+                    description: item['description'],
+                  );
                 } else {
                   _openPDF(item['url']!);
                 }
@@ -409,8 +419,8 @@ class _SubjectContentScreenState extends State<SubjectContentScreen>
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            widget.gradientStart.withOpacity(0.2),
-                            widget.gradientEnd.withOpacity(0.3),
+                            widget.gradientStart.withValues(alpha: 0.2),
+                            widget.gradientEnd.withValues(alpha: 0.3),
                           ],
                         ),
                         borderRadius: BorderRadius.circular(15),
@@ -442,7 +452,7 @@ class _SubjectContentScreenState extends State<SubjectContentScreen>
                             item['description']!,
                             style: TextStyle(
                               fontSize: 14,
-                              color: Colors.black.withOpacity(0.7),
+                              color: Colors.black.withValues(alpha: 0.7),
                             ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
@@ -454,7 +464,7 @@ class _SubjectContentScreenState extends State<SubjectContentScreen>
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: widget.gradientStart.withOpacity(0.1),
+                              color: widget.gradientStart.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Text(
@@ -476,8 +486,8 @@ class _SubjectContentScreenState extends State<SubjectContentScreen>
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            widget.gradientStart.withOpacity(0.1),
-                            widget.gradientEnd.withOpacity(0.1),
+                            widget.gradientStart.withValues(alpha: 0.1),
+                            widget.gradientEnd.withValues(alpha: 0.1),
                           ],
                         ),
                         borderRadius: BorderRadius.circular(12),

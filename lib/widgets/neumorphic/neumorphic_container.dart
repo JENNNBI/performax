@@ -43,29 +43,29 @@ class NeumorphicContainer extends StatelessWidget {
     final Color borderColor;
     
     if (isDark) {
-      // --- DARK MODE (Subtle Premium Glow - RESTORED) ---
-      // Elegant colored rim light for depth without bloom
-      topShadow = Colors.black.withOpacity(0.3); // Soft structural shadow
-      bottomShadow = Colors.black.withOpacity(0.4); // Depth definition
-      ambientShadow = NeumorphicColors.accentBlue.withOpacity(0.15); // ✨ RESTORED - Subtle blue glow
-      highlightColor = Colors.white.withOpacity(0.03); // Gentle highlight
-      borderColor = Colors.white.withOpacity(0.08); // Subtle rim
+      // --- DARK MODE (BOOSTED Glow - Better Separation) ---
+      // Stronger colored rim light for clear depth and layering
+      topShadow = Colors.black.withValues(alpha: 0.4); // Deeper structural shadow
+      bottomShadow = Colors.black.withValues(alpha: 0.5); // Enhanced depth definition
+      ambientShadow = NeumorphicColors.accentBlue.withValues(alpha: 0.5); // ✨ ENHANCED - Punchier blue glow (increased from 0.30)
+      highlightColor = Colors.white.withValues(alpha: 0.05); // Brighter highlight
+      borderColor = Colors.white.withValues(alpha: 0.12); // More visible rim
     } else {
-      // --- LIGHT MODE (Clean Soft UI) ---
-      // Neutral grey shadows, no colored glow
+      // --- LIGHT MODE (REDUCED Glow - Cleaner Look) ---
+      // Neutral grey shadows only, very subtle
       topShadow = Colors.white; // Light source from top
-      bottomShadow = Colors.black.withOpacity(0.06); // 🎯 NEUTRAL grey shadow (not colored)
+      bottomShadow = Colors.grey.shade400.withValues(alpha: 0.05); // 🎯 Very faint grey shadow
       ambientShadow = Colors.transparent; // No colored glow in light mode
-      highlightColor = Colors.white.withOpacity(0.8); // Bright highlight
-      borderColor = Colors.black.withOpacity(0.05); // Subtle neutral border
+      highlightColor = Colors.white.withValues(alpha: 0.9); // Bright highlight
+      borderColor = Colors.grey.shade300.withValues(alpha: 0.08); // Very subtle neutral border
     }
 
     List<BoxShadow> shadows = [];
     
-    // ✨ Balanced Shadow Parameters
-    final blurRadius = isDark ? 10.0 : 12.0; // Moderate blur for both modes
-    final offsetDistance = isDark ? 3.0 : 4.0; // Gentle offset
-    final spreadRadius = isDark ? 0.0 : 0.0; // No spread in both modes
+    // ✨ CALIBRATED Shadow Parameters (Theme-Aware)
+    final blurRadius = isDark ? 15.0 : 8.0; // Stronger blur for dark mode backlight effect
+    final offsetDistance = isDark ? 3.0 : 3.0; // Consistent offset
+    final spreadRadius = 0.0; // No spread in both modes for tight control
 
     if (!isPressed) {
       shadows = [
@@ -74,7 +74,7 @@ class NeumorphicContainer extends StatelessWidget {
           color: isDark ? highlightColor : topShadow,
           offset: Offset(-offsetDistance/2, -offsetDistance/2),
           blurRadius: blurRadius,
-          spreadRadius: isDark ? 0 : 1.0, // Slight spread for light mode highlight
+          spreadRadius: 0.0,
         ),
         // Bottom-Right Drop Shadow (Depth)
         BoxShadow(
@@ -83,13 +83,13 @@ class NeumorphicContainer extends StatelessWidget {
           blurRadius: blurRadius,
           spreadRadius: spreadRadius,
         ),
-        // Ambient Glow (Dark Mode Only) - RESTORED with subtlety
+        // Ambient Glow (Dark Mode Only) - ENHANCED for tighter, punchier glow
         if (isDark)
           BoxShadow(
-            color: ambientShadow, // 0.15 opacity - visible but controlled
-            offset: const Offset(0, 2), // Gentle offset
-            blurRadius: 12, // Moderate bloom
-            spreadRadius: 0, // No spread - contained glow
+            color: ambientShadow, // 0.5 opacity - punchier blue glow
+            offset: const Offset(0, 3), // Slightly offset for depth
+            blurRadius: 10.0, // Tighter blur for closer, more focused glow (reduced from 15.0)
+            spreadRadius: 0.5, // Reduced spread for tighter glow (reduced from 1.0)
           ),
       ];
     }
@@ -105,7 +105,7 @@ class NeumorphicContainer extends StatelessWidget {
         boxShadow: shadows,
         border: Border.all(
           color: borderColor,
-          width: isDark ? 0.6 : 1.0, // Visible border for both modes
+          width: isDark ? 0.8 : 0.5, // More visible border for dark mode
         ),
         gradient: isPressed 
           ? LinearGradient(

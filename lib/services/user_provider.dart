@@ -1,5 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/material.dart';
+import 'user_service.dart'; // For reloading balance
+import 'currency_service.dart'; // For syncing balance
 
 /// 🔐 USER PROVIDER - User-Specific Data Persistence
 /// 
@@ -330,6 +333,48 @@ class UserProvider extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       debugPrint('❌ Error updating stats: $e');
+    }
+  }
+  
+  /// 🔄 Reload Rocket Balance from CurrencyService
+  /// **CRITICAL FIX:** Syncs UserProvider with CurrencyService after quest claims
+  /// This fixes the bug where quest rewards don't appear in the UI
+  Future<void> reloadBalance() async {
+    if (_currentUserId == null) {
+      debugPrint('⚠️ Cannot reload balance: No user logged in');
+      return;
+    }
+    
+    try {
+      final profile = await UserService().getCurrentUserProfile(useCache: true);
+      if (profile != null) {
+        // Load balance from CurrencyService (the source of truth)
+        final latestBalance = await CurrencyService.instance.loadBalance(profile);
+        final latestScore = await CurrencyService.instance.loadScore(profile);
+        
+        debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        debugPrint('🔄 UserProvider: Reloading balance from CurrencyService');
+        debugPrint('   Previous Balance: $_rockets');
+        debugPrint('   New Balance: $latestBalance');
+        debugPrint('   Previous Score: $_score');
+        debugPrint('   New Score: $latestScore');
+        debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        
+        // Update local state
+        _rockets = latestBalance;
+        _score = latestScore;
+        _rank = _calculateRank(_score);
+        
+        // 💾 Sync back to UserProvider's SharedPreferences keys
+        await saveUserData(_currentUserId!);
+        
+        // 🔔 Notify UI to rebuild
+        notifyListeners();
+        
+        debugPrint('✅ Balance reloaded successfully!');
+      }
+    } catch (e) {
+      debugPrint('❌ Error reloading balance: $e');
     }
   }
 

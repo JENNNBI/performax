@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
 import '../blocs/bloc_exports.dart';
 import '../utils/app_icons.dart';
 import '../services/localization_service.dart';
@@ -329,7 +329,7 @@ class _SettingsScreenState extends State<SettingsScreen>
           icon: AppIcons.person,
           title: languageBloc.translate('profile_info'),
           subtitle: languageBloc.translate('edit_personal_info'),
-          trailing: Icon(AppIcons.arrowForward, color: NeumorphicColors.getText(context).withOpacity(0.5)),
+          trailing: Icon(AppIcons.arrowForward, color: NeumorphicColors.getText(context).withValues(alpha: 0.5)),
           onTap: () {
             Navigator.push(
               context, 

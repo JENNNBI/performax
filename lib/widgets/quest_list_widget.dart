@@ -3,7 +3,6 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../models/quest.dart';
 import '../services/quest_celebration_coordinator.dart';
 import '../theme/neumorphic_colors.dart';
-import '../widgets/neumorphic/neumorphic_container.dart';
 import '../widgets/neumorphic/neumorphic_button.dart';
 
 /// Quest list widget with tabs for Daily/Weekly/Monthly quests
@@ -42,6 +41,7 @@ class _QuestListWidgetState extends State<QuestListWidget> with SingleTickerProv
     // Dark Futuristic Theme Colors
     const modalBgColor = Color(0xFF2B2E35);
     const accentColor = NeumorphicColors.accentBlue;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     
     return Container(
       width: double.infinity,
@@ -69,10 +69,29 @@ class _QuestListWidgetState extends State<QuestListWidget> with SingleTickerProv
             padding: const EdgeInsets.all(20),
             child: Row(
               children: [
-                NeumorphicContainer(
+                // 🎨 TROPHY ICON - Fixed Light Mode Glare
+                Container(
                   padding: const EdgeInsets.all(10),
-                  borderRadius: 12,
-                  color: accentColor.withValues(alpha: 0.1),
+                  decoration: BoxDecoration(
+                    color: accentColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    // 🎯 LIGHT MODE FIX: Subtle shadow instead of intense glow
+                    boxShadow: isDarkMode 
+                      ? [
+                          BoxShadow(
+                            color: accentColor.withValues(alpha: 0.2),
+                            blurRadius: 8,
+                            spreadRadius: 0,
+                          ),
+                        ]
+                      : [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 4,
+                            spreadRadius: 0,
+                          ),
+                        ],
+                  ),
                   child: const Icon(Icons.emoji_events_rounded, color: accentColor, size: 24),
                 ),
                 const SizedBox(width: 16),
@@ -87,12 +106,33 @@ class _QuestListWidgetState extends State<QuestListWidget> with SingleTickerProv
                     ),
                   ),
                 ),
-                NeumorphicButton(
-                  onPressed: widget.onClose,
-                  padding: const EdgeInsets.all(8),
-                  borderRadius: 12,
-                  color: Colors.white.withValues(alpha: 0.05),
-                  child: const Icon(Icons.close_rounded, color: Colors.white70, size: 20),
+                // 🎨 CLOSE BUTTON - Fixed Light Mode Glare
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(12),
+                    // 🎯 LIGHT MODE FIX: Subtle shadow instead of intense glow
+                    boxShadow: isDarkMode
+                      ? [
+                          BoxShadow(
+                            color: Colors.white.withValues(alpha: 0.1),
+                            blurRadius: 6,
+                            spreadRadius: 0,
+                          ),
+                        ]
+                      : [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 4,
+                            spreadRadius: 0,
+                          ),
+                        ],
+                  ),
+                  child: IconButton(
+                    onPressed: widget.onClose,
+                    padding: const EdgeInsets.all(8),
+                    icon: const Icon(Icons.close_rounded, color: Colors.white70, size: 20),
+                  ),
                 ),
               ],
             ),
@@ -163,11 +203,34 @@ class _QuestListWidgetState extends State<QuestListWidget> with SingleTickerProv
   }
 
   Widget _buildQuestList(List<Quest> quests) {
+    // 🎯 REFINED SORT LOGIC - UX Fix for Registration Flow
+    // Priority Order:
+    // 1. TOP: Completed & Unclaimed (ready to collect reward) ⭐
+    // 2. MIDDLE: In Progress (active quests)
+    // 3. BOTTOM: Completed & Claimed (done and dusted)
     final sorted = [...quests];
     sorted.sort((a, b) {
-      final ac = a.isCompleted ? 1 : 0;
-      final bc = b.isCompleted ? 1 : 0;
-      return ac.compareTo(bc);
+      // Calculate priority scores (lower = higher priority = top of list)
+      int aPriority;
+      int bPriority;
+      
+      if (a.completed && !a.claimed) {
+        aPriority = 0; // 🎯 HIGHEST PRIORITY - Ready to claim!
+      } else if (!a.completed) {
+        aPriority = 1; // MEDIUM PRIORITY - In progress
+      } else {
+        aPriority = 2; // LOWEST PRIORITY - Claimed/done
+      }
+      
+      if (b.completed && !b.claimed) {
+        bPriority = 0; // 🎯 HIGHEST PRIORITY - Ready to claim!
+      } else if (!b.completed) {
+        bPriority = 1; // MEDIUM PRIORITY - In progress
+      } else {
+        bPriority = 2; // LOWEST PRIORITY - Claimed/done
+      }
+      
+      return aPriority.compareTo(bPriority);
     });
 
     if (sorted.isEmpty) {
@@ -215,26 +278,30 @@ class _QuestCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isCompleted = quest.isCompleted;
-    final isClaimable = quest.isClaimable;
+    // 🎯 VISUAL STATE LOGIC FIX
+    // We need to check the actual completed and claimed flags separately
+    // NOT use the isCompleted getter which returns claimed status
+    final isReadyToClaim = quest.isClaimable; // progress >= target && !claimed
+    final isFullyDone = quest.claimed; // Reward already claimed
+    
     // Create a GlobalKey to track the claim button position
     final GlobalKey buttonKey = GlobalKey();
     
     // Card Colors
     final cardColor = const Color(0xFF353941);
-    final borderColor = isClaimable 
-        ? const Color(0xFFFFD700) 
-        : (isCompleted ? Colors.green : Colors.white.withValues(alpha: 0.1));
+    final borderColor = isReadyToClaim 
+        ? const Color(0xFFFFD700) // Golden border for claimable quests
+        : (isFullyDone ? Colors.green : Colors.white.withValues(alpha: 0.1));
 
     return GestureDetector(
-      onTap: isClaimable ? () => QuestCelebrationCoordinator.instance.claimQuest(quest, buttonKey) : null,
+      onTap: isReadyToClaim ? () => QuestCelebrationCoordinator.instance.claimQuest(quest, buttonKey) : null,
       child: Container(
         decoration: BoxDecoration(
           color: cardColor,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: borderColor.withValues(alpha: isClaimable ? 1.0 : 0.5),
-            width: isClaimable ? 1.5 : 1,
+            color: borderColor.withValues(alpha: isReadyToClaim ? 1.0 : 0.5),
+            width: isReadyToClaim ? 1.5 : 1,
           ),
           boxShadow: [
             // Convex Shadow Effect
@@ -248,7 +315,7 @@ class _QuestCard extends StatelessWidget {
               offset: const Offset(-2, -2),
               blurRadius: 4,
             ),
-            if (isClaimable)
+            if (isReadyToClaim)
               BoxShadow(
                 color: const Color(0xFFFFD700).withValues(alpha: 0.2),
                 blurRadius: 15,
@@ -274,8 +341,9 @@ class _QuestCard extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
-                            color: isCompleted ? Colors.greenAccent : Colors.white,
-                            decoration: isCompleted ? TextDecoration.lineThrough : null,
+                            // 🎯 FIX: Only cross out if CLAIMED, not just completed
+                            color: isFullyDone ? Colors.greenAccent : Colors.white,
+                            decoration: isFullyDone ? TextDecoration.lineThrough : null,
                             decorationColor: Colors.greenAccent,
                           ),
                         ),
@@ -293,7 +361,8 @@ class _QuestCard extends StatelessWidget {
                   const SizedBox(width: 12),
                   
                   // Reward Pill
-                  if (!isCompleted)
+                  // 🎯 FIX: Show reward pill if NOT claimed yet
+                  if (!isFullyDone)
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
@@ -328,7 +397,8 @@ class _QuestCard extends StatelessWidget {
               const SizedBox(height: 16),
 
               // Progress Section
-              if (isClaimable)
+              // 🎯 FIX: Show claim button if ready to claim (completed but not claimed)
+              if (isReadyToClaim)
                 Align(
                   alignment: Alignment.centerRight,
                   child: NeumorphicButton(
@@ -347,7 +417,8 @@ class _QuestCard extends StatelessWidget {
                     ),
                   ),
                 )
-              else if (!isCompleted)
+              // 🎯 FIX: Show progress bar if NOT ready to claim and NOT fully done
+              else if (!isFullyDone && !isReadyToClaim)
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -404,7 +475,7 @@ class _QuestCard extends StatelessWidget {
                   ],
                 )
               else
-                // Completed State
+                // 🎯 FIX: Completed State (Claimed) - only show if fully done
                 Row(
                   children: const [
                     Icon(Icons.check_circle_rounded, color: Colors.greenAccent, size: 16),

@@ -117,7 +117,7 @@ class _SearchableInstitutionDropdownState extends State<SearchableInstitutionDro
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 10,
                     spreadRadius: 2,
                   ),
@@ -194,8 +194,8 @@ class _SearchableInstitutionDropdownState extends State<SearchableInstitutionDro
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
                         color: institution.type == InstitutionType.lise 
-                            ? Colors.blue.withOpacity(0.1)
-                            : Colors.orange.withOpacity(0.1),
+                            ? Colors.blue.withValues(alpha: 0.1)
+                            : Colors.orange.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
@@ -247,7 +247,7 @@ class _SearchableInstitutionDropdownState extends State<SearchableInstitutionDro
         // Modern Dark Theme Container
         // Matches _ModernTextField style
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05), // Dark fill
+          color: Colors.white.withValues(alpha: 0.05), // Dark fill
           borderRadius: BorderRadius.circular(30), // Rounded corners
         ),
         child: TextFormField(
@@ -258,9 +258,9 @@ class _SearchableInstitutionDropdownState extends State<SearchableInstitutionDro
           decoration: InputDecoration(
             labelText: widget.labelText,
             hintText: widget.hintText ?? 'Search school...',
-            labelStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
-            hintStyle: TextStyle(color: Colors.white.withOpacity(0.3)),
-            prefixIcon: Icon(Icons.school_rounded, color: Colors.white.withOpacity(0.7)),
+            labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
+            hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3)),
+            prefixIcon: Icon(Icons.school_rounded, color: Colors.white.withValues(alpha: 0.7)),
             suffixIcon: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -273,11 +273,11 @@ class _SearchableInstitutionDropdownState extends State<SearchableInstitutionDro
                       });
                       widget.onChanged(null);
                     },
-                    icon: Icon(Icons.clear_rounded, size: 20, color: Colors.white.withOpacity(0.7)),
+                    icon: Icon(Icons.clear_rounded, size: 20, color: Colors.white.withValues(alpha: 0.7)),
                   ),
                 Icon(
                   _isDropdownOpen ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
-                  color: Colors.white.withOpacity(0.7),
+                  color: Colors.white.withValues(alpha: 0.7),
                 ),
                 const SizedBox(width: 8),
               ],

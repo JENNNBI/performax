@@ -1,8 +1,10 @@
 import 'dart:collection';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart'; // For UserProvider access
 import '../models/quest.dart';
 import 'quest_service.dart';
+import 'user_provider.dart'; // For reloading balance
 
 typedef OpenQuestWindow = void Function();
 typedef AnimateCurrency = void Function(int delta);
@@ -76,7 +78,7 @@ class QuestCelebrationCoordinator {
   void _spawnParticles(Quest quest, GlobalKey startKey, {VoidCallback? onArriveAll}) {
     if (_homeContext == null || _rocketIconKey == null) return;
     final overlay = Overlay.of(_homeContext!);
-    if (overlay == null) return;
+    if (!overlay.mounted) return;
 
     final startBox = startKey.currentContext?.findRenderObject() as RenderBox?;
     final endBox = _rocketIconKey!.currentContext?.findRenderObject() as RenderBox?;
@@ -128,6 +130,22 @@ class QuestCelebrationCoordinator {
   void claimQuest(Quest quest, GlobalKey buttonKey) {
     _spawnParticles(quest, buttonKey, onArriveAll: () {
       QuestService.instance.claimById(quest.id);
+      
+      // 🔄 CRITICAL FIX: Reload balance from CurrencyService to update UI
+      // This fixes the bug where rewards don't appear in the UI immediately
+      // The delay ensures CurrencyService has finished updating
+      Future.delayed(const Duration(milliseconds: 300), () async {
+        try {
+          // Get UserProvider from context (if available)
+          if (_homeContext != null && _homeContext!.mounted) {
+            final userProvider = Provider.of<UserProvider>(_homeContext!, listen: false);
+            await userProvider.reloadBalance();
+            debugPrint('✅ Balance reloaded in UI after quest claim');
+          }
+        } catch (e) {
+          debugPrint('⚠️ Could not reload balance: $e');
+        }
+      });
     });
   }
 }
@@ -138,7 +156,7 @@ class _ParticleFlight extends StatefulWidget {
   final Duration delay;
   final VoidCallback? onArrive;
   final VoidCallback? onRemove;
-  const _ParticleFlight({super.key, required this.start, required this.end, required this.delay, this.onArrive, this.onRemove});
+  const _ParticleFlight({required this.start, required this.end, required this.delay, this.onArrive, this.onRemove});
   @override
   State<_ParticleFlight> createState() => _ParticleFlightState();
 }

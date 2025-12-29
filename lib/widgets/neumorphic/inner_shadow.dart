@@ -43,7 +43,7 @@ class _RenderInnerShadow extends RenderProxyBox {
     context.paintChild(child!, offset);
 
     for (final shadow in _shadows) {
-      final shadowRect = bounds.inflate(shadow.blurSigma * 2);
+      // shadowRect removed - unused
       final shadowPaint = Paint()
         ..blendMode = BlendMode.srcATop
         ..colorFilter = ColorFilter.mode(shadow.color, BlendMode.srcOut)

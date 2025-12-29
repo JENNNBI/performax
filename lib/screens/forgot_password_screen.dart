@@ -98,16 +98,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     }
   }
 
-  String? _validateEmail(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'E-posta gereklidir';
-    }
-    final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-    if (!emailRegex.hasMatch(value)) {
-      return 'Geçerli bir e-posta adresi girin';
-    }
-    return null;
-  }
 
   @override
   Widget build(BuildContext context) {

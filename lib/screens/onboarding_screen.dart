@@ -136,7 +136,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
-                            color: Colors.white.withOpacity(0.6),
+                            color: Colors.white.withValues(alpha: 0.6),
                           ),
                         ),
                       ),
@@ -173,9 +173,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
                                 borderRadius: BorderRadius.circular(4),
                                 color: _currentPage == index
                                     ? _pages[_currentPage].accentColor
-                                    : Colors.white.withOpacity(0.2),
+                                    : Colors.white.withValues(alpha: 0.2),
                                 boxShadow: _currentPage == index 
-                                    ? [BoxShadow(color: _pages[_currentPage].accentColor.withOpacity(0.5), blurRadius: 8)]
+                                    ? [BoxShadow(color: _pages[_currentPage].accentColor.withValues(alpha: 0.5), blurRadius: 8)]
                                     : [],
                               ),
                             );
@@ -193,14 +193,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
                             gradient: LinearGradient(
                               colors: [
                                 _pages[_currentPage].accentColor,
-                                _pages[_currentPage].accentColor.withOpacity(0.7),
+                                _pages[_currentPage].accentColor.withValues(alpha: 0.7),
                               ],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: _pages[_currentPage].accentColor.withOpacity(0.4),
+                                color: _pages[_currentPage].accentColor.withValues(alpha: 0.4),
                                 blurRadius: 20,
                                 offset: const Offset(0, 8),
                               ),
@@ -262,7 +262,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      page.accentColor.withOpacity(0.3),
+                      page.accentColor.withValues(alpha: 0.3),
                       Colors.transparent,
                     ],
                   ),
@@ -308,9 +308,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
                 child: Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.05),
+                    color: Colors.white.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: Colors.white.withOpacity(0.1)),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -331,7 +331,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
                         style: TextStyle(
                           fontSize: 16,
                           height: 1.5,
-                          color: Colors.white.withOpacity(0.7),
+                          color: Colors.white.withValues(alpha: 0.7),
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -366,7 +366,7 @@ class _GridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white.withOpacity(0.03)
+      ..color = Colors.white.withValues(alpha: 0.03)
       ..strokeWidth = 1;
 
     const spacing = 40.0;

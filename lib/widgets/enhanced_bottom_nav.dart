@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/neumorphic_colors.dart';
 
 class EnhancedBottomNav extends StatefulWidget {
   final int selectedIndex;
@@ -111,8 +112,8 @@ class _EnhancedBottomNavState extends State<EnhancedBottomNav>
             end: Alignment.bottomCenter,
             colors: [
               Theme.of(context).bottomAppBarTheme.color ?? Colors.white,
-              Theme.of(context).bottomAppBarTheme.color?.withOpacity(0.95) ?? 
-                  Colors.white.withOpacity(0.95),
+              Theme.of(context).bottomAppBarTheme.color?.withValues(alpha: 0.95) ?? 
+                  Colors.white.withValues(alpha: 0.95),
             ],
           ),
         ),
@@ -242,8 +243,8 @@ class _NavItemButtonState extends State<_NavItemButton>
                 gradient: widget.isSelected
                     ? LinearGradient(
                         colors: [
-                          widget.primaryColor.withOpacity(0.15),
-                          widget.primaryColor.withOpacity(0.05),
+                          widget.primaryColor.withValues(alpha: 0.15),
+                          widget.primaryColor.withValues(alpha: 0.05),
                         ],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
@@ -253,9 +254,18 @@ class _NavItemButtonState extends State<_NavItemButton>
                 boxShadow: widget.isSelected
                     ? [
                         BoxShadow(
-                          color: widget.primaryColor.withOpacity(0.3),
-                          blurRadius: 12,
-                          spreadRadius: 2,
+                          color: Theme.of(context).brightness == Brightness.dark && 
+                                 widget.primaryColor == NeumorphicColors.accentBlue
+                            ? widget.primaryColor.withValues(alpha: 0.5) // Enhanced opacity for dark mode blue glow
+                            : widget.primaryColor.withValues(alpha: 0.3),
+                          blurRadius: Theme.of(context).brightness == Brightness.dark && 
+                                     widget.primaryColor == NeumorphicColors.accentBlue
+                            ? 10.0 // Tighter blur for dark mode blue glow
+                            : 12.0,
+                          spreadRadius: Theme.of(context).brightness == Brightness.dark && 
+                                       widget.primaryColor == NeumorphicColors.accentBlue
+                            ? 0.5 // Tighter spread for dark mode blue glow
+                            : 2.0,
                         ),
                       ]
                     : null,

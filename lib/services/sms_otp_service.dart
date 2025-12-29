@@ -41,29 +41,29 @@ class SmsOtpService {
       final attemptCount = prefs.getInt(_otpAttemptCountKey) ?? 0;
       final lastAttempt = prefs.getInt(_lastOtpAttemptKey) ?? 0;
       
-      // Reset counter if more than 1 hour has passed since last attempt
-      if (now - lastAttempt > 3600000) {
+      // Reset counter if more than 30 minutes has passed since last attempt (was 1 hour)
+      if (now - lastAttempt > 1800000) { // 30 minutes
         await prefs.setInt(_otpAttemptCountKey, 0);
         await prefs.remove(_blockUntilKey);
-        debugPrint('✅ Rate limit counter reset after 1 hour');
+        debugPrint('✅ Rate limit counter reset after 30 minutes');
         return null;
       }
       
-      // Exponential backoff based on attempt count
-      if (attemptCount >= 5) {
-        // After 5 attempts, block for 30 minutes
+      // More lenient exponential backoff based on attempt count
+      if (attemptCount >= 10) {
+        // After 10 attempts, block for 30 minutes (was 5)
         final blockTime = now + (30 * 60000);
         await prefs.setInt(_blockUntilKey, blockTime);
-        debugPrint('🚫 Too many attempts (5+). Blocking for 30 minutes.');
+        debugPrint('🚫 Too many attempts (10+). Blocking for 30 minutes.');
         return 'Çok fazla deneme yapıldı. Lütfen 30 dakika sonra tekrar deneyin.';
-      } else if (attemptCount >= 3) {
-        // After 3 attempts, require 5 minute wait
-        final requiredWait = 5 * 60000; // 5 minutes
+      } else if (attemptCount >= 5) {
+        // After 5 attempts, require 2 minute wait (was 3 attempts, 5 minutes)
+        final requiredWait = 2 * 60000; // 2 minutes
         final timeSinceLastAttempt = now - lastAttempt;
         if (timeSinceLastAttempt < requiredWait) {
-          final remainingMinutes = ((requiredWait - timeSinceLastAttempt) / 60000).ceil();
-          debugPrint('⏸️ Rate limit: Need to wait $remainingMinutes more minutes');
-          return 'Lütfen $remainingMinutes dakika bekleyip tekrar deneyin.';
+          final remainingSeconds = ((requiredWait - timeSinceLastAttempt) / 1000).ceil();
+          debugPrint('⏸️ Rate limit: Need to wait $remainingSeconds more seconds');
+          return 'Lütfen ${remainingSeconds} saniye bekleyip tekrar deneyin.';
         }
       }
       
@@ -121,18 +121,27 @@ class SmsOtpService {
         return false;
       }
       
-      // CRITICAL: Check rate limit before proceeding
-      final rateLimitError = await checkRateLimit();
-      if (rateLimitError != null) {
-        debugPrint('🚫 Rate limit check failed: $rateLimitError');
-        if (onFailed != null) {
-          onFailed(rateLimitError);
-        }
-        return false;
-      }
+      // Check if this is a test phone number - bypass rate limiting
+      final isTestNumber = phoneNumber == '+905550001234' || 
+                          phoneNumber == '+905074750523' ||
+                          phoneNumber.contains('5550001234');
       
-      // Record this attempt for rate limiting
-      await _recordAttempt();
+      if (isTestNumber) {
+        debugPrint('🧪 Test phone number detected - bypassing rate limit');
+      } else {
+        // CRITICAL: Check rate limit before proceeding (only for real numbers)
+        final rateLimitError = await checkRateLimit();
+        if (rateLimitError != null) {
+          debugPrint('🚫 Rate limit check failed: $rateLimitError');
+          if (onFailed != null) {
+            onFailed(rateLimitError);
+          }
+          return false;
+        }
+        
+        // Record this attempt for rate limiting (only for real numbers)
+        await _recordAttempt();
+      }
       
       // Store callbacks
       onOtpSent = onSent;
@@ -226,9 +235,10 @@ class SmsOtpService {
       }
       
       // CRITICAL: Ensure FirebaseAuth is ready
-      if (_auth.app == null) {
-        debugPrint('❌ FirebaseAuth app instance is null');
-         if (onFailed != null) {
+      if (_auth.app.options.projectId.isEmpty) {
+        // Firebase is NOT ready
+        debugPrint('❌ Firebase Auth not initialized');
+        if (onFailed != null) {
           onFailed('Uygulama başlatma hatası (Auth)');
         }
         return false;

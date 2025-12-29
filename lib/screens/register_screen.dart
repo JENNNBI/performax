@@ -4,7 +4,6 @@ import 'registration_details_screen.dart';
 import '../theme/neumorphic_colors.dart';
 import '../widgets/neumorphic/neumorphic_container.dart';
 import '../widgets/neumorphic/neumorphic_button.dart';
-import '../widgets/neumorphic/neumorphic_text_field.dart';
 
 import 'package:provider/provider.dart';
 import '../services/user_provider.dart';
@@ -77,7 +76,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     final bgColor = const Color(0xFF0F172A); // Deep Blue / Dark Background
-    final textColor = Colors.white;
+    // Removed unused textColor variable
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -129,7 +128,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         'Yeni bir başlangıç yapın',
                         style: TextStyle(
                           fontSize: 14,
-                          color: Colors.white.withOpacity(0.8),
+                          color: Colors.white.withValues(alpha: 0.8),
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -142,13 +141,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         style: const TextStyle(color: Colors.white),
                         decoration: InputDecoration(
                           hintText: 'E-posta',
-                          hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+                          hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
                           prefixIcon: PhosphorIcon(
                             PhosphorIcons.envelope(PhosphorIconsStyle.regular),
-                            color: Colors.white.withOpacity(0.5),
+                            color: Colors.white.withValues(alpha: 0.5),
                           ),
                           filled: true,
-                          fillColor: Colors.black.withOpacity(0.2),
+                          fillColor: Colors.black.withValues(alpha: 0.2),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
                             borderSide: BorderSide.none,
@@ -165,13 +164,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         style: const TextStyle(color: Colors.white),
                         decoration: InputDecoration(
                           hintText: 'Şifre',
-                          hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+                          hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
                           prefixIcon: PhosphorIcon(
                             PhosphorIcons.lock(PhosphorIconsStyle.regular),
-                            color: Colors.white.withOpacity(0.5),
+                            color: Colors.white.withValues(alpha: 0.5),
                           ),
                           filled: true,
-                          fillColor: Colors.black.withOpacity(0.2),
+                          fillColor: Colors.black.withValues(alpha: 0.2),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
                             borderSide: BorderSide.none,
@@ -188,13 +187,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         style: const TextStyle(color: Colors.white),
                         decoration: InputDecoration(
                           hintText: 'Şifre Tekrar',
-                          hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+                          hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
                           prefixIcon: PhosphorIcon(
                             PhosphorIcons.lockKey(PhosphorIconsStyle.regular),
-                            color: Colors.white.withOpacity(0.5),
+                            color: Colors.white.withValues(alpha: 0.5),
                           ),
                           filled: true,
-                          fillColor: Colors.black.withOpacity(0.2),
+                          fillColor: Colors.black.withValues(alpha: 0.2),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
                             borderSide: BorderSide.none,
